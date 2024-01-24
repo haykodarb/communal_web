@@ -1,12 +1,39 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		%sveltekit.head%
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-	</body>
+
+<head>
+	<meta charset="utf-8" />
+	<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Communal</title>
+	%sveltekit.head%
+</head>
+
+<body data-sveltekit-preload-data="hover">
+	<div style="display: contents">%sveltekit.body%</div>
+</body>
+
+<style>
+	html * {
+		color: black;
+		font-family: 'Poppins';
+	}
+
+	body {
+		height: 95vh;
+		width: 95vw;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		padding: 0;
+		align-items: center;
+	}
+
+	@font-face {
+		font-family: 'Poppins';
+		src: url('/fonts/Poppins-Regular.ttf');
+		font-display: swap;
+	}
+</style>
+
 </html>

@@ -22,8 +22,14 @@
 	const handleSubmit = async () => {
 		const { data, error } = await supabase.auth.updateUser({ password: newPassword });
 
-		if (data) console.log('Password updated successfully!');
-		if (error) console.log('There was an error updating your password.');
+		if (data) {
+			console.log('Password updated successfully!');
+			console.log(data);
+		}
+		if (error) {
+			console.log('There was an error updating your password.');
+			console.log(error);
+		}
 	};
 </script>
 

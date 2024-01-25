@@ -9,22 +9,18 @@
 	import { page } from '$app/stores';
 
 	onMount(async () => {
-		let {access_token, refresh_token} = $page.data;
-		console.log(`Token > ${access_token}`);
-		console.log(`Refresh > ${refresh_token}`);
+		let { code } = $page.data;
+		console.log(`Code > ${code}`);
 
-        const { data, error } = await supabase.auth.setSession({
-          access_token: access_token,
-          refresh_token: refresh_token,
-        });
+		const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
-        if (error) {
-          console.log(`Error signing in: ${error.message}`);
-        }
+		if (error) {
+			console.log(`Error signing in: ${error.message}`);
+		}
 
 		if (data) {
-          console.log(`Data: ${data}`);
-        }
+			console.log(`Data: ${data}`);
+		}
 
 		supabase.auth.onAuthStateChange(async (event, session) => {
 			console.log(`New event: ${event}`);

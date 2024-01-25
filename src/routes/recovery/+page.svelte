@@ -3,11 +3,29 @@
 	import type { AuthChangeEvent, AuthSession } from '@supabase/supabase-js';
 	import { supabase } from '$lib/supabase';
 	import { goto } from '$app/navigation';
-
 	let newPassword: string;
 	let currentState: AuthChangeEvent;
 
-	onMount(() => {
+	import { page } from '$app/stores';
+
+	onMount(async () => {
+		let {access_token, refresh_token} = $page.data;
+		console.log(`Token > ${access_token}`);
+		console.log(`Refresh > ${refresh_token}`);
+
+        const { data, error } = await supabase.auth.setSession({
+          access_token: access_token,
+          refresh_token: refresh_token,
+        });
+
+        if (error) {
+          console.log(`Error signing in: ${error.message}`);
+        }
+
+		if (data) {
+          console.log(`Data: ${data}`);
+        }
+
 		supabase.auth.onAuthStateChange(async (event, session) => {
 			console.log(`New event: ${event}`);
 

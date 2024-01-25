@@ -9,6 +9,9 @@
 
 	onMount(() => {
 		supabase.auth.onAuthStateChange(async (event, session) => {
+
+			console.log(`New event: ${event}`);
+
 			if (event == 'PASSWORD_RECOVERY') {
 				currentState = event;
 			} else {

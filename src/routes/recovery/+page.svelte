@@ -9,7 +9,6 @@
 
 	onMount(() => {
 		supabase.auth.onAuthStateChange(async (event, session) => {
-
 			console.log(`New event: ${event}`);
 
 			if (event == 'PASSWORD_RECOVERY') {
@@ -21,12 +20,10 @@
 	});
 
 	const handleSubmit = async () => {
-		if (currentState == 'PASSWORD_RECOVERY') {
-			const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+		const { data, error } = await supabase.auth.updateUser({ password: newPassword });
 
-			if (data) console.log('Password updated successfully!');
-			if (error) console.log('There was an error updating your password.');
-		}
+		if (data) console.log('Password updated successfully!');
+		if (error) console.log('There was an error updating your password.');
 	};
 </script>
 

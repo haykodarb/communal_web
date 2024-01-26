@@ -9,10 +9,14 @@
 	import { page } from '$app/stores';
 
 	onMount(async () => {
-		let { code } = $page.data;
-		console.log(`Code > ${code}`);
+		let { access_token, refresh_token } = $page.data;
+		console.log(`Access Token > ${access_token}`);
+		console.log(`Refresh Token > ${refresh_token}`);
 
-		const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+		const { data, error } = await supabase.auth.setSession({
+			access_token: access_token,
+			refresh_token: refresh_token,
+		});
 
 		if (error) {
 			console.log(`Error signing in: ${error.message}`);

@@ -2,20 +2,22 @@
 	import { onMount } from 'svelte';
 	import type { AuthChangeEvent, AuthSession } from '@supabase/supabase-js';
 	import { supabase } from '$lib/supabase';
-	import { goto } from '$app/navigation';
-	let newPassword: string;
-	let currentState: AuthChangeEvent;
-
 	import { page } from '$app/stores';
+
+	let newPassword: string;
+	let loading: boolean;
+	let resultMessage: string;
 
 	onMount(async () => {
 		let { access_token, refresh_token } = $page.data;
 		console.log(`Access Token > ${access_token}`);
 		console.log(`Refresh Token > ${refresh_token}`);
 
+		loading = true;
+
 		const { data, error } = await supabase.auth.setSession({
 			access_token: access_token,
-			refresh_token: refresh_token,
+			refresh_token: refresh_token
 		});
 
 		if (error) {
@@ -25,20 +27,19 @@
 		if (data) {
 			console.log(`Data: ${data}`);
 		}
+		loading = false;
 
 		supabase.auth.onAuthStateChange(async (event, session) => {
 			console.log(`New event: ${event}`);
-
-			if (event == 'PASSWORD_RECOVERY') {
-				currentState = event;
-			} else {
-				currentState = 'INITIAL_SESSION';
-			}
 		});
 	});
 
 	const handleSubmit = async () => {
+		loading = true;
+
 		const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+
+		loading = false;
 
 		if (data) {
 			console.log('Password updated successfully!');
@@ -64,15 +65,38 @@
 					type="password"
 					alt="Password"
 				/>
-				<div class="login_button">
-					<button on:click={handleSubmit} class="login_text">Update</button>
-				</div>
+				{#if loading}
+					<div class="loader" />
+				{:else}
+					<p>{resultMessage}</p>
+					<div class="login_button">
+						<button on:click={handleSubmit} class="login_text">Update</button>
+					</div>
+				{/if}
 			</div>
 		</div>
 	</div>
 </body>
 
 <style>
+	.loader {
+		border: 2vh solid #f3f3f3; /* Light grey */
+		border-top: 2vh solid #56949f; /* Blue */
+		border-radius: 50%;
+		width: 4vh;
+		height: 4vh;
+		animation: spin 2s linear infinite;
+	}
+
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+
 	.input_field {
 		height: 50px;
 		width: 350px;

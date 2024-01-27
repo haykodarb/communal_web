@@ -4,6 +4,8 @@
 
 	let login_active: boolean = false;
 	let register_active: boolean = false;
+	let recovery_active: boolean = false;
+	let resend_active: boolean = false;
 
 	let loading: boolean = false;
 	let resultMessage: string = '';
@@ -11,6 +13,66 @@
 	let valid: boolean = false;
 	let fields = { username: '', email: '', password: '' };
 	let errors = { username: '', email: '', password: '' };
+
+	const handleResendConfirmation = async () => {
+		try {
+			valid = true;
+			let validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+
+			if (!fields.email.match(validRegex)) {
+				errors.email = 'Email must be a valid email address.';
+				valid = false;
+			} else {
+				errors.email = '';
+			}
+			if (valid) {
+				loading = true;
+
+				const { data, error } = await supabase.auth.resend({ email: fields.email, type: 'signup' });
+
+				if (error) {
+					resultMessage = error.message;
+				} else {
+					resultMessage = `Confirmation email resent to ${fields.email}`;
+				}
+
+				loading = false;
+			}
+		} catch (error) {
+			resultMessage = `${error}`;
+		}
+	};
+
+	const handlePasswordRecovery = async () => {
+		try {
+			valid = true;
+			let validRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+
+			if (!fields.email.match(validRegex)) {
+				errors.email = 'Email must be a valid email address.';
+				valid = false;
+			} else {
+				errors.email = '';
+			}
+			if (valid) {
+				loading = true;
+
+				const { data, error } = await supabase.auth.resetPasswordForEmail(fields.email, {
+					redirectTo: 'https://communal.ar/recovery'
+				});
+
+				if (error) {
+					resultMessage = error.message;
+				} else {
+					resultMessage = `Recovery email sent to ${fields.email}`;
+				}
+
+				loading = false;
+			}
+		} catch (error) {
+			resultMessage = `${error}`;
+		}
+	};
 
 	const handleLogin = async () => {
 		try {
@@ -89,51 +151,39 @@
 			console.log(error);
 		}
 	};
+
+	const handleGoBack = () => {
+		register_active = false;
+		login_active = false;
+		resend_active = false;
+		recovery_active = false;
+		(fields = { email: '', password: '', username: '' }),
+			(errors = { email: '', password: '', username: '' }),
+			(resultMessage = '');
+		loading = false;
+		valid = false;
+	};
 </script>
 
 <div class="container">
 	<img class="crow" src="crow_light.png" alt="Crow" />
 	<div class="main_column">
-		<h1 class="header">Communal</h1>
+		<a class="header" href="/">Communal</a>
 		<div class="form_column">
-			{#if login_active || register_active}
-				<button
-					class="go_back_button"
-					on:click={() => {
-						register_active = false;
-						login_active = false;
-						fields.username = '';
-						fields.email = '';
-						fields.password = '';
-					}}
-				>
-					{'<'} Go Back</button
-				>
-			{/if}
-			{#if login_active}
+			{#if login_active || register_active || resend_active || recovery_active}
+				<button class="text_button" on:click={handleGoBack}>
+					{'<'} Go Back
+				</button>
 				<input
 					bind:value={fields.email}
 					class="input_field"
 					placeholder="Email"
 					type="email"
-					alt="Username"
+					alt="Email"
 				/>
-
-				<input
-					bind:value={fields.password}
-					class="input_field"
-					placeholder="Password"
-					type="password"
-					alt="Username"
-				/>
-				{#if loading}
-					<div class="loader" />
-				{:else}
-					<button on:click={handleLogin} class="login_button"> Login </button>
-
-					<div class="error_message" style="font-size: 2.5vh;">{resultMessage}</div>
-				{/if}
+				<div class="error_message">{errors.email}</div>
 			{/if}
+
 			{#if register_active}
 				<input
 					bind:value={fields.username}
@@ -143,14 +193,9 @@
 					alt="Username"
 				/>
 				<div class="error_message">{errors.username}</div>
-				<input
-					bind:value={fields.email}
-					class="input_field"
-					placeholder="Email"
-					type="email"
-					alt="Email"
-				/>
-				<div class="error_message">{errors.email}</div>
+			{/if}
+
+			{#if register_active || login_active}
 				<input
 					bind:value={fields.password}
 					class="input_field"
@@ -159,18 +204,52 @@
 					alt="Password"
 				/>
 				<div class="error_message">{errors.password}</div>
-				{#if loading}
-					<div class="loader" />
-				{:else}
+			{/if}
+
+			{#if loading}
+				<div class="loader" />
+			{:else}
+				{#if login_active}
+					<button on:click={handleLogin} class="login_button"> Login </button>
+				{/if}
+				{#if register_active}
 					<button class="register_button" on:click={handleRegister}> Register </button>
+				{/if}
+
+				{#if recovery_active}
+					<button class="register_button" on:click={handlePasswordRecovery}>
+						Reset Password
+					</button>
+				{/if}
+
+				{#if resend_active}
+					<button class="register_button" on:click={handleRegister}> Resend </button>
+				{/if}
+
+				{#if login_active || register_active || resend_active || recovery_active}
 					<div class="error_message" style="font-size: 2.5vh;">{resultMessage}</div>
 				{/if}
 			{/if}
 
-			{#if !register_active && !login_active}
+			{#if !register_active && !login_active && !resend_active && !recovery_active}
 				<button on:click={() => (login_active = true)} class="login_button"> Login </button>
 				<button on:click={() => (register_active = true)} class="register_button">
 					Register
+				</button>
+				<button
+					class="text_button"
+					style="font-size: 2vh; align-self: flex-end;"
+					on:click={() => (recovery_active = true)}
+				>
+					Forgot Password?
+				</button>
+
+				<button
+					class="text_button"
+					style="font-size: 2vh; align-self: flex-end;"
+					on:click={() => (resend_active = true)}
+				>
+					Resend confirmation?
 				</button>
 			{/if}
 		</div>
@@ -178,7 +257,7 @@
 </div>
 
 <style>
-	.go_back_button {
+	.text_button {
 		border: none;
 		font-size: 2.5vh;
 		align-self: flex-start;
@@ -208,42 +287,25 @@
 
 	.error_message {
 		font-size: 2vh;
-		text-align: left;
-		display: flex;
-		flex-direction: row;
-		justify-content: start;
-		color: #eb6f92;
+		text-align: center;
+		width: 25vw;
+		max-width: 40vw;
 	}
 
 	.input_field {
-		height: 6vh;
-		width: 100px;
-		min-width: 25vw;
-		max-height: 6vh;
-		max-width: 50vw;
-		border: 0.2vh solid #56949f;
+		height: 5vh;
+		width: 100%;
+		border: 0.2vh solid #907aa9;
 		outline: none;
 		border-radius: 1vh;
 		padding-left: 5%;
 		padding-right: 5%;
-		max-height: 8vh;
-		max-width: 60vw;
 		font-size: 2vh;
 	}
 
 	.input_field:focus {
-		height: 6vh;
-		width: 100px;
-		min-width: 25vw;
-		max-height: 6vh;
-		max-width: 50vw;
-		border: 0.3vh solid #907aa9;
+		border: 0.3vh solid #56949f;
 		outline: none;
-		border-radius: 1vh;
-		padding-left: 5%;
-		padding-right: 5%;
-		max-height: 8vh;
-		max-width: 60vw;
 	}
 
 	.login_button {
@@ -251,13 +313,9 @@
 		flex-direction: column;
 		justify-content: center;
 		height: 6vh;
-		width: 100px;
-		min-width: 25vw;
-		max-height: 6vh;
-		max-width: 50vw;
-		background-color: #56949f;
+		width: 100%;
+		background: #56949f;
 		border-radius: 1vh;
-
 		color: white;
 		cursor: pointer;
 		border: none;
@@ -273,29 +331,27 @@
 		justify-content: center;
 		height: 90vh;
 		width: 90vw;
-		padding: 2vh;
 		gap: 5vw;
 	}
 
 	.main_column {
 		display: flex;
 		height: 60vh;
+		min-width: 25vw;
+		max-width: 80vw;
 		flex-direction: column;
 		align-items: center;
 		gap: 2vh;
-		padding: 5%;
 	}
 
 	.form_column {
 		display: flex;
 		flex: 1;
+		width: 80%;
 		flex-direction: column;
 		justify-content: start;
 		align-items: center;
 		gap: 2vh;
-	}
-
-	.login_text {
 	}
 
 	.register_button {
@@ -304,19 +360,14 @@
 		cursor: pointer;
 		justify-content: center;
 		height: 6vh;
-		width: 100px;
-		min-width: 25vw;
-		max-height: 6vh;
-		max-width: 50vw;
-		border-style: solid;
-		border-width: 0.25vh;
-		border-color: #56949f;
-		border-radius: 1vh;
-
+		width: 100%;
 		color: #56949f;
+		border: 0.05vh solid;
+		background: none;
+		border-width: 0.3vh;
+		border-radius: 1vh;
 		cursor: pointer;
 		text-decoration: none;
-		background-color: transparent;
 		text-align: center;
 		font-size: 3vh;
 	}
@@ -329,7 +380,9 @@
 	.header {
 		color: 0xFFFFFF;
 		margin: 0;
+		text-decoration: none;
 		background: linear-gradient(to left, #56949f, #907aa9);
+		font-weight: 700;
 		font-family: 'RussoOne';
 		font-size: 10vh;
 		text-align: center;

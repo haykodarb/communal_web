@@ -10,6 +10,7 @@
 		const { data, error } = await supabase.auth.refreshSession();
 		session = data.session;
 	});
+	
 
 	const handleLogout = async () => {
 		await supabase.auth.signOut();
@@ -17,10 +18,10 @@
 	};
 </script>
 
-<div style="display: flex; flex-direction: column; align-items: center;">
-	<h2 style="text-align: center; font-weight: 500;">
+<div style="display: flex; flex-direction: column; align-items: center; width: 40%;">
+	<h2 style="text-align: justify; font-weight: 500;">
 		{#if session != null}
-			Signed in as {session.user.user_metadata['username']}
+			Signed in as {session.user.user_metadata['username']}.
 		{/if}
 		<br />
 		<br />
@@ -32,7 +33,7 @@
 	<br />
 	<button
 		on:click={handleLogout}
-		style="border: none; background: none; font-size: 30px; color: #56949f; cursor: pointer; font-weight: 800;"
+		style="border: none; background: none; font-size: 30px; color: #56949f; cursor: pointer; font-weight: 800; margin-top: 10vh;"
 		>Sign Out</button
 	>
 </div>

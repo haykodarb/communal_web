@@ -85,11 +85,10 @@
 
 			if (error) {
 				resultMessage = error.message;
+			} else {
+				await goto('/home');
 			}
 
-			if (error == null) {
-				goto('/home');
-			}
 			loading = false;
 
 			console.log(data);
@@ -294,7 +293,7 @@
 
 	.input_field {
 		height: 5vh;
-		width: 100%;
+		width: 90%;
 		border: 0.2vh solid #907aa9;
 		outline: none;
 		border-radius: 1vh;
@@ -311,6 +310,7 @@
 	.login_button {
 		display: flex;
 		flex-direction: column;
+		align-items: center;
 		justify-content: center;
 		height: 6vh;
 		width: 100%;
@@ -347,6 +347,7 @@
 	.form_column {
 		display: flex;
 		flex: 1;
+		height: 100%;
 		width: 80%;
 		flex-direction: column;
 		justify-content: start;
@@ -355,9 +356,10 @@
 	}
 
 	.register_button {
+		cursor: pointer;
 		display: flex;
 		flex-direction: column;
-		cursor: pointer;
+		align-items: center;
 		justify-content: center;
 		height: 6vh;
 		width: 100%;

@@ -121,7 +121,7 @@
 
 	.input_field {
 		height: 5vh;
-		width: 100%;
+		width: 90%;
 		border: 0.2vh solid #907aa9;
 		outline: none;
 		border-radius: 1vh;
@@ -139,6 +139,7 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: center;
+		align-items: center;
 		height: 6vh;
 		width: 100%;
 		background: #56949f;

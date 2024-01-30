@@ -1,25 +1,36 @@
 <script lang="ts">
-	import {
-		UilBooks,
-		UilCommentsAlt,
-		UilEnvelopes,
-		UilExchangeAlt,
-		UilMoon,
-		UilSignOutAlt,
-		UilUser,
-		UilUsersAlt
-	} from 'svelte-unicons';
-	import Tools from 'svelte-material-icons/HammerScrewdriver.svelte';
+	import MoonIcon from '../../assets/icons/moon.svelte';
+	import SunIcon from '../../assets/icons/sun.svelte';
+	import InvitationsIcon from '../../assets/icons/invitations.svelte';
+	import ChatsIcon from '../../assets/icons/chats.svelte';
+	import CommunityIcon from '../../assets/icons/community.svelte';
+	import ProfileIcon from '../../assets/icons/profile.svelte';
+	import BookIcon from '../../assets/icons/book.svelte';
+	import SignoutIcon from '../../assets/icons/signout.svelte';
+	import LoansIcon from '../../assets/icons/loans.svelte';
+	import ToolsIcon from '../../assets/icons/tools.svelte';
+
 	import { supabase } from '$lib/supabase';
 	import { goto } from '$app/navigation';
 	import CircularAvatar from '../../common/circular_avatar.svelte';
 	import { type Profile } from '$lib/profiles';
+	import { page } from '$app/stores';
 
-	export let data: Profile ;
+	export let data: Profile;
+
+	let current_path: string;
+
+	$: current_path = $page.url.pathname;
+
+	console.log(current_path);
 
 	const handleLogout = async () => {
 		await supabase.auth.signOut();
 		goto('/');
+	};
+
+	const handleNavigation = async (path: string) => {
+		await goto(path);
 	};
 </script>
 
@@ -31,51 +42,72 @@
 				<div>{data.username}</div>
 			{/if}
 		</div>
-		<div class="drawer_separator" />
-		<div class="drawer_button">
-			<UilUser size="4vh" />
-			<h2>Profile</h2>
-		</div>
-		<div class="drawer_separator" />
-		<div class="drawer_button">
-			<UilCommentsAlt size="4vh" />
-			<h2>Messages</h2>
-		</div>
-		<div class="drawer_separator" />
-		<div class="drawer_button">
-			<UilBooks size="4vh" />
-			<h2>My Books</h2>
-		</div>
-		<div class="drawer_separator" />
-		<div class="drawer_button">
-			<Tools size="4vh" />
-			<h2>My Tools</h2>
-		</div>
-		<div class="drawer_separator" />
-		<div class="drawer_button">
-			<UilUsersAlt size="4vh" />
-			<h2>Communities</h2>
-		</div>
-		<div class="drawer_separator" />
-		<div class="drawer_button">
-			<UilEnvelopes size="4vh" />
-			<h2>Invitations</h2>
-		</div>
-		<div class="drawer_separator" />
-		<div class="drawer_button">
-			<UilExchangeAlt size="4vh" />
-			<h2>Loans</h2>
-		</div>
+
 		<div class="drawer_separator" />
 
-		<div class="drawer_button">
-			<UilMoon size="4vh" />
-			<h2>Dark</h2>
-		</div>
-		<div style="flex: 1;" />
+		<button class="drawer_button" on:click={() => handleNavigation('/profile')}>
+			<ProfileIcon size="3.5vh" color={current_path == '/profile' ? '#56949f' : '#0F1F1B'} />
+			<h2 style="color: {current_path == '/profile' ? '#56949f' : '#0F1F1B'}">Profile</h2>
+		</button>
+
 		<div class="drawer_separator" />
+
+		<button class="drawer_button" on:click={() => handleNavigation('/messages')}>
+			<ChatsIcon size="3.5vh" color={current_path == '/messages' ? '#56949f' : '#0F1F1B'} />
+			<h2 style="color: {current_path == '/messages' ? '#56949f' : '#0F1F1B'}">Messages</h2>
+		</button>
+
+		<div class="drawer_separator" />
+
+		<button class="drawer_button" on:click={() => handleNavigation('/books')}>
+			<BookIcon size="3.5vh" color={current_path == '/books' ? '#56949f' : '#0F1F1B'} />
+			<h2 style="color: {current_path == '/books' ? '#56949f' : '#0F1F1B'}">My Books</h2>
+		</button>
+
+		<div class="drawer_separator" />
+
+		<button class="drawer_button" on:click={() => handleNavigation('/tools')}>
+			<ToolsIcon size="3.5vh" color={current_path == '/tools' ? '#56949f' : '#0F1F1B'}/>
+			<h2 style="color: {current_path == '/tools' ? '#56949f' : '#0F1F1B'}">My Tools</h2>
+		</button>
+
+		<div class="drawer_separator" />
+
+		<button class="drawer_button" on:click={() => handleNavigation('/communities')}>
+			<CommunityIcon size="3.5vh" color={current_path == '/communities' ? '#56949f' : '#0F1F1B'} />
+			<h2 style="color: {current_path == '/communities' ? '#56949f' : '#0F1F1B'}">Communities</h2>
+		</button>
+
+		<div class="drawer_separator" />
+
+		<button class="drawer_button" on:click={() => handleNavigation('/invitations')}>
+			<InvitationsIcon
+				size="3.5vh"
+				color={current_path == '/invitations' ? '#56949f' : '#0F1F1B'}
+			/>
+			<h2 style="color: {current_path == '/invitations' ? '#56949f' : '#0F1F1B'}">Invitations</h2>
+		</button>
+
+		<div class="drawer_separator" />
+
+		<button class="drawer_button" on:click={() => handleNavigation('/loans')}>
+			<LoansIcon size="3.5vh" color={current_path == '/loans' ? '#56949f' : '#0F1F1B'} />
+			<h2 style="color: {current_path == '/loans' ? '#56949f' : '#0F1F1B'}">Loans</h2>
+		</button>
+
+		<div class="drawer_separator" />
+
+		<button class="drawer_button">
+			<MoonIcon size="3.5vh" color="#0F1F1B" />
+			<h2>Dark</h2>
+		</button>
+
+		<div style="flex: 1;" />
+
+		<div class="drawer_separator" />
+
 		<button class="drawer_button" on:click={handleLogout}>
-			<UilSignOutAlt size="4vh" />
+			<SignoutIcon size="3.5vh" color="#0F1F1B" />
 			<h2>Logout</h2>
 		</button>
 	</div>
@@ -108,7 +140,7 @@
 	.drawer_separator {
 		width: 100%;
 		height: 0.2vh;
-		background-color: #0002;
+		background-color: #deedea;
 	}
 
 	.drawer_button {
@@ -121,7 +153,7 @@
 		padding-right: 2vw;
 		gap: 5%;
 		height: 4vh;
-		font-size: 1.5vh;
+		font-size: 1.4vh;
 		background: none;
 		outline: none;
 		border: none;
@@ -135,5 +167,13 @@
 		font-size: 2.5vh;
 		height: 15vh;
 		gap: 5%;
+	}
+
+	.selected_icon {
+		color: red;
+	}
+
+	.unselected_icon {
+		color: #0f1f1b;
 	}
 </style>

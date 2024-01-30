@@ -21,7 +21,6 @@ export async function load(): Promise<Profile | undefined> {
 
       if (result.success) {
         currentUser = result.payload as Profile;
-        console.log(currentUser);
         return currentUser;
       }
     }

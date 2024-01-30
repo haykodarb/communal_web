@@ -2,13 +2,12 @@
 	import type { Profile } from '$lib/profiles';
 	import { supabase } from '$lib/supabase';
 	import { onMount } from 'svelte';
+	import LoadingImage from './loading_image.svelte';
 
 	export let user: Profile;
 	export let size: string;
 
-	let image_url: string | null = null;
-
-	onMount(async () => {
+	const load_image = async (): Promise<string> => {
 		if (user.avatar_path == null) {
 		} else {
 			let { data, error } = await supabase.storage
@@ -20,22 +19,25 @@
 			}
 
 			if (data) {
-				image_url = URL.createObjectURL(data);
+				return URL.createObjectURL(data);
 			}
 		}
-	});
+
+		return '';
+	};
+
+	onMount(async () => {});
 </script>
 
-{#if image_url != null}
-	<img
-		class="image_circle"
-		style="height: {size}; width: {size};"
-		src={image_url}
-		alt="User Avatar"
-	/>
+{#if user.avatar_path != null}
+	{#await load_image()}
+		<LoadingImage height={size} width={size} border_radius="50%" />
+	{:then url}
+		<img class="image_circle" style="height: {size}; width: {size};" src={url} alt="User Avatar" />
+	{/await}
 {:else}
 	<div class="empty_circle" style="height: {size}; width: {size}; font-size: calc({size} / 3)">
-		<!-- {user.username.substring(0, 2).toUpperCase()} -->
+		{user.username.substring(0, 2).toUpperCase()}
 	</div>
 {/if}
 

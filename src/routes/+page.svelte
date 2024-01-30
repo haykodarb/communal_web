@@ -98,7 +98,7 @@
 				if (error) {
 					resultMessage = error.message;
 				} else {
-					await goto('/home');
+					await goto('/books');
 				}
 
 				console.log(data);

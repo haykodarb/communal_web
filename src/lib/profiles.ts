@@ -1,29 +1,18 @@
-// import { SupabaseClient, type QueryData } from "@supabase/supabase-js";
-// import { BackendResponse, supabase } from "./supabase";
+import { supabase, BackendResponse } from "./supabase";
+import type { Tables } from "./types/database.types";
 
-// export class Profile {
-//     id: string;
-//     username: string;
-//     show_email: boolean;
-//     email: string | null = null;
-//     bio: string | null = null;
-//     avatar_path: string | null = null;
+export type Profile = Tables<'profiles'>;
 
-//     constructor(username: string, id: string, show_email: boolean) {
-//         this.username = username;
-//         this.id = id;
-//         this.show_email = show_email;
-//     }
+export async function getProfileFromUserId(_id: string): Promise<BackendResponse<Profile | string>> {
+    const query = supabase.from('profiles').select().eq('id', _id).single();
 
-//     static async getProfileFromUserId(_id: string): Promise<BackendResponse<Profile | string>> {
-//         const query = supabase.from('profiles').select().eq('id', _id).single();
+    const { data, error } = await query;
 
-//         type Profile = QueryData<typeof query>;
+    if (error) throw error;
 
-//         const {data, error} = await query;
-
-//         if(error) throw error;
-
-//         return new BackendResponse(true, '');
-//     }
-// }
+    if(data) {
+        return new BackendResponse(true, data);
+    } else {
+        return new BackendResponse(false, 'Could not get profile');
+    }
+}

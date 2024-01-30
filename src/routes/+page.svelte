@@ -77,21 +77,34 @@
 	const handleLogin = async () => {
 		try {
 			loading = true;
+			valid = true;
 
-			const { data, error } = await supabase.auth.signInWithPassword({
-				email: fields.email,
-				password: fields.password
-			});
+			if (fields.email.length <= 0) {
+				errors.email = 'Please enter something.';
+				valid = false;
+			}
 
-			if (error) {
-				resultMessage = error.message;
-			} else {
-				await goto('/home');
+			if (fields.password.length <= 0) {
+				errors.password = 'Please enter something.';
+				valid = false;
+			}
+
+			if (valid) {
+				const { data, error } = await supabase.auth.signInWithPassword({
+					email: fields.email,
+					password: fields.password
+				});
+
+				if (error) {
+					resultMessage = error.message;
+				} else {
+					await goto('/home');
+				}
+
+				console.log(data);
 			}
 
 			loading = false;
-
-			console.log(data);
 		} catch (error) {
 			console.log(error);
 		}
@@ -161,6 +174,8 @@
 			(resultMessage = '');
 		loading = false;
 		valid = false;
+
+		console.log('this runs');
 	};
 </script>
 
@@ -170,87 +185,91 @@
 		<a class="header" href="/">Communal</a>
 		<div class="form_column">
 			{#if login_active || register_active || resend_active || recovery_active}
-				<button class="text_button" on:click={handleGoBack}>
+				<button class="text_button" on:click|preventDefault={handleGoBack}>
 					{'<'} Go Back
 				</button>
-				<input
-					bind:value={fields.email}
-					class="input_field"
-					placeholder="Email"
-					type="email"
-					alt="Email"
-				/>
-				<div class="error_message">{errors.email}</div>
 			{/if}
-
-			{#if register_active}
-				<input
-					bind:value={fields.username}
-					class="input_field"
-					placeholder="Username"
-					type="text"
-					alt="Username"
-				/>
-				<div class="error_message">{errors.username}</div>
-			{/if}
-
-			{#if register_active || login_active}
-				<input
-					bind:value={fields.password}
-					class="input_field"
-					placeholder="Password"
-					type="password"
-					alt="Password"
-				/>
-				<div class="error_message">{errors.password}</div>
-			{/if}
-
-			{#if loading}
-				<div class="loader" />
-			{:else}
-				{#if login_active}
-					<button on:click={handleLogin} class="login_button"> Login </button>
+			<form class="form_column" style="width: 100%;">
+				{#if login_active || register_active || resend_active || recovery_active}
+					<input
+						bind:value={fields.email}
+						class="input_field"
+						placeholder="Email"
+						type="email"
+						alt="Email"
+					/>
+					<div class="error_message">{errors.email}</div>
 				{/if}
+
 				{#if register_active}
-					<button class="register_button" on:click={handleRegister}> Register </button>
+					<input
+						bind:value={fields.username}
+						class="input_field"
+						placeholder="Username"
+						type="text"
+						alt="Username"
+					/>
+					<div class="error_message">{errors.username}</div>
 				{/if}
 
-				{#if recovery_active}
-					<button class="register_button" on:click={handlePasswordRecovery}>
-						Reset Password
+				{#if register_active || login_active}
+					<input
+						bind:value={fields.password}
+						class="input_field"
+						placeholder="Password"
+						type="password"
+						alt="Password"
+					/>
+					<div class="error_message">{errors.password}</div>
+				{/if}
+
+				{#if loading}
+					<div class="loader" />
+				{:else}
+					{#if login_active}
+						<button on:click={handleLogin} class="login_button"> Login </button>
+					{/if}
+					{#if register_active}
+						<button class="register_button" on:click={handleRegister}> Register </button>
+					{/if}
+
+					{#if recovery_active}
+						<button class="register_button" on:click={handlePasswordRecovery}>
+							Reset Password
+						</button>
+					{/if}
+
+					{#if resend_active}
+						<button class="register_button" on:click={handleResendConfirmation}> Resend </button>
+					{/if}
+
+					{#if login_active || register_active || resend_active || recovery_active}
+						<div class="error_message" style="font-size: 2.5vh;">{resultMessage}</div>
+					{/if}
+				{/if}
+
+				{#if !register_active && !login_active && !resend_active && !recovery_active}
+					<button on:click={() => (login_active = true)} class="login_button"> Login </button>
+					<button on:click={() => (register_active = true)} class="register_button">
+						Register
+					</button>
+					<button
+						class="text_button"
+						style="font-size: 2vh; align-self: flex-end;"
+						on:click={() => (recovery_active = true)}
+					>
+						Forgot Password?
+					</button>
+
+					<button
+						class="text_button"
+						style="font-size: 2vh; align-self: flex-end;"
+						on:click={() => (resend_active = true)}
+					>
+						Resend confirmation?
 					</button>
 				{/if}
-
-				{#if resend_active}
-					<button class="register_button" on:click={handleRegister}> Resend </button>
-				{/if}
-
-				{#if login_active || register_active || resend_active || recovery_active}
-					<div class="error_message" style="font-size: 2.5vh;">{resultMessage}</div>
-				{/if}
-			{/if}
-
-			{#if !register_active && !login_active && !resend_active && !recovery_active}
-				<button on:click={() => (login_active = true)} class="login_button"> Login </button>
-				<button on:click={() => (register_active = true)} class="register_button">
-					Register
-				</button>
-				<button
-					class="text_button"
-					style="font-size: 2vh; align-self: flex-end;"
-					on:click={() => (recovery_active = true)}
-				>
-					Forgot Password?
-				</button>
-
-				<button
-					class="text_button"
-					style="font-size: 2vh; align-self: flex-end;"
-					on:click={() => (resend_active = true)}
-				>
-					Resend confirmation?
-				</button>
-			{/if}
+			</form>
 		</div>
 	</div>
 </div>
@@ -285,10 +304,9 @@
 	}
 
 	.error_message {
-		font-size: 2vh;
+		font-size: 1.75vh;
 		text-align: center;
-		width: 25vw;
-		max-width: 40vw;
+		width: 100%;
 	}
 
 	.input_field {

@@ -1,21 +1,21 @@
-<script>
+<script lang="ts">
 	import {
 		UilBooks,
-		UilCommentAltMessage,
 		UilCommentsAlt,
 		UilEnvelopes,
-		UilExchange,
 		UilExchangeAlt,
 		UilMoon,
 		UilSignOutAlt,
-		UilSignout,
 		UilUser,
 		UilUsersAlt
 	} from 'svelte-unicons';
 	import Tools from 'svelte-material-icons/HammerScrewdriver.svelte';
 	import { supabase } from '$lib/supabase';
 	import { goto } from '$app/navigation';
-    import CircularAvatar from '../../common/circular_avatar.svelte';
+	import CircularAvatar from '../../common/circular_avatar.svelte';
+	import { type Profile } from '$lib/profiles';
+
+	export let data: Profile ;
 
 	const handleLogout = async () => {
 		await supabase.auth.signOut();
@@ -25,9 +25,12 @@
 
 <div class="drawer_container">
 	<div class="drawer">
-        <div class="profile_header">
-            <CircularAvatar/>
-        </div>
+		<div class="profile_header">
+			{#if data != undefined}
+				<CircularAvatar size={'15vh'} user={data} />
+				<div>{data.username}</div>
+			{/if}
+		</div>
 		<div class="drawer_separator" />
 		<div class="drawer_button">
 			<UilUser size="4vh" />
@@ -69,6 +72,7 @@
 			<UilMoon size="4vh" />
 			<h2>Dark</h2>
 		</div>
+		<div style="flex: 1;" />
 		<div class="drawer_separator" />
 		<button class="drawer_button" on:click={handleLogout}>
 			<UilSignOutAlt size="4vh" />
@@ -92,18 +96,18 @@
 		flex-direction: column;
 		justify-content: start;
 		background-color: white;
-		box-shadow: 0px 0px 0px 1px #0002;
+		box-shadow: 0px 0px 0px 0.2vh #0002;
 		padding-top: 2vh;
 		padding-bottom: 2vh;
-        min-width: 300px;
-		width: 20%;
+		min-width: 20vw;
+		max-width: 30vw;
 		height: 96%;
 		gap: 2%;
 	}
 
 	.drawer_separator {
 		width: 100%;
-		height: 0.1%;
+		height: 0.2vh;
 		background-color: #0002;
 	}
 
@@ -121,5 +125,15 @@
 		background: none;
 		outline: none;
 		border: none;
+	}
+
+	.profile_header {
+		display: flex;
+		flex-direction: row;
+		padding-left: 2vw;
+		align-items: center;
+		font-size: 2.5vh;
+		height: 15vh;
+		gap: 5%;
 	}
 </style>

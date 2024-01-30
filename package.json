@@ -35,6 +35,8 @@
 	"type": "module",
 	"dependencies": {
 		"@iconscout/unicons": "^4.0.8",
+		"@supabase/auth-helpers-sveltekit": "^0.11.0",
+		"@supabase/ssr": "^0.0.10",
 		"@supabase/supabase-js": "^2.39.3",
 		"svelte-material-icons": "^3.0.5",
 		"svelte-unicons": "^1.1.0"

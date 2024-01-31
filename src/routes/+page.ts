@@ -1,5 +1,5 @@
 import { goto } from "$app/navigation";
-import { BackendResponse, supabase } from "$lib/supabase";
+import { supabase } from "$lib/supabase";
 
 export const prerender = true;
 export const ssr = false;

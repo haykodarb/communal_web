@@ -35,50 +35,39 @@
 </script>
 
 <div class="drawer_container">
+	<div style="min-width: 15vw;"></div>
 	<div class="drawer">
 		<div class="profile_header">
 			{#if data != undefined}
-				<CircularAvatar size={'15vh'} user={data} />
+				<CircularAvatar size={'12.5vh'} user={data} />
 				<div>{data.username}</div>
 			{/if}
 		</div>
-
-		<div class="drawer_separator" />
 
 		<button class="drawer_button" on:click={() => handleNavigation('/profile')}>
 			<ProfileIcon size="3.5vh" color={current_path == '/profile' ? '#56949f' : '#0F1F1B'} />
 			<h2 style="color: {current_path == '/profile' ? '#56949f' : '#0F1F1B'}">Profile</h2>
 		</button>
 
-		<div class="drawer_separator" />
-
 		<button class="drawer_button" on:click={() => handleNavigation('/messages')}>
 			<ChatsIcon size="3.5vh" color={current_path == '/messages' ? '#56949f' : '#0F1F1B'} />
 			<h2 style="color: {current_path == '/messages' ? '#56949f' : '#0F1F1B'}">Messages</h2>
 		</button>
-
-		<div class="drawer_separator" />
 
 		<button class="drawer_button" on:click={() => handleNavigation('/books')}>
 			<BookIcon size="3.5vh" color={current_path == '/books' ? '#56949f' : '#0F1F1B'} />
 			<h2 style="color: {current_path == '/books' ? '#56949f' : '#0F1F1B'}">My Books</h2>
 		</button>
 
-		<div class="drawer_separator" />
-
 		<button class="drawer_button" on:click={() => handleNavigation('/tools')}>
-			<ToolsIcon size="3.5vh" color={current_path == '/tools' ? '#56949f' : '#0F1F1B'}/>
+			<ToolsIcon size="3.5vh" color={current_path == '/tools' ? '#56949f' : '#0F1F1B'} />
 			<h2 style="color: {current_path == '/tools' ? '#56949f' : '#0F1F1B'}">My Tools</h2>
 		</button>
-
-		<div class="drawer_separator" />
 
 		<button class="drawer_button" on:click={() => handleNavigation('/communities')}>
 			<CommunityIcon size="3.5vh" color={current_path == '/communities' ? '#56949f' : '#0F1F1B'} />
 			<h2 style="color: {current_path == '/communities' ? '#56949f' : '#0F1F1B'}">Communities</h2>
 		</button>
-
-		<div class="drawer_separator" />
 
 		<button class="drawer_button" on:click={() => handleNavigation('/invitations')}>
 			<InvitationsIcon
@@ -88,14 +77,10 @@
 			<h2 style="color: {current_path == '/invitations' ? '#56949f' : '#0F1F1B'}">Invitations</h2>
 		</button>
 
-		<div class="drawer_separator" />
-
 		<button class="drawer_button" on:click={() => handleNavigation('/loans')}>
 			<LoansIcon size="3.5vh" color={current_path == '/loans' ? '#56949f' : '#0F1F1B'} />
 			<h2 style="color: {current_path == '/loans' ? '#56949f' : '#0F1F1B'}">Loans</h2>
 		</button>
-
-		<div class="drawer_separator" />
 
 		<button class="drawer_button">
 			<MoonIcon size="3.5vh" color="#0F1F1B" />
@@ -104,14 +89,12 @@
 
 		<div style="flex: 1;" />
 
-		<div class="drawer_separator" />
-
 		<button class="drawer_button" on:click={handleLogout}>
 			<SignoutIcon size="3.5vh" color="#0F1F1B" />
 			<h2>Logout</h2>
 		</button>
 	</div>
-	<slot />
+	<slot style="flex: 2;" />
 </div>
 
 <style>
@@ -128,19 +111,13 @@
 		flex-direction: column;
 		justify-content: start;
 		background-color: white;
-		box-shadow: 0px 0px 0px 0.2vh #0002;
 		padding-top: 2vh;
 		padding-bottom: 2vh;
 		min-width: 20vw;
 		max-width: 30vw;
-		height: 96%;
-		gap: 2%;
-	}
-
-	.drawer_separator {
-		width: 100%;
-		height: 0.2vh;
-		background-color: #deedea;
+		height: 100%;
+		box-sizing: border-box;
+		gap: 3%;
 	}
 
 	.drawer_button {
@@ -167,13 +144,5 @@
 		font-size: 2.5vh;
 		height: 15vh;
 		gap: 5%;
-	}
-
-	.selected_icon {
-		color: red;
-	}
-
-	.unselected_icon {
-		color: #0f1f1b;
 	}
 </style>

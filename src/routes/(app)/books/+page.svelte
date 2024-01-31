@@ -1,26 +1,41 @@
 <script lang="ts">
 	import { getBookCover, type Book, getBooksForCurrentUser } from '$lib/tables/books';
-	import LoadingImage from '../../../common/loading_image.svelte';
+	import LoadingIndicator from '../../../common/loading_indicator.svelte';
+
+	const loading_cards: number[] = [1, 2, 3];
 </script>
 
 <div class="book_list">
 	{#await getBooksForCurrentUser()}
-		<div style="position: absolute; align-self: center; justify-self: center;">Loading</div>
+		{#each loading_cards as num}
+			<div class="book_card">
+				<div class="cover_container">
+					<LoadingIndicator height="100%" width="100%" border_radius="0px" />
+				</div>
+				<div class="book_info">
+					<LoadingIndicator height="10%" width="80%" border_radius="0.5vh" />
+					<LoadingIndicator height="10%" width="60%" border_radius="0.5vh" />
+					<LoadingIndicator height="10%" width="40%" border_radius="0.5vh" />
+				</div>
+			</div>
+		{/each}
 	{:then data}
 		{#if data.result != null}
 			{#each data.result as book}
 				<div class="book_card">
-					{#await getBookCover(book)}
-						<LoadingImage height="10vh" width="10vh" border_radius="10px" />
-					{:then value}
-						{#if value.result != null}
-							<img
-								src={URL.createObjectURL(value.result)}
-								class="book_cover"
-								alt="Cover for {book.title}"
-							/>
-						{/if}
-					{/await}
+					<div class="cover_container">
+						{#await getBookCover(book)}
+							<LoadingIndicator height="100%" width="100%" border_radius="0px" />
+						{:then value}
+							{#if value.result != null}
+								<img
+									src={URL.createObjectURL(value.result)}
+									class="book_cover"
+									alt="Cover for {book.title}"
+								/>
+							{/if}
+						{/await}
+					</div>
 					<div class="book_info">
 						<div>{book.title}</div>
 						<div>{book.author}</div>
@@ -64,15 +79,21 @@
 		box-shadow: 0 0.5vh 1vh 0 rgba(0, 0, 0, 0.2);
 	}
 
+	.cover_container {
+		aspect-ratio: 3/4;
+	}
+
 	.book_cover {
 		height: 100%;
+		width: 100%;
 	}
 
 	.book_info {
 		height: 100%;
 		display: flex;
-        font-size: 2vh;
+		font-size: 2vh;
 		flex-direction: column;
+		flex: 1;
 		padding: 2%;
 		gap: 5%;
 	}

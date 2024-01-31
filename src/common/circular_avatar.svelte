@@ -2,7 +2,7 @@
 	import type { Profile } from '$lib/tables/profiles';
 	import { supabase } from '$lib/supabase';
 	import { onMount } from 'svelte';
-	import LoadingImage from './loading_image.svelte';
+	import LoadingIndicator from './loading_indicator.svelte';
 
 	export let user: Profile;
 	export let size: string;
@@ -31,7 +31,7 @@
 
 {#if user.avatar_path != null}
 	{#await load_image()}
-		<LoadingImage height={size} width={size} border_radius="50%" />
+		<LoadingIndicator height={size} width={size} border_radius="50%" />
 	{:then url}
 		<img class="image_circle" style="height: {size}; width: {size};" src={url} alt="User Avatar" />
 	{/await}

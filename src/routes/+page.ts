@@ -1,7 +1,6 @@
 import { goto } from "$app/navigation";
 import { supabase } from "$lib/supabase";
 
-export const prerender = true;
 export const ssr = false;
 
 export async function load(): Promise<void> {
@@ -10,6 +9,7 @@ export async function load(): Promise<void> {
 
         if (error) {
             console.log(error);
+            goto('/auth');
         }
 
         if (data.session != null) {

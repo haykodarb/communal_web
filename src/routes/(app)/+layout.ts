@@ -2,7 +2,6 @@ import { goto } from "$app/navigation";
 import { getProfileFromUserId, type Profile } from "$lib/tables/profiles";
 import { supabase } from "$lib/supabase";
 
-export const prerender = true;
 export const ssr = false;
 
 export async function load(): Promise<Profile | undefined> {
@@ -11,11 +10,12 @@ export async function load(): Promise<Profile | undefined> {
 
     if (error) {
       console.log(error);
+      goto('/auth');
     }
 
     if (data.session != null) {
 
-      let {result, error} = await getProfileFromUserId(
+      let { result, error } = await getProfileFromUserId(
         data.session.user.id
       );
 
@@ -27,5 +27,6 @@ export async function load(): Promise<Profile | undefined> {
     }
   } catch (error) {
     console.log(error);
+    goto('/auth');
   }
 }

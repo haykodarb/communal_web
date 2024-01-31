@@ -1,11 +1,11 @@
-import { getProfileFromUserId, type Profile } from "$lib/profiles";
-import { BackendResponse, supabase } from "$lib/supabase";
+import { goto } from "$app/navigation";
+import { getProfileFromUserId, type Profile } from "$lib/tables/profiles";
+import { supabase } from "$lib/supabase";
 
 export const prerender = true;
 export const ssr = false;
 
 export async function load(): Promise<Profile | undefined> {
-  let currentUser: Profile;
   try {
     let { data, error } = await supabase.auth.getSession();
 
@@ -15,14 +15,15 @@ export async function load(): Promise<Profile | undefined> {
 
     if (data.session != null) {
 
-      let result: BackendResponse<Profile | string> = await getProfileFromUserId(
+      let {result, error} = await getProfileFromUserId(
         data.session.user.id
       );
 
-      if (result.success) {
-        currentUser = result.payload as Profile;
-        return currentUser;
+      if (result != null) {
+        return result;
       }
+    } else {
+      goto('/auth');
     }
   } catch (error) {
     console.log(error);

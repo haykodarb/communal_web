@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { Profile } from '$lib/profiles';
+	import type { Profile } from '$lib/tables/profiles';
 	import { supabase } from '$lib/supabase';
 	import { onMount } from 'svelte';
 	import LoadingImage from './loading_image.svelte';

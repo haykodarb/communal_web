@@ -58,7 +58,7 @@
 				loading = true;
 
 				const { data, error } = await supabase.auth.resetPasswordForEmail(fields.email, {
-					redirectTo: 'https://communal.ar/recovery'
+					redirectTo: 'https://communal.ar/auth/recovery'
 				});
 
 				if (error) {

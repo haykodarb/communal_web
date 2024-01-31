@@ -13,7 +13,7 @@
 	import { supabase } from '$lib/supabase';
 	import { goto } from '$app/navigation';
 	import CircularAvatar from '../../common/circular_avatar.svelte';
-	import { type Profile } from '$lib/profiles';
+	import { type Profile } from '$lib/tables/profiles';
 	import { page } from '$app/stores';
 
 	export let data: Profile;

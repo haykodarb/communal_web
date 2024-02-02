@@ -8,7 +8,7 @@
 
 <style>
 	.loading_indicator {
-		background: linear-gradient(110deg, #deedea 10%, #fff 30%, #deedea 50%);
+		background: linear-gradient(110deg, var(--surface) 10%, var(--background) 30%, var(--surface) 50%);
 		border-radius: 5px;
 		background-size: 200% 100%;
 		animation: 0.75s shine linear infinite;

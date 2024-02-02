@@ -1,0 +1,29 @@
+:root {
+    --background: #0F0F19;
+    --surface: #21202e;
+    --primary: #84BDAB;
+    --secondary: #ebbcba;
+    --tertiary: #c4a7e7;
+    --error: #eb6f92;
+    --onBackground: #FFFFFF;
+    --onPrimary: #0F0F19;
+    --onSecondary: #0F0F19;
+    --onSurfaceVariant: #BBBBBB;
+    --onTertiary: #0F0F19;
+    --onSurface: #FFFFFF;
+    --onError: #FFFFFF;
+
+    --background-rgb: 15, 15, 25;
+    --surface-rgb: 33, 32, 46;
+    --primary-rgb: 132, 189, 171;
+    --secondary-rgb: 235, 188, 186;
+    --tertiary-rgb: 196, 167, 231;
+    --error-rgb: 235, 111, 146;
+    --onBackground-rgb: 255, 255, 255;
+    --onPrimary-rgb: 15, 15, 25;
+    --onSecondary-rgb: 15, 15, 25;
+    --onSurfaceVariant-rgb: 187, 187, 187;
+    --onTertiary-rgb: 15, 15, 25;
+    --onSurface-rgb: 255, 255, 255;
+    --onError-rgb: 255, 255, 255;
+}

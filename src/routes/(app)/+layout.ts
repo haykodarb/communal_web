@@ -4,7 +4,7 @@ import { supabase } from "$lib/supabase";
 
 export const ssr = false;
 
-export async function load(): Promise<Profile | undefined> {
+export async function load(): Promise<{ user: Profile } | undefined> {
   try {
     let { data, error } = await supabase.auth.getSession();
 
@@ -20,8 +20,9 @@ export async function load(): Promise<Profile | undefined> {
       );
 
       if (result != null) {
-        return result;
+        return { user: result };
       }
+
     } else {
       goto('/auth');
     }

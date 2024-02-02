@@ -16,7 +16,6 @@
 		><style>
 			.cls-63ce7424ea57ea6c83800544-1 {
 				fill: none;
-				stroke: currentColor;
 				stroke-miterlimit: 10;
 			}
 		</style></defs

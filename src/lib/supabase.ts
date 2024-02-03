@@ -10,6 +10,6 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     }
 });
 
-export const getCurrentUserId = async () => {
+export const getCurrentUserId = async (): Promise<string | undefined>  => {
    return (await supabase.auth.getUser()).data.user?.id;
 }

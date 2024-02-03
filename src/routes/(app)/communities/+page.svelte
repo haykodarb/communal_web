@@ -1,11 +1,22 @@
 <script lang="ts">
 	import { getCommunitiesWhereUserIsMember, getCommunityAvatar } from '$lib/tables/communities';
 	import LoadingIndicator from '../../../common/loading_indicator.svelte';
+
+	const loading_cards: number[] = [1, 2, 3];
 </script>
 
 <div class="community_list">
 	{#await getCommunitiesWhereUserIsMember()}
-		<div>Loading</div>
+		{#each loading_cards as num}
+			<div class="community_card">
+				<div class="cover_container">
+					<LoadingIndicator height="100%" width="100%" border_radius="0px" />
+				</div>
+				<div class="community_name">
+					<LoadingIndicator height="30%" width="60%" border_radius="0.5vh" />
+				</div>
+			</div>
+		{/each}
 	{:then data}
 		{#if data.result != null}
 			{#each data.result as community}
@@ -50,11 +61,11 @@
 		flex-direction: column;
 		justify-content: start;
 		width: 40%;
-        min-height: 40vh;
+		min-height: 40vh;
 		box-shadow: 0 0.25vh 0.5vh 0 rgba(var(--tertiary-rgb), 0.25);
 		border-radius: 1vh;
 		transition: 0.3s;
-        overflow: hidden;
+		overflow: hidden;
 		cursor: pointer;
 	}
 
@@ -64,9 +75,9 @@
 	}
 
 	.cover_container {
-		aspect-ratio: 4/3;
-        max-height: 80%;
-        object-fit: cover;
+		aspect-ratio: 16/9;
+		max-height: 80%;
+		object-fit: cover;
 	}
 
 	.community_avatar {
@@ -75,13 +86,14 @@
 	}
 
 	.community_name {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
 		height: 100%;
-        text-align: center;
-        vertical-align: middle;
-        font-size: 2vh;
+		text-align: center;
+		vertical-align: middle;
+		font-size: 2vh;
 		flex: 1;
 		padding: 2%;
 		gap: 5%;

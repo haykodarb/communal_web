@@ -17,8 +17,6 @@
 	import { page } from '$app/stores';
 	import { getTheme, theme } from '$lib/stores';
 
-	export let data;
-
 	let current_path: string;
 	$: current_path = $page.url.pathname;
 

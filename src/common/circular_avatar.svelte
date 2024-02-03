@@ -57,6 +57,7 @@
 		align-items: center;
 		justify-content: center;
 		border-radius: 50%;
-		background-color: #56949f;
+		color: var(--onPrimary);
+		background-color: var(--primary);
 	}
 </style>

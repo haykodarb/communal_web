@@ -5,7 +5,7 @@
 	import CircularAvatar from '../../../common/circular_avatar.svelte';
 	import LoadingIndicator from '../../../common/loading_indicator.svelte';
 
-	const loading_cards: number[] = [1, 2, 3];
+	const loading_cards: number[] = [1, 2, 3, 4];
 
 	export let data;
 </script>
@@ -13,7 +13,16 @@
 <div class="chats_list">
 	{#await getDistinctChats()}
 		{#each loading_cards as num}
-			<div class="chat_card"></div>
+			<div class="chat_card">
+				<div class="avatar_container">
+					<LoadingIndicator height="8vh" width="8vh" border_radius="50%" />
+				</div>
+
+				<div class="name_column">
+					<LoadingIndicator height="3vh" width="30vh" border_radius="5%"/>
+					<LoadingIndicator height="2vh" width="20vh" border_radius="5%"/>
+				</div>
+			</div>
 		{/each}
 	{:then chats}
 		{#if chats.result != null}
@@ -70,7 +79,7 @@
 		gap: 1vw;
 		box-sizing: content-box;
 		padding: 3vh;
-        background-color: rgba(var(--tertiary-rgb), 0.025);
+		background-color: rgba(var(--tertiary-rgb), 0.025);
 	}
 
 	.avatar_container {
@@ -102,12 +111,12 @@
 		overflow: hidden;
 		text-wrap: nowrap;
 		text-overflow: ellipsis;
-        color: rgba(var(--onSurface-rgb), 0.8);
+		color: rgba(var(--onSurface-rgb), 0.8);
 	}
 
 	.date {
 		font-size: 1.5vh;
 		min-width: 20%;
-        color: rgba(var(--onSurface-rgb), 0.8);
+		color: rgba(var(--onSurface-rgb), 0.8);
 	}
 </style>

@@ -14,8 +14,8 @@
 				</div>
 				<div class="book_info">
 					<LoadingIndicator height="10%" width="80%" border_radius="0.5vh" />
-					<LoadingIndicator height="10%" width="60%" border_radius="0.5vh" />
-					<LoadingIndicator height="10%" width="40%" border_radius="0.5vh" />
+					<LoadingIndicator height="5%" width="60%" border_radius="0.5vh" />
+					<LoadingIndicator height="5%" width="40%" border_radius="0.5vh" />
 				</div>
 			</div>
 		{/each}
@@ -37,9 +37,15 @@
 						{/await}
 					</div>
 					<div class="book_info">
-						<div>{book.title}</div>
-						<div>{book.author}</div>
-						<div>{book.available}</div>
+						<div class="title">{book.title}</div>
+						<div>
+							<div class="subtitle">Author</div>
+							<div>{book.author}</div>
+						</div>
+						<div>
+							<div class="subtitle">Available</div>
+							<div>{book.available ? 'Yes' : 'No'}</div>
+						</div>
 					</div>
 				</div>
 			{/each}
@@ -67,18 +73,19 @@
 		flex-direction: row;
 		justify-content: start;
 		width: 40%;
-		height: 28vh;
-		box-shadow: 0 0.25vh 0.5vh 0 rgba(var(--tertiary-rgb), 0.25) ;
+		min-height: 30vh;
+		max-height: 30vh;
+		box-shadow: 0 0.25vh 0.5vh 0 rgba(var(--tertiary-rgb), 0.25);
 		border-radius: 1vh;
 		transition: 0.3s;
 		overflow: hidden;
 		cursor: pointer;
-        background-color: rgba(var(--tertiary-rgb), 0.025);
+		background-color: rgba(var(--tertiary-rgb), 0.025);
 	}
 
 	/* On mouse-over, add a deeper shadow */
 	.book_card:hover {
-		box-shadow: 0 0.5vh 1vh 0 rgba(var(--tertiary-rgb), 0.25) ;
+		box-shadow: 0 0.5vh 1vh 0 rgba(var(--tertiary-rgb), 0.25);
 	}
 
 	.cover_container {
@@ -98,5 +105,14 @@
 		flex: 1;
 		padding: 2%;
 		gap: 5%;
+	}
+
+	.title {
+		font-size: 2.5vh;
+		font-weight: 900;
+	}
+
+	.subtitle {
+		color: var(--secondary);
 	}
 </style>

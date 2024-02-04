@@ -70,7 +70,7 @@
 		gap: 1vw;
 		box-sizing: content-box;
 		padding: 3vh;
-        background-color: rgba(var(--tertiary-rgb), 0.05);
+        background-color: rgba(var(--tertiary-rgb), 0.025);
 	}
 
 	.avatar_container {

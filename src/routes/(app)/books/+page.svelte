@@ -73,6 +73,7 @@
 		transition: 0.3s;
 		overflow: hidden;
 		cursor: pointer;
+        background-color: rgba(var(--tertiary-rgb), 0.025);
 	}
 
 	/* On mouse-over, add a deeper shadow */

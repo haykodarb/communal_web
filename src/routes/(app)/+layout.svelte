@@ -44,7 +44,6 @@
 </svelte:head>
 
 <div class="drawer_container">
-	<div style="min-width: 15vw;"></div>
 	<div class="drawer">
 		<!-- <div class="profile_header">
 			{#if data.user != undefined && data.user != null}
@@ -163,16 +162,18 @@
 		display: flex;
 		flex-direction: column;
 		justify-content: start;
+		align-items: end;
 		background-color: white;
 		padding-top: 2vh;
 		padding-bottom: 2vh;
-		min-width: 20vw;
+		min-width: 30vw;
 		max-width: 30vw;
 		height: 100%;
 		box-sizing: border-box;
 		background-color: var(--background);
 		color: var(--onBackground);
 		gap: 3%;
+		box-shadow: 0.1vh 0vh 0.5vh 0vh rgba(var(--tertiary-rgb), 0.10) ;
 	}
 
 	.drawer_button {
@@ -185,6 +186,7 @@
 		padding-right: 2vw;
 		gap: 5%;
 		height: 4vh;
+		width: 15vw;
 		font-size: 1.4vh;
 		background: none;
 		outline: none;

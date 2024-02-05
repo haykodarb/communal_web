@@ -2,17 +2,18 @@
 	import { getBookCover, type Book, getBooksForCurrentUser } from '$lib/tables/books';
 	import LoadingIndicator from '../../../common/loading_indicator.svelte';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
 
 	const loading_cards: number[] = [1, 2, 3];
 
-	const gotoBook = (routeSegment: string, id: string) => {
-        goto(`${routeSegment}/${id}`);
-    };
-
-
+	const gotoBook = (id: string) => {
+		goto(`books/${id}`);
+	};
 </script>
 
 <div class="book_list">
+	<button class="add_button" on:click={() => goto('/books/add')}> Add a Book</button>
+
 	{#await getBooksForCurrentUser()}
 		{#each loading_cards as num}
 			<div class="book_card">
@@ -29,9 +30,7 @@
 	{:then data}
 		{#if data.result != null}
 			{#each data.result as book}
-		
-		
-					<button class="book_card" on:click={() => gotoBook("books", book.id)}>
+				<button class="book_card" on:click={() => gotoBook( book.id)}>
 					<div class="cover_container">
 						{#await getBookCover(book)}
 							<LoadingIndicator height="100%" width="100%" border_radius="0px" />
@@ -57,8 +56,6 @@
 						</div>
 					</div>
 				</button>
-			
-			
 			{/each}
 		{/if}
 	{/await}
@@ -79,10 +76,28 @@
 		color: var(--onBackground) !important;
 	}
 
+	.add_button {
+		cursor: pointer;
+		width: 40%;
+		min-height: 5vh;
+		outline: none;
+		border: 0.25vh solid var(--primary);
+		border-radius: 1vh;
+		font-size: 2vh;
+		transition: 0.3s;
+		background: none;
+		color: var(--onBackground);
+	}
+
+	.add_button:hover {
+		background-color: var(--surface);
+	}
+
 	.book_card {
 		display: flex;
 		flex-direction: row;
 		justify-content: start;
+		gap: 2%;
 		width: 40%;
 		min-height: 30vh;
 		max-height: 30vh;
@@ -92,8 +107,9 @@
 		overflow: hidden;
 		cursor: pointer;
 		background-color: rgba(var(--tertiary-rgb), 0.025);
+		color: var(--onBackground);
 		border: none;
-	
+		text-align: left;
 	}
 
 	/* On mouse-over, add a deeper shadow */

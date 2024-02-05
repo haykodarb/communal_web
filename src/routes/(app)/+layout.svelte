@@ -12,8 +12,6 @@
 
 	import { supabase } from '$lib/supabase';
 	import { goto } from '$app/navigation';
-	import CircularAvatar from '../../common/circular_avatar.svelte';
-	import { type Profile } from '$lib/tables/profiles';
 	import { page } from '$app/stores';
 	import { getTheme, theme } from '$lib/stores';
 

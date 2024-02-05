@@ -1,8 +1,15 @@
 <script lang="ts">
 	import { getBookCover, type Book, getBooksForCurrentUser } from '$lib/tables/books';
 	import LoadingIndicator from '../../../common/loading_indicator.svelte';
+	import { goto } from '$app/navigation';
 
 	const loading_cards: number[] = [1, 2, 3];
+
+	const gotoBook = (routeSegment: string, id: string) => {
+        goto(`${routeSegment}/${id}`);
+    };
+
+
 </script>
 
 <div class="book_list">
@@ -22,7 +29,9 @@
 	{:then data}
 		{#if data.result != null}
 			{#each data.result as book}
-				<div class="book_card">
+		
+		
+					<button class="book_card" on:click={() => gotoBook("books", book.id)}>
 					<div class="cover_container">
 						{#await getBookCover(book)}
 							<LoadingIndicator height="100%" width="100%" border_radius="0px" />
@@ -47,7 +56,9 @@
 							<div>{book.available ? 'Yes' : 'No'}</div>
 						</div>
 					</div>
-				</div>
+				</button>
+			
+			
 			{/each}
 		{/if}
 	{/await}
@@ -81,6 +92,8 @@
 		overflow: hidden;
 		cursor: pointer;
 		background-color: rgba(var(--tertiary-rgb), 0.025);
+		border: none;
+	
 	}
 
 	/* On mouse-over, add a deeper shadow */
@@ -90,6 +103,7 @@
 
 	.cover_container {
 		aspect-ratio: 3/4;
+		max-width: 50%;
 	}
 
 	.book_cover {

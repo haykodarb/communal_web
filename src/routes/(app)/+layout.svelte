@@ -193,15 +193,4 @@
 		border: none;
 		color: var(--onBackground);
 	}
-
-	.profile_header {
-		display: flex;
-		flex-direction: row;
-		padding-left: 2vw;
-		align-items: center;
-		font-size: 2.5vh;
-		height: 15vh;
-		gap: 5%;
-		color: var(--onBackground);
-	}
 </style>

@@ -119,10 +119,16 @@
 		flex: 1;
 		box-shadow: 0vh 0.2vh 0vh 0vh rgba(var(--tertiary-rgb), 0.2);
 		cursor: pointer;
+		transition: 0.3s;
 	}
+    
+    .tab_button:hover {
+		background-color: var(--surface);
+        
+    }
 
 	.tab_button.active {
-		box-shadow: 0vh 0.2vh 0vh 0vh rgba(var(--primary-rgb), 1);
+		box-shadow: 0vh 0.3vh 0vh 0vh rgba(var(--primary-rgb), 1);
 	}
 
 	.body_content {

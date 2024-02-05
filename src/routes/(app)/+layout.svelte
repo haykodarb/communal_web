@@ -17,10 +17,11 @@
 	import { page } from '$app/stores';
 	import { getTheme, theme } from '$lib/stores';
 
-	let current_path: string;
-	$: current_path = $page.url.pathname;
+	const isCurrentPath = (currentPath: string, comparePath: string): boolean => {
+		let rootPath = '/' + currentPath.split('/')[1];
 
-	console.log(current_path);
+		return rootPath == comparePath;
+	};
 
 	const handleLogout = async () => {
 		await supabase.auth.signOut();
@@ -33,9 +34,6 @@
 
 	const changeTheme = async () => {
 		theme.set(getTheme() == 'light' ? 'dark' : 'light');
-	};
-	const getButtonColor = (path: string): string => {
-		return path == current_path ? 'var(--primary)' : 'var(--background)';
 	};
 </script>
 
@@ -56,9 +54,9 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/profile')}>
 			<ProfileIcon
 				size="3.5vh"
-				color={current_path == '/profile' ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath($page.url.pathname, '/profile') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
-			<h2 style="color: {current_path == '/profile' ? 'var(--primary)' : 'var(--onBackground)'}">
+			<h2 style="color: {isCurrentPath($page.url.pathname, '/profile') ? 'var(--primary)' : 'var(--onBackground)'}">
 				Profile
 			</h2>
 		</button>
@@ -66,9 +64,9 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/messages')}>
 			<ChatsIcon
 				size="3.5vh"
-				color={current_path == '/messages' ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath($page.url.pathname, '/messages') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
-			<h2 style="color: {current_path == '/messages' ? 'var(--primary)' : 'var(--onBackground)'}">
+			<h2 style="color: {isCurrentPath($page.url.pathname, '/messages') ? 'var(--primary)' : 'var(--onBackground)'}">
 				Messages
 			</h2>
 		</button>
@@ -76,9 +74,9 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/books')}>
 			<BookIcon
 				size="3.5vh"
-				color={current_path == '/books' ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath($page.url.pathname, '/books') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
-			<h2 style="color: {current_path == '/books' ? 'var(--primary)' : 'var(--onBackground)'}">
+			<h2 style="color: {isCurrentPath($page.url.pathname, '/books') ? 'var(--primary)' : 'var(--onBackground)'}">
 				My Books
 			</h2>
 		</button>
@@ -86,9 +84,9 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/tools')}>
 			<ToolsIcon
 				size="3.5vh"
-				color={current_path == '/tools' ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath($page.url.pathname, '/tools') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
-			<h2 style="color: {current_path == '/tools' ? 'var(--primary)' : 'var(--onBackground)'}">
+			<h2 style="color: {isCurrentPath($page.url.pathname, '/tools') ? 'var(--primary)' : 'var(--onBackground)'}">
 				My Tools
 			</h2>
 		</button>
@@ -96,10 +94,10 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/communities')}>
 			<CommunityIcon
 				size="3.5vh"
-				color={current_path == '/communities' ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath($page.url.pathname, '/communities') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
 			<h2
-				style="color: {current_path == '/communities' ? 'var(--primary)' : 'var(--onBackground)'}"
+				style="color: {isCurrentPath($page.url.pathname, '/communities') ? 'var(--primary)' : 'var(--onBackground)'}"
 			>
 				Communities
 			</h2>
@@ -108,10 +106,10 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/invitations')}>
 			<InvitationsIcon
 				size="3.5vh"
-				color={current_path == '/invitations' ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath($page.url.pathname, '/invitations') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
 			<h2
-				style="color: {current_path == '/invitations' ? 'var(--primary)' : 'var(--onBackground)'}"
+				style="color: {isCurrentPath($page.url.pathname, '/invitations') ? 'var(--primary)' : 'var(--onBackground)'}"
 			>
 				Invitations
 			</h2>
@@ -120,9 +118,9 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/loans')}>
 			<LoansIcon
 				size="3.5vh"
-				color={current_path == '/loans' ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath($page.url.pathname, '/loans') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
-			<h2 style="color: {current_path == '/loans' ? 'var(--primary)' : 'var(--onBackground)'}">
+			<h2 style="color: {isCurrentPath($page.url.pathname, '/loans') ? 'var(--primary)' : 'var(--onBackground)'}">
 				Loans
 			</h2>
 		</button>
@@ -173,7 +171,7 @@
 		background-color: var(--background);
 		color: var(--onBackground);
 		gap: 3%;
-		box-shadow: 0.1vh 0vh 0.5vh 0vh rgba(var(--tertiary-rgb), 0.10) ;
+		box-shadow: 0.1vh 0vh 0.5vh 0vh rgba(var(--tertiary-rgb), 0.1);
 	}
 
 	.drawer_button {
@@ -194,14 +192,4 @@
 		color: var(--onBackground);
 	}
 
-	.profile_header {
-		display: flex;
-		flex-direction: row;
-		padding-left: 2vw;
-		align-items: center;
-		font-size: 2.5vh;
-		height: 15vh;
-		gap: 5%;
-		color: var(--onBackground);
-	}
 </style>

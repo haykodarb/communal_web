@@ -12,10 +12,12 @@
 
 	import { supabase } from '$lib/supabase';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
+	import { navigating, page } from '$app/stores';
 	import { getTheme, theme } from '$lib/stores';
 
-	const isCurrentPath = (currentPath: string, comparePath: string): boolean => {
+	let path = $page.url.pathname;
+
+	$: isCurrentPath = (currentPath: string, comparePath: string): boolean => {
 		let rootPath = '/' + currentPath.split('/')[1];
 
 		return rootPath == comparePath;
@@ -26,8 +28,9 @@
 		goto('/');
 	};
 
-	const handleNavigation = async (path: string) => {
-		await goto(path);
+	const handleNavigation = async (newPath: string) => {
+		path = newPath;
+		goto(newPath);
 	};
 
 	const changeTheme = async () => {
@@ -52,9 +55,11 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/profile')}>
 			<ProfileIcon
 				size="3.5vh"
-				color={isCurrentPath($page.url.pathname, '/profile') ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath(path, '/profile') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
-			<h2 style="color: {isCurrentPath($page.url.pathname, '/profile') ? 'var(--primary)' : 'var(--onBackground)'}">
+			<h2
+				style="color: {isCurrentPath(path, '/profile') ? 'var(--primary)' : 'var(--onBackground)'}"
+			>
 				Profile
 			</h2>
 		</button>
@@ -62,29 +67,35 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/messages')}>
 			<ChatsIcon
 				size="3.5vh"
-				color={isCurrentPath($page.url.pathname, '/messages') ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath(path, '/messages') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
-			<h2 style="color: {isCurrentPath($page.url.pathname, '/messages') ? 'var(--primary)' : 'var(--onBackground)'}">
+			<h2
+				style="color: {isCurrentPath(path, '/messages') ? 'var(--primary)' : 'var(--onBackground)'}"
+			>
 				Messages
 			</h2>
 		</button>
 
-		<button class="drawer_button" on:click={() => handleNavigation('/books')}>
+		<button class="drawer_button" on:click={() => handleNavigation('/my-books')}>
 			<BookIcon
 				size="3.5vh"
-				color={isCurrentPath($page.url.pathname, '/books') ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath(path, '/my-books') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
-			<h2 style="color: {isCurrentPath($page.url.pathname, '/books') ? 'var(--primary)' : 'var(--onBackground)'}">
+			<h2
+				style="color: {isCurrentPath(path, '/my-books') ? 'var(--primary)' : 'var(--onBackground)'}"
+			>
 				My Books
 			</h2>
 		</button>
 
-		<button class="drawer_button" on:click={() => handleNavigation('/tools')}>
+		<button class="drawer_button" on:click={() => handleNavigation('/my-tools')}>
 			<ToolsIcon
 				size="3.5vh"
-				color={isCurrentPath($page.url.pathname, '/tools') ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath(path, '/my-tools') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
-			<h2 style="color: {isCurrentPath($page.url.pathname, '/tools') ? 'var(--primary)' : 'var(--onBackground)'}">
+			<h2
+				style="color: {isCurrentPath(path, '/my-tools') ? 'var(--primary)' : 'var(--onBackground)'}"
+			>
 				My Tools
 			</h2>
 		</button>
@@ -92,10 +103,12 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/communities')}>
 			<CommunityIcon
 				size="3.5vh"
-				color={isCurrentPath($page.url.pathname, '/communities') ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath(path, '/communities') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
 			<h2
-				style="color: {isCurrentPath($page.url.pathname, '/communities') ? 'var(--primary)' : 'var(--onBackground)'}"
+				style="color: {isCurrentPath(path, '/communities')
+					? 'var(--primary)'
+					: 'var(--onBackground)'}"
 			>
 				Communities
 			</h2>
@@ -104,10 +117,12 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/invitations')}>
 			<InvitationsIcon
 				size="3.5vh"
-				color={isCurrentPath($page.url.pathname, '/invitations') ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath(path, '/invitations') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
 			<h2
-				style="color: {isCurrentPath($page.url.pathname, '/invitations') ? 'var(--primary)' : 'var(--onBackground)'}"
+				style="color: {isCurrentPath(path, '/invitations')
+					? 'var(--primary)'
+					: 'var(--onBackground)'}"
 			>
 				Invitations
 			</h2>
@@ -116,9 +131,9 @@
 		<button class="drawer_button" on:click={() => handleNavigation('/loans')}>
 			<LoansIcon
 				size="3.5vh"
-				color={isCurrentPath($page.url.pathname, '/loans') ? 'var(--primary)' : 'var(--onBackground)'}
+				color={isCurrentPath(path, '/loans') ? 'var(--primary)' : 'var(--onBackground)'}
 			/>
-			<h2 style="color: {isCurrentPath($page.url.pathname, '/loans') ? 'var(--primary)' : 'var(--onBackground)'}">
+			<h2 style="color: {isCurrentPath(path, '/loans') ? 'var(--primary)' : 'var(--onBackground)'}">
 				Loans
 			</h2>
 		</button>
@@ -140,7 +155,12 @@
 			<h2>Logout</h2>
 		</button>
 	</div>
-	<slot style="background-color: var(--background); color: var(--onBackground)" />
+
+	{#if $navigating}
+		loading
+	{:else}
+		<slot style="background-color: var(--background); color: var(--onBackground)" />
+	{/if}
 </div>
 
 <style>

@@ -1,5 +1,6 @@
 // src/app.d.ts
 
+import type { Book } from '$lib/tables/books'
 import { SupabaseClient, Session } from '@supabase/supabase-js'
 
 declare global {
@@ -10,7 +11,7 @@ declare global {
     }
 	
     interface PageData {
-      session: Session | null
+      session: Session | null,
     }
     // interface Error {}
     // interface Platform {}

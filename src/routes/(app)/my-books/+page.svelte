@@ -2,34 +2,20 @@
 	import { getBookCover, type Book, getBooksForCurrentUser } from '$lib/tables/books';
 	import LoadingIndicator from '../../../common/loading_indicator.svelte';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
 
 	const loading_cards: number[] = [1, 2, 3];
+	
+	export let data;
 
 	const gotoBook = (id: string) => {
-		goto(`books/${id}`);
+		goto(`/my-books/${id}`);
 	};
 </script>
 
 <div class="book_list">
-	<button class="add_button" on:click={() => goto('/books/add')}> Add a Book</button>
-
-	{#await getBooksForCurrentUser()}
-		{#each loading_cards as num}
-			<div class="book_card">
-				<div class="cover_container">
-					<LoadingIndicator height="100%" width="100%" border_radius="0px" />
-				</div>
-				<div class="book_info">
-					<LoadingIndicator height="10%" width="80%" border_radius="0.5vh" />
-					<LoadingIndicator height="5%" width="60%" border_radius="0.5vh" />
-					<LoadingIndicator height="5%" width="40%" border_radius="0.5vh" />
-				</div>
-			</div>
-		{/each}
-	{:then data}
-		{#if data.result != null}
-			{#each data.result as book}
+	<button class="add_button" on:click={() => goto('/my-books/add')}> Add a Book</button>
+		{#if data.books != undefined}
+			{#each data.books as book}
 				<button class="book_card" on:click={() => gotoBook( book.id)}>
 					<div class="cover_container">
 						{#await getBookCover(book)}
@@ -58,7 +44,6 @@
 				</button>
 			{/each}
 		{/if}
-	{/await}
 </div>
 
 <style>

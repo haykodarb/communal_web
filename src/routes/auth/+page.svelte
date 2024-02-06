@@ -98,7 +98,7 @@
 				if (error) {
 					resultMessage = error.message;
 				} else {
-					await goto('/books');
+					await goto('/my-books');
 				}
 
 				console.log(data);

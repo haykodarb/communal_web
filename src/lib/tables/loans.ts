@@ -1,6 +1,6 @@
 import { supabase, getCurrentUserId } from "../supabase";
 import type { Tables } from "../types/database.types";
-import type { Book } from "./books";
+import type { Book } from "./my-books";
 import type { Community } from "./communities";
 import type { Profile } from "./profiles";
 import type { Tool } from "./tools";

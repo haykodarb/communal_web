@@ -1,6 +1,5 @@
 import { supabase, getCurrentUserId } from "../supabase";
-import type { Tables } from "../types/database.types";
-import type { Book } from "./my-books";
+import type { Book } from "./books";
 import type { Community } from "./communities";
 import type { Profile } from "./profiles";
 import type { Tool } from "./tools";
@@ -41,7 +40,7 @@ export async function getLoansWhere(requestType: string): Promise<{ result: Loan
 
         switch (requestType) {
             case 'owned':
-                query.eq('returned', false).eq('rejected', false).eq('owner', userId);
+                query.eq('returned', false).eq('rejected', false).eq('owner', userId).order('accepted_at', {ascending: false});;
                 break;
             case 'borrowed':
                 query.match(
@@ -49,10 +48,10 @@ export async function getLoansWhere(requestType: string): Promise<{ result: Loan
                         'loanee': userId,
                         'returned': false,
                     },
-                );
+                ).order('accepted_at', {ascending: false});
                 break;
             case 'completed':
-                query.eq('returned', true);
+                query.eq('returned', true).order('returned_at', { ascending: false, });
             default:
                 break;
         }

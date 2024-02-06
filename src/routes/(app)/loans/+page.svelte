@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { getLoansWhere } from '$lib/tables/loans';
-	import { el } from 'date-fns/locale';
 	import Card from '../../../common/card.svelte';
 	import ThreeDotsVert from '../../../assets/icons/three_dots_vert.svelte';
+	import { format } from 'date-fns/format';
 
 	export let data;
 
@@ -77,7 +77,12 @@
 												Pending Approval
 											{/if}
 										</div>
-										<div class="date">Sun, Jan 21</div>
+										<div class="date">
+											{format(
+												new Date((loan.accepted ? loan.accepted_at : loan.created_at) ?? ''),
+												'E, MMM d'
+											)}
+										</div>
 									</div>
 								</div>
 							</Card>
@@ -120,7 +125,12 @@
 												Pending Approval
 											{/if}
 										</div>
-										<div class="date">Sun, Jan 21</div>
+										<div class="date">
+											{format(
+												new Date((loan.accepted ? loan.accepted_at : loan.created_at) ?? ''),
+												'E, MMM d'
+											)}
+										</div>
 									</div>
 								</div>
 							</Card>
@@ -157,7 +167,9 @@
 										<button class="user">{loan.loanee_profile.username}</button>
 									</div>
 									<div class="card_bottom_row">
-										<div class="status">Returned Sun, Jan 21</div>
+										<div class="status">Returned
+											{format(new Date(loan.returned_at ?? ''), 'E, MMM d')}
+										</div>
 									</div>
 								</div>
 							</Card>
@@ -193,11 +205,11 @@
 		flex: 1;
 		box-shadow: 0vh 0.2vh 0vh 0vh rgba(var(--tertiary-rgb), 0.2);
 		cursor: pointer;
-		transition: 0.3s;
 	}
 
 	.tab_button:hover {
 		background-color: var(--surface);
+		transition: 0.3s;
 	}
 
 	.tab_button.active {
@@ -269,6 +281,7 @@
 
 	.date {
 		color: rgba(var(--onSurface-rgb), 0.5);
+		font-size: 2vh;
 	}
 
 	.menu_button {

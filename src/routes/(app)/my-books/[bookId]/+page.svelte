@@ -1,11 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { getBookInformation, getBookCover, type Book } from '$lib/tables/books';
+	import { getBookCover, type Book } from '$lib/tables/books';
 	import LoadingIndicator from '../../../../common/loading_indicator.svelte';
 	const bookId = $page.params.bookId;
-
-	let bookInformation = getBookInformation(bookId);
-	console.log(bookInformation);
 
 	export let data;
 

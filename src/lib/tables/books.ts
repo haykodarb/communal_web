@@ -27,6 +27,27 @@ export async function getBooksForCurrentUser(): Promise<{ result: Book[] | null,
     }
 }
 
+
+export async function getBookInformation(bookId: string): Promise<{ result: Book[] | null, error: string | null }> {
+    try {
+
+        const query = supabase.from('books').select().eq('id', bookId);
+
+        const { data, error } = await query;
+        if (data) {
+            return { result: data, error: null };
+        } else {
+            return { result: null, error: 'Could not get books.' };
+        }
+
+    } catch (error) {
+        return { error: `${error}`, result: null };
+
+    }
+}
+
+
+
 export async function getBookCover(book: Book): Promise<{ result: Blob | null, error: string | null }> {
     try {
         const { data, error } = await supabase.storage.from('book_covers').download(book.image_path);

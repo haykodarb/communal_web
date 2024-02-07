@@ -1,22 +1,30 @@
 <script lang="ts">
 	import { getBookCover, type Book, getBooksForCurrentUser } from '$lib/tables/books';
 	import LoadingIndicator from '../../../common/loading_indicator.svelte';
-	import { goto } from '$app/navigation';
 
 	const loading_cards: number[] = [1, 2, 3];
-	
-	export let data;
 
-	const gotoBook = (id: string) => {
-		goto(`/my-books/${id}`);
-	};
 </script>
 
 <div class="book_list">
-	<button class="add_button" on:click={() => goto('/my-books/add')}> Add a Book</button>
-		{#if data.books != undefined}
-			{#each data.books as book}
-				<button class="book_card" on:click={() => gotoBook( book.id)}>
+	<a class="add_button" href="/my-books/add"> Add a Book</a>
+	{#await getBooksForCurrentUser()}
+		{#each loading_cards as card}
+		<div class="book_card">
+			<div class="cover_container">
+				<LoadingIndicator height="100%" width="100%" border_radius="0px" />
+			</div>
+			<div class="book_info">
+				<LoadingIndicator height="15%" width="80%" border_radius="0.5vh" />
+				<LoadingIndicator height="10%" width="40%" border_radius="0.5vh" />
+				<LoadingIndicator height="10%" width="40%" border_radius="0.5vh" />
+			</div>
+		</div>
+		{/each}
+	{:then { result }}
+		{#if result != undefined}
+			{#each result as book}
+				<a class="book_card" href={`/my-books/${book.id}`}>
 					<div class="cover_container">
 						{#await getBookCover(book)}
 							<LoadingIndicator height="100%" width="100%" border_radius="0px" />
@@ -41,9 +49,10 @@
 							<div>{book.available ? 'Yes' : 'No'}</div>
 						</div>
 					</div>
-				</button>
+				</a>
 			{/each}
 		{/if}
+	{/await}
 </div>
 
 <style>
@@ -62,15 +71,21 @@
 	}
 
 	.add_button {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
 		cursor: pointer;
 		width: 40%;
 		min-height: 5vh;
 		outline: none;
 		border: 0.25vh solid var(--primary);
 		border-radius: 1vh;
-		font-size: 2vh;
+		font-size: 2.5vh;
 		transition: 0.3s;
 		background: none;
+		text-decoration: none;
+		text-align: center;
+		vertical-align: middle;
 		color: var(--onBackground);
 	}
 
@@ -94,6 +109,7 @@
 		background-color: rgba(var(--tertiary-rgb), 0.025);
 		color: var(--onBackground);
 		border: none;
+		text-decoration: none;
 		text-align: left;
 	}
 

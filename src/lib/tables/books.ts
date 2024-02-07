@@ -28,10 +28,10 @@ export async function getBooksForCurrentUser(): Promise<{ result: Book[] | null,
 }
 
 
-export async function getBookInformation(bookId: string): Promise<{ result: Book[] | null, error: string | null }> {
+export async function getBookInformation(bookId: string): Promise<{ result: Book | null, error: string | null }> {
     try {
 
-        const query = supabase.from('books').select().eq('id', bookId);
+        const query = supabase.from('books').select().eq('id', bookId).single();
 
         const { data, error } = await query;
         if (data) {

@@ -14,6 +14,7 @@
 	import { goto } from '$app/navigation';
 	import { navigating, page } from '$app/stores';
 	import { getTheme, theme } from '$lib/stores';
+	import LoadingSpinner from '../../common/loading_spinner.svelte';
 
 	let path = $page.url.pathname;
 
@@ -156,11 +157,7 @@
 		</button>
 	</div>
 
-	{#if $navigating}
-		loading
-	{:else}
-		<slot style="background-color: var(--background); color: var(--onBackground)" />
-	{/if}
+	<slot style="background-color: var(--background); color: var(--onBackground)" />
 </div>
 
 <style>
@@ -208,5 +205,14 @@
 		outline: none;
 		border: none;
 		color: var(--onBackground);
+	}
+
+	.spinner_container {
+		height: 100vh;
+		width: 30vw;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
 	}
 </style>

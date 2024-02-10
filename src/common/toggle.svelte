@@ -11,10 +11,7 @@
 	>
 		YES
 	</div>
-	<div
-		class="disabled_icon"
-		style={`color: ${checked ? 'var(--onBackground)' : 'var(--onError)'}`}
-	>
+	<div class="disabled_icon" style={`color: ${checked ? 'var(--onBackground)' : 'var(--onError)'}`}>
 		NO
 	</div>
 </label>
@@ -40,6 +37,7 @@
 		padding: 0;
 		margin: 0;
 		border-radius: 0;
+		display: none;
 	}
 
 	.slider {
@@ -55,7 +53,7 @@
 		position: absolute;
 		left: 50%;
 		content: '';
-		height: 100%;
+		height: 120%;
 		width: 50%;
 		-webkit-transition: 0.3s;
 		transition: 0.3s;

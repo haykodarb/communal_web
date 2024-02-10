@@ -13,28 +13,38 @@
 
 	let input: HTMLInputElement;
 	let image: string;
+	let showImage: boolean = false;
 
-	$: () => {
+	const onChanged = () => {
+		console.log(input);
+
 		if (input.files == null || input.files.length == 0) {
 			return;
 		}
 
 		const file = input.files[0];
+		console.log(file);
 
 		if (file) {
+			showImage = false;
+
 			const reader = new FileReader();
 
-			if (reader.result == null) return;
+			console.log('gets here');
 
 			reader.readAsDataURL(file);
+
+			console.log(reader);
 
 			reader.onload = (e) => {
 				if (e.target == null) return;
 
 				image = e.target.result as string;
+
+				showImage = true;
 			};
 		}
-	}
+	};
 
 	let errors = { title: '', author: '', review: '' };
 
@@ -42,6 +52,10 @@
 	let loading = false;
 
 	$: {
+		if (!form.read) {
+			add_review = false;
+		}
+
 		if (!add_review) {
 			form.review = null;
 		}
@@ -57,74 +71,103 @@
 </script>
 
 <div class="container">
-	<div id="image_container">
-		{#if image != undefined || image != null}
-			<img id="cover" src={image} alt="d" />
-		{/if}
-		<button on:click={() => {input.click()}} id="select_button">Select Image</button>
-		<input bind:this={input} style="display: none;" type="file" placeholder="Select" />
-	</div>
-
-	<input bind:value={form.title} class="input_field" placeholder="Title" type="text" alt="Title" />
-
-	<input
-		bind:value={form.author}
-		class="input_field"
-		placeholder="Author"
-		type="text"
-		alt="Author"
-	/>
-	<div class="check_row">
-		<div class="check_title">Allow Loans</div>
-		<div class="toggle">
-			<Toggle bind:checked={form.available} />
+	<div class="left_container">
+		<div id="image_container">
+			<button
+				on:click={() => {
+					input.click();
+				}}
+				id="select_button">Select Image</button
+			>
+			{#if showImage}
+				<img id="cover" src={image} alt="d" />
+			{/if}
+			<input
+				bind:this={input}
+				style="display: none;"
+				on:change={onChanged}
+				type="file"
+				placeholder="Select"
+			/>
 		</div>
-	</div>
 
-	<div class="check_row">
-		<div class="check_title">Already Read</div>
-		<div class="toggle">
-			<Toggle bind:checked={form.read} />
-		</div>
-	</div>
+		<input
+			bind:value={form.title}
+			class="input_field"
+			placeholder="Title"
+			type="text"
+			alt="Title"
+		/>
 
-	{#if form.read}
+		<input
+			bind:value={form.author}
+			class="input_field"
+			placeholder="Author"
+			type="text"
+			alt="Author"
+		/>
 		<div class="check_row">
-			<div class="check_title">Add Review</div>
+			<div class="check_title">Allow Loans</div>
 			<div class="toggle">
-				<Toggle bind:checked={add_review} />
+				<Toggle bind:checked={form.available} />
 			</div>
 		</div>
-	{/if}
 
-	{#if add_review}
-		<textarea class="review_field" placeholder="Review" bind:value={form.review} />
-	{/if}
+		<div class="check_row">
+			<div class="check_title">Already Read</div>
+			<div class="toggle">
+				<Toggle bind:checked={form.read} />
+			</div>
+		</div>
 
-	<div class="button_container">
-		{#if loading}
-			<LoadingSpinner />
-		{:else}
-			<button class="elevated_button" id="submit" on:click={onSubmit}> Add </button>
+		{#if form.read}
+			<div class="check_row">
+				<div class="check_title">Add Review</div>
+				<div class="toggle">
+					<Toggle bind:checked={add_review} />
+				</div>
+			</div>
 		{/if}
+
+		{#if add_review}
+			<textarea class="review_field" placeholder="Review" bind:value={form.review} rows="5" />
+		{/if}
+
+		<div class="button_container">
+			{#if loading}
+				<LoadingSpinner />
+			{:else}
+				<button class="elevated_button" id="submit" on:click={onSubmit}> Add </button>
+			{/if}
+		</div>
 	</div>
 </div>
 
 <style>
 	.container {
-		width: 30%;
+		width: 100%;
 		height: 100%;
 		box-sizing: border-box;
-		padding: 2%;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+	}
+
+	.left_container {
+		width: 40%;
+		height: 100%;
 		display: flex;
 		flex-direction: column;
 		justify-content: start;
 		align-items: center;
 		gap: 3%;
+		box-sizing: bord;
+		padding: 5%;
+		overflow: scroll;
 	}
 
 	#image_container {
-		height: 40vh;
+		min-height: 40vh;
 		aspect-ratio: 3/4;
 		position: relative;
 	}
@@ -139,7 +182,10 @@
 		height: 20%;
 		width: 100%;
 		top: 80%;
-		background-color: rgba(var(--surface-rgb), 0.5);
+		background-color: rgba(var(--surface-rgb), 0.95);
+		color: var(--onSurface);
+		cursor: pointer;
+		font-size: 2vh;
 	}
 
 	.input_field {
@@ -153,7 +199,7 @@
 	}
 
 	.check_row {
-		width: 90%;
+		min-width: 90%;
 		display: flex;
 		flex-direction: row;
 		justify-content: space-between;
@@ -183,7 +229,7 @@
 	}
 
 	#submit {
-		height: 100%;
+		height: 5vh;
 		width: 100%;
 		border-radius: 0.5vh;
 	}

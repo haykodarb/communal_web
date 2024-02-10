@@ -11,7 +11,7 @@
     --onSurfaceVariant: #BBBBBB;
     --onTertiary: #0F0F19;
     --onSurface: #FFFFFF;
-    --onError: #FFFFFF;
+    --onError: #0F0F19;
 
     --background-rgb: 15, 15, 25;
     --surface-rgb: 33, 32, 46;
@@ -26,4 +26,19 @@
     --onTertiary-rgb: 15, 15, 25;
     --onSurface-rgb: 255, 255, 255;
     --onError-rgb: 255, 255, 255;
+}
+
+.elevated_button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1vh;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    text-align: center;
+    font-size: 2.5vh;
+    background: var(--primary);
+    color: var(--onPrimary);
 }

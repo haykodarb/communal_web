@@ -12,9 +12,8 @@
 
 	import { supabase } from '$lib/supabase';
 	import { goto } from '$app/navigation';
-	import { navigating, page } from '$app/stores';
+	import { page } from '$app/stores';
 	import { getTheme, theme } from '$lib/stores';
-	import LoadingSpinner from '../../common/loading_spinner.svelte';
 
 	let path = $page.url.pathname;
 
@@ -207,12 +206,4 @@
 		color: var(--onBackground);
 	}
 
-	.spinner_container {
-		height: 100vh;
-		width: 30vw;
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-	}
 </style>

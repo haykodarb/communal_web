@@ -3,6 +3,14 @@ import type { Tables } from "../types/database.types";
 
 export type Book = Tables<'books'>;
 
+export type BookForm = {
+    title: string;
+    author: string;
+    review: string | null;
+    read:boolean;
+    available:boolean;
+}
+
 export async function getBooksForCurrentUser(): Promise<{ result: Book[] | null, error: string | null }> {
     try {
         const userId: string | undefined = await getCurrentUserId();

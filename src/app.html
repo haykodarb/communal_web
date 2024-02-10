@@ -34,6 +34,53 @@
 		src: url('/fonts/Poppins-Regular.ttf');
 		font-display: swap;
 	}
+
+	input {
+		background-color: var(--background);
+		color: var(--onBackground);
+		border: 0.25vh solid var(--tertiary);
+		outline: none;
+		padding: 5%;
+		font-size: 2vh;
+		box-sizing: border-box;
+		border-radius: 0.5vh;
+		margin: 0;
+	}
+
+	input:focus {
+		border: 0.25vh solid var(--primary);
+		outline: none;
+	}
+
+	textarea {
+		background-color: var(--background);
+		color: var(--onBackground);
+		border: 0.25vh solid var(--tertiary);
+		outline: none;
+		font-size: 2vh;
+		box-sizing: border-box;
+		border-radius: 0.5vh;
+		margin: 0;
+		resize: none;
+		padding-top: 2vh;
+		padding-bottom: 2vh;
+		padding-left: 2vh;
+		padding-right: 2vh;
+	}
+
+	textarea:focus {
+		border: 0.25vh solid var(--primary);
+		outline: none;
+	}
+
+	button {
+		outline: none;
+		margin: 0;
+		border: none;
+		background: none;
+	}
+
+
 </style>
 
 </html>

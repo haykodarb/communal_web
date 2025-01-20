@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link
+		href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+		rel="stylesheet">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<link rel="icon" href="assets/favicon.ico" sizes="any">
+	<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+	<title>Communal</title>
+</head>
+
+<body>
+	<div id="main-container">
+		<div id="header">
+			<div id="logo">
+				<img id="logo-icon" src="assets/icon-512.png" />
+				<p id="logo-title">Communal</p>
+			</div>
+			<!--
+			<div id="lang-selector">
+				<svg width="18" height="18" viewbox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<g clip-path="url(#clip0_1242_8)">
+						<path d="m0.375 2.51251h9" stroke="#d7827e" stroke-width="2" stroke-miterlimit="10" />
+						<path d="m4.6875 0.359985v2.51249" stroke="#d7827e" stroke-width="2" stroke-miterlimit="10" />
+						<path d="m6.83997 2.51251c6.83997 5.15251 4.37997 8.66251 1.09497 10.425" stroke="#d7827e"
+							stroke-width="2" stroke-miterlimit="10" />
+						<path d="m3.38251 5.52753c4.5041 7.5913 6.19317 9.29077 8.25001 10.425" stroke="#d7827e"
+							stroke-width="2" stroke-miterlimit="10" />
+						<path d="m9.71997 16.89l12.5925 8.98499h13.3125l16.185 16.89" stroke="#d7827e" stroke-width="2"
+							stroke-miterlimit="10" />
+						<path d="m15.3225 14.0175h11.3025" stroke="#d7827e" stroke-width="2" stroke-miterlimit="10" />
+						<path d="m8.28003 16.89h11.16" stroke="#d7827e" stroke-width="2" stroke-miterlimit="10" />
+						<path d="m14.7525 16.89h17.625" stroke="#d7827e" stroke-width="2" stroke-miterlimit="10" />
+					</g>
+					<defs>
+						<clippath id="clip0_1242_8">
+							<rect width="18" height="18" fill="white" />
+						</clippath>
+					</defs>
+				</svg>
+				<svg width="17" height="11" viewbox="0 0 17 11" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="m16 0.999999l8.5 9l1 1" stroke="#d7827e" stroke-width="2.5" />
+				</svg>
+			</div> -->
+		</div>
+
+		<div id="description">
+			<div id="description-first-col">
+				<h1 id="description-title">Share books with your communities.</h1>
+				<h4 id="description-subtitle">Connect with your peers and upload your physical collection to contribute
+					to a decentralized library, shared among the circles you're connected with.</h4>
+				<a href="https://app.communal.ar" target="_blank" rel="noopener noreferrer" id="go-to-app-button">Go to
+					app</a>
+
+				<div id="description-developers">
+					<p class="developers-text">Designed by <a class="developers-link" target="_blank"
+							rel="noopener noreferrer">Daiana
+							Veloso</a></p>
+					<p class="developers-text">Developed by <a class="developers-link" target="_blank"
+							rel="noopener noreferrer" href="https://hayk.ar">Hayk
+							Darbinyan</a></p>
+				</div>
+			</div>
+			<div id="description-hero">
+				<img src="assets/crow.svg" />
+			</div>
+		</div>
+
+		<div id="cards-list">
+			<div class="card-container">
+				<div class="card-row">
+					<div class="card-icon">
+						<img src="assets/book.svg" />
+					</div>
+					<div class="card-title">Open your shelf</div>
+				</div>
+				<div class="card-content">Showcase your book collection to your peers. Give each book a new purpose by
+					lending it out, building shared stories along the way.</div>
+			</div>
+			<div class="card-container">
+				<div class="card-row">
+					<div class="card-icon">
+
+						<img src="assets/exchange.svg" />
+					</div>
+					<div class="card-title">Borrow books</div>
+				</div>
+				<div class="card-content">
+					One of your friends has a book on their shelf that you've been dying to read? Join a mutual
+					community and ask if you can loan it out for a bit.</div>
+			</div>
+			<div class="card-container">
+				<div class="card-row">
+					<div class="card-icon">
+						<img src="assets/messages.svg" />
+					</div>
+					<div class="card-title">Exchange ideas</div>
+				</div>
+				<div class="card-content">Review the books you've read and discuss them with other community members.
+					Share your insights and perspectives with like-minded people.</div>
+			</div>
+		</div>
+
+	</div>
+</body>
+
+<style>
+	body {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+		margin: 0;
+		background: var(--Background, #F2E9E1);
+	}
+
+	#main-container {
+		display: flex;
+		align-self: stretch;
+		font-family: Poppins;
+		margin: 0;
+		padding-left: 5%;
+		padding-right: 5%;
+		padding-top: 20px;
+		padding-bottom: 40px;
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 60px;
+		max-width: 72rem;
+	}
+
+	#header {
+		display: flex;
+		margin: 0;
+		padding: 0;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		align-self: stretch;
+	}
+
+	#logo {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin: 0;
+		gap: 10px;
+	}
+
+	#logo-icon {
+		height: 50px;
+		width: 50px;
+	}
+
+	#logo-title {
+		color: var(--On-surface, #575279);
+		font-size: 20px;
+		font-style: normal;
+		font-weight: 600;
+		line-height: normal;
+	}
+
+	#lang-selector {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: space-evenly;
+		padding: 14px 20px;
+		gap: 20px;
+		border-radius: var(--tab-bar-outer-radius, 50px);
+		border: 1px solid var(--Primary, #D7827E);
+		height: 20px;
+	}
+
+	#description {
+		display: flex;
+		flex-direction: row;
+		margin: 0;
+		padding: 0;
+		gap: 30px;
+		flex-shrink: 0;
+		align-items: flex-start;
+		justify-content: center;
+		align-self: stretch;
+	}
+
+	#description-first-col {
+		display: flex;
+		flex-direction: column;
+		gap: 30px;
+		flex: 1;
+		color: var(--On-surface, #575279);
+	}
+
+	#description-title {
+		font-size: 30px;
+		font-style: normal;
+		font-weight: 600;
+		line-height: normal;
+		margin: 0;
+	}
+
+	#description-subtitle {
+		font-size: 23px;
+		font-style: normal;
+		font-weight: 400;
+		line-height: normal;
+		margin: 0;
+	}
+
+	#description-hero {
+		flex: 1;
+		display: flex;
+		flex-direction: row;
+		justify-content: end;
+		min-height: 500px;
+	}
+
+	#description-developers {
+		margin: 0;
+		font-style: italic;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		justify-content: start;
+	}
+
+	.developers-text {
+		margin: 0;
+		font-weight: 300;
+	}
+
+	.developers-link {
+		text-decoration: none;
+		text-decoration-line: underline;
+		color: var(--Primary, #286983);
+		font-weight: 600;
+	}
+
+
+	#go-to-app-button {
+		text-decoration: none;
+		display: flex;
+		border-radius: 40px;
+		background: var(--Primary, #D7827E);
+		padding: 16px 24px;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+		width: 100px;
+		height: 30px;
+		color: var(--On-primary, #FAF4ED);
+		font-size: 20px;
+		font-style: normal;
+		font-weight: 500;
+		line-height: normal;
+		cursor: pointer;
+	}
+
+	#cards-list {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-content: center;
+		align-items: center;
+		align-self: stretch;
+		gap: 30px;
+	}
+
+	.card-container {
+		display: flex;
+		flex: 1;
+		padding: 30px;
+		flex-direction: column;
+		min-width: 200px;
+		max-width: 400px;
+		align-items: center;
+		justify-content: center;
+		align-self: stretch;
+		gap: 30px;
+		border-radius: 40px;
+		background: var(--Surface, #FFFAF3);
+	}
+
+
+	.card-row {
+		display: flex;
+		flex-direction: row;
+		gap: 15px;
+		justify-content: start;
+		align-self: stretch;
+		align-items: center;
+	}
+
+	.card-title {
+		color: var(--On-surface, #575279);
+		font-size: 20px;
+		font-weight: 600;
+		letter-spacing: 0.1px;
+	}
+
+	.card-icon {
+		border-radius: 20px;
+		background: var(--Secondary-50, rgba(40, 105, 131, 0.50));
+		display: flex;
+		width: 60px;
+		height: 60px;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+	}
+
+	.card-content {
+		color: var(--On-surface, #575279);
+		font-family: Poppins;
+		font-size: 16px;
+		font-style: normal;
+		font-weight: 400;
+		line-height: normal;
+		letter-spacing: 0.08px;
+	}
+
+	@media only screen and (max-width: 900px) {
+		#cards-list {
+			flex-direction: column;
+			justify-content: start;
+			align-items: center;
+		}
+
+		#description-first-col {
+			align-items: center;
+			text-align: center;
+			max-width: 320px;
+		}
+
+		#description-hero {
+			display: none;
+		}
+
+		.card-container {
+			align-self: center;
+			height: 200px;
+		}
+	}
+</style>
+
+</html>

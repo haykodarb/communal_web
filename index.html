@@ -56,9 +56,15 @@
 				<h1 id="description-title">Share books with your communities.</h1>
 				<h4 id="description-subtitle">Connect with your peers and upload your physical collection to contribute
 					to a decentralized library, shared among the circles you're connected with.</h4>
-				<a href="https://app.communal.ar" target="_blank" rel="noopener noreferrer" id="go-to-app-button">Go to
-					app</a>
-
+				<div style="display:flex; flex-direction: row; gap: 10px;">
+					<a href="https://app.communal.ar" target="_blank" rel="noopener noreferrer" id="go-to-app-button">
+						Web app
+					</a>
+					<a href="https://github.com/haykodarb/communal_app/releases/tag/alpha" target="_blank"
+						rel="noopener noreferrer" id="download-app-button">
+						Get APK
+					</a>
+				</div>
 				<div id="description-developers">
 					<p class="developers-text">Designed by <a class="developers-link" target="_blank"
 							rel="noopener noreferrer">Daiana
@@ -263,6 +269,29 @@
 		font-weight: 500;
 		line-height: normal;
 		cursor: pointer;
+	}
+
+	#download-app-button {
+		text-decoration: none;
+		display: flex;
+		border-radius: 40px;
+		color: var(--Primary, #D7827E);
+		border-color: var(--Primary, #D7827E);
+		border-width: 2px;
+		border-style: solid;
+		padding: 16px 24px;
+		justify-content: center;
+		align-items: center;
+		gap: 10px;
+		width: 100px;
+		height: 30px;
+		background-color: var(--On-primary, #FAF4ED);
+		font-size: 20px;
+		font-style: normal;
+		font-weight: 600;
+		line-height: normal;
+		cursor: pointer;
+		text-align: center;
 	}
 
 	#cards-list {

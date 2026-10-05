@@ -249,7 +249,16 @@ const es: Record<string, string> = {
 	Previous: 'Anterior',
 	'No books.': 'Sin libros.',
 	'No reviews.': 'Sin reseñas.',
-	'Created this topic': 'Creó esta conversación'
+	'Created this topic': 'Creó esta conversación',
+	'Order by': 'Ordenar por',
+	'Filter by': 'Filtrar por',
+	'Filter by status': 'Filtrar por estado',
+	'Filter by book ownership': 'Filtrar por propiedad',
+	Date: 'Fecha',
+	All: 'Todos',
+	Completed: 'Completado',
+	Own: 'Propio',
+	Foreign: 'Ajeno'
 };
 
 function readInitial(): Locale {

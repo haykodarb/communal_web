@@ -1,55 +1,100 @@
 <script lang="ts">
+	import FilterRow from '#lib/components/FilterRow.svelte';
+	import FilterSheet from '#lib/components/FilterSheet.svelte';
 	import LoanCard from '#lib/components/LoanCard.svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
+	import Sentinel from '#lib/components/Sentinel.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
-	import { getLoansForUser } from '#lib/data/api.ts';
+	import { getLoansForUser, type LoansQuery } from '#lib/data/api.ts';
 	import type { Loan } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
-	import { errorMessage } from '#lib/errors.ts';
+	import { createPaged } from '#lib/paged.svelte.ts';
 
-	let loans = $state<Loan[]>([]);
-	let loading = $state(true);
-	let error = $state('');
+	// LoansPage with LoansController's filter sheet and infinite scroll.
+	const PAGE_SIZE = 30;
 
-	async function load(search = '') {
-		const userId = auth.user?.id;
-		if (!userId) return;
-		loading = true;
-		error = '';
-		try {
-			loans = await getLoansForUser(userId, { search });
-		} catch (e) {
-			error = errorMessage(e);
-		} finally {
-			loading = false;
-		}
+	/** Status options -> filter flags, as in LoansController.onFilterByStatusChanged. */
+	const STATUS: LoansQuery[] = [
+		{ allStatus: true },
+		{ allStatus: false, accepted: false, returned: false, rejected: false }, // pending
+		{ allStatus: false, accepted: true, returned: false, rejected: false }, // accepted
+		{ allStatus: false, accepted: true, returned: true, rejected: false }, // completed
+		{ allStatus: false, accepted: false, returned: false, rejected: true } // rejected
+	];
+	/** Ownership options: all / own books (owner) / foreign books (loanee). */
+	const OWNERSHIP: LoansQuery[] = [
+		{ userIsOwner: true, userIsLoanee: true },
+		{ userIsOwner: true, userIsLoanee: false },
+		{ userIsOwner: false, userIsLoanee: true }
+	];
+
+	let search = $state('');
+	let orderIndex = $state(0);
+	let statusIndex = $state(0);
+	let ownershipIndex = $state(0);
+	let sheet: FilterSheet;
+
+	const loans = createPaged<Loan>(
+		(page) =>
+			getLoansForUser(auth.user!.id, {
+				...STATUS[statusIndex],
+				...OWNERSHIP[ownershipIndex],
+				orderByDate: orderIndex === 0,
+				search,
+				page,
+				pageSize: PAGE_SIZE
+			}),
+		PAGE_SIZE
+	);
+
+	function set(update: () => void) {
+		update();
+		loans.reset();
 	}
-
-	$effect(() => {
-		const userId = auth.user?.id;
-		if (userId) void load();
-	});
 </script>
 
 <div class="page">
-	<SearchBar onSearch={(q) => load(q)} onFilter={() => {}} />
+	<SearchBar bind:value={search} onSearch={() => loans.reset()} onFilter={() => sheet.open()} />
 
-	{#if error}
-		<p class="error">{error}</p>
-	{:else if loading}
-		<p class="muted">{t('Loading…')}</p>
-	{:else if loans.length === 0}
-		<div class="empty">
-			<p>{t('No loans found.')}</p>
-		</div>
-	{:else}
+	{#if loans.items.length > 0}
 		<div class="list">
-			{#each loans as loan (loan.id)}
+			{#each loans.items as loan (loan.id)}
 				<LoanCard {loan} />
 			{/each}
 		</div>
+	{:else if loans.error}
+		<p class="error">{loans.error}</p>
+	{:else if !loans.loading && !loans.hasMore}
+		<div class="empty">
+			<p>{t('No loans found.')}</p>
+		</div>
 	{/if}
+	{#if loans.loading}
+		<p class="muted">{t('Loading…')}</p>
+	{/if}
+	<Sentinel onvisible={loans.loadMore} />
 </div>
+
+<FilterSheet bind:this={sheet}>
+	<FilterRow
+		title={t('Order by')}
+		options={[t('Date'), t('Title')]}
+		index={orderIndex}
+		onchange={(i) => set(() => (orderIndex = i))}
+	/>
+	<FilterRow
+		title={t('Filter by status')}
+		options={[t('All'), t('Pending'), t('Accepted'), t('Completed'), t('Rejected')]}
+		index={statusIndex}
+		onchange={(i) => set(() => (statusIndex = i))}
+	/>
+	<FilterRow
+		title={t('Filter by book ownership')}
+		options={[t('All'), t('Own'), t('Foreign')]}
+		index={ownershipIndex}
+		onchange={(i) => set(() => (ownershipIndex = i))}
+	/>
+</FilterSheet>
 
 <style>
 	.page {

@@ -99,13 +99,15 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 export interface BooksQuery {
 	search?: string;
 	loaned?: boolean;
+	/** Newest first for created_at, A–Z for title/author (BooksQuery.order_by). */
+	orderBy?: 'created_at' | 'title' | 'author';
 	page?: number;
 	pageSize?: number;
 }
 
 export async function getBooksForUser(
 	userId: string,
-	{ search = '', loaned, page = 0, pageSize = 30 }: BooksQuery = {}
+	{ search = '', loaned, orderBy = 'created_at', page = 0, pageSize = 30 }: BooksQuery = {}
 ): Promise<Book[]> {
 	let query = supabase
 		.from('books')
@@ -120,7 +122,7 @@ export async function getBooksForUser(
 	}
 
 	const { data, error } = await query
-		.order('created_at', { ascending: false })
+		.order(orderBy, { ascending: orderBy !== 'created_at' })
 		.range(page * pageSize, page * pageSize + pageSize - 1);
 
 	if (error) throw error;

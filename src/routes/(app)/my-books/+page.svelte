@@ -2,59 +2,85 @@
 	import { goto } from '$app/navigation';
 	import BookCard from '#lib/components/BookCard.svelte';
 	import Fab from '#lib/components/Fab.svelte';
+	import FilterRow from '#lib/components/FilterRow.svelte';
+	import FilterSheet from '#lib/components/FilterSheet.svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
+	import Sentinel from '#lib/components/Sentinel.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
-	import { getBooksForUser } from '#lib/data/api.ts';
+	import { getBooksForUser, type BooksQuery } from '#lib/data/api.ts';
 	import type { Book } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
-	import { errorMessage } from '#lib/errors.ts';
+	import { createPaged } from '#lib/paged.svelte.ts';
 
-	let books = $state<Book[]>([]);
-	let loading = $state(true);
-	let error = $state('');
+	// BookListPage: the user's books, searchable, with BookListController's
+	// order/filter sheet and infinite scroll.
+	const PAGE_SIZE = 30;
+	const ORDERS: NonNullable<BooksQuery['orderBy']>[] = ['created_at', 'title', 'author'];
+	const FILTERS: (boolean | undefined)[] = [undefined, false, true]; // all / available / loaned
 
-	async function load(search = '') {
-		const userId = auth.user?.id;
-		if (!userId) return;
-		loading = true;
-		error = '';
-		try {
-			books = await getBooksForUser(userId, { search });
-		} catch (e) {
-			error = errorMessage(e);
-		} finally {
-			loading = false;
-		}
-	}
+	let search = $state('');
+	let orderIndex = $state(0);
+	let filterIndex = $state(0);
+	let sheet: FilterSheet;
 
-	$effect(() => {
-		const userId = auth.user?.id;
-		if (userId) void load();
-	});
+	const books = createPaged<Book>(
+		(page) =>
+			getBooksForUser(auth.user!.id, {
+				search,
+				orderBy: ORDERS[orderIndex],
+				loaned: FILTERS[filterIndex],
+				page,
+				pageSize: PAGE_SIZE
+			}),
+		PAGE_SIZE
+	);
 </script>
 
 <div class="page">
-	<SearchBar onSearch={(q) => load(q)} onFilter={() => {}} />
+	<SearchBar bind:value={search} onSearch={() => books.reset()} onFilter={() => sheet.open()} />
 
-	{#if error}
-		<p class="error">{error}</p>
-	{:else if loading}
-		<p class="muted">{t('Loading…')}</p>
-	{:else if books.length === 0}
+	{#if books.items.length > 0}
+		<div class="list">
+			{#each books.items as book (book.id)}
+				<BookCard {book} />
+			{/each}
+		</div>
+	{:else if books.error}
+		<p class="error">{books.error}</p>
+	{:else if !books.loading && !books.hasMore}
 		<div class="empty">
 			<p>{t('No books found in your library.')}</p>
 			<p>{t('You can upload some with the floating button on the bottom right.')}</p>
 		</div>
-	{:else}
-		<div class="list">
-			{#each books as book (book.id)}
-				<BookCard {book} />
-			{/each}
-		</div>
 	{/if}
+	{#if books.loading}
+		<p class="muted">{t('Loading…')}</p>
+	{/if}
+	<Sentinel onvisible={books.loadMore} />
 
 	<Fab icon="plus" label={t('Add book')} onclick={() => goto('/my-books/create')} />
 </div>
+
+<FilterSheet bind:this={sheet}>
+	<FilterRow
+		title={t('Order by')}
+		options={[t('Date'), t('Title'), t('Author')]}
+		index={orderIndex}
+		onchange={(i) => {
+			orderIndex = i;
+			books.reset();
+		}}
+	/>
+	<FilterRow
+		title={t('Filter by')}
+		options={[t('All'), t('Available'), t('Loaned')]}
+		index={filterIndex}
+		onchange={(i) => {
+			filterIndex = i;
+			books.reset();
+		}}
+	/>
+</FilterSheet>
 
 <style>
 	.page {

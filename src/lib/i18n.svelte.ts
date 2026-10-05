@@ -140,7 +140,35 @@ const es: Record<string, string> = {
 	'Username should only include ASCII characters':
 		'El usuario solo puede incluir caracteres ASCII',
 	'Username is already taken.': 'El usuario ya está en uso.',
-	'Bio must be at least 20 characters long': 'La bio debe tener al menos 20 caracteres'
+	'Bio must be at least 20 characters long': 'La bio debe tener al menos 20 caracteres',
+	Book: 'Libro',
+	Loan: 'Préstamo',
+	Request: 'Solicitar',
+	Unavailable: 'No disponible',
+	'Request loan for this book?': '¿Solicitar préstamo de este libro?',
+	'Withdraw request': 'Retirar solicitud',
+	'Withdraw your request for this book?': '¿Retirar tu solicitud de este libro?',
+	'Request status': 'Estado de la solicitud',
+	'requested this book': 'solicitó este libro',
+	'You requested this book from': 'Solicitaste este libro a',
+	'Mark as returned': 'Marcar como devuelto',
+	'Mark this book as returned?': '¿Marcar este libro como devuelto?',
+	Approve: 'Aceptar',
+	Reject: 'Rechazar',
+	'Accept this loan?': '¿Aceptar este préstamo?',
+	'Reject this loan?': '¿Rechazar este préstamo?',
+	'Review by': 'Reseña por',
+	'Write a review...': 'Escribir una reseña...',
+	Cancel: 'Cancelar',
+	'Your review': 'Tu reseña',
+	'Add review': 'Agregar reseña',
+	'Edit review': 'Editar reseña',
+	'Add friend': 'Agregar amigo',
+	Friends: 'Amigos',
+	'Add {name} as friend?': '¿Agregar a {name} como amigo?',
+	'Remove {name} as friend?': '¿Eliminar a {name} de tus amigos?',
+	'Withdraw friend request?': '¿Retirar solicitud de amistad?',
+	'No books found.': 'No se encontraron libros.'
 };
 
 function readInitial(): Locale {

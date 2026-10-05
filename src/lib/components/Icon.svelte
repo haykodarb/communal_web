@@ -73,6 +73,18 @@
 		<path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
 	{:else if name === 'check'}
 		<path d="M20 6L9 17l-5-5" />
+	{:else if name === 'user-plus'}
+		<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+		<circle cx="9" cy="7" r="4" />
+		<path d="M19 8v6M22 11h-6" />
+	{:else if name === 'user-check'}
+		<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+		<circle cx="9" cy="7" r="4" />
+		<path d="M16 11l2 2 4-4" />
+	{:else if name === 'user-minus'}
+		<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+		<circle cx="9" cy="7" r="4" />
+		<path d="M22 11h-6" />
 	{:else if name === 'x'}
 		<path d="M18 6L6 18M6 6l12 12" />
 	{/if}

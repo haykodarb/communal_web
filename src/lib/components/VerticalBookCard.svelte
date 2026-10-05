@@ -1,11 +1,12 @@
 <script lang="ts">
 	import type { Book } from '#lib/data/models.ts';
+	import { bookHref } from '#lib/links.ts';
 	import CoverImage from './CoverImage.svelte';
 
 	let { book }: { book: Book } = $props();
 </script>
 
-<a class="vcard" href={`/my-books/${book.id}`}>
+<a class="vcard" href={bookHref(book)}>
 	<div class="cover">
 		<CoverImage bucket="book_covers" path={book.image_path} alt={book.title} />
 	</div>

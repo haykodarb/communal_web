@@ -57,3 +57,13 @@ export function loanStatus(loan: Loan): LoanStatus {
 	if (loan.accepted) return 'accepted';
 	return 'pending';
 }
+
+export interface Friendship {
+	id: number;
+	created_at: string;
+	accepted_at?: string | null;
+	requester: Profile;
+	responder: Profile;
+	/** null while pending, false when rejected. */
+	accepted: boolean | null;
+}

@@ -21,7 +21,9 @@
 		'/messages': 'Messages',
 		'/notifications': 'Notifications',
 		'/my-profile': 'My Profile',
-		'/search': 'Search'
+		'/search': 'Search',
+		'/profile/': 'Profile',
+		'/book/': 'Book'
 	};
 	const titleKey = $derived(
 		Object.keys(titles).find((path) => page.url.pathname.startsWith(path)) ?? '/my-books'

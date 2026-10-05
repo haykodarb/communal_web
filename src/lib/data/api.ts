@@ -1,5 +1,5 @@
 import { supabase } from '#lib/supabase.ts';
-import type { Book, Community, Loan, Profile } from './models';
+import type { Book, Community, Friendship, Loan, Profile } from './models';
 
 // The backend is untyped (no generated Database type), so rows are mapped here.
 
@@ -508,4 +508,120 @@ export async function updateProfile(
 		.single();
 	if (error) throw error;
 	return toProfile(data);
+}
+
+// ---------------------------------------------------------------------------
+// Loan mutations
+
+export async function requestLoan(userId: string, bookId: string): Promise<Loan> {
+	const { data, error } = await supabase
+		.from('loans')
+		.insert({ loanee: userId, book: bookId })
+		.select(LOAN_SELECT)
+		.single();
+	if (error) throw error;
+	return toLoan(data as Record<string, unknown>);
+}
+
+/** Withdraws a loan request. */
+export async function deleteLoan(loanId: string): Promise<void> {
+	const { data, error } = await supabase
+		.from('loans')
+		.delete()
+		.eq('id', loanId)
+		.select()
+		.maybeSingle();
+	if (error) throw error;
+	if (!data) throw new Error('Could not withdraw this request.');
+}
+
+/** Sets one of the loan's status flags (mirrors LoansBackend.setLoanParameterTrue). */
+export async function setLoanFlag(
+	loanId: string,
+	flag: 'accepted' | 'rejected' | 'returned'
+): Promise<void> {
+	const { data, error } = await supabase
+		.from('loans')
+		.update({ [flag]: true })
+		.eq('id', loanId)
+		.select()
+		.maybeSingle();
+	if (error) throw error;
+	if (!data) throw new Error('Could not update this loan, please try again.');
+}
+
+export async function updateLoanReview(loanId: string, review: string | null): Promise<void> {
+	const { data, error } = await supabase
+		.from('loans')
+		.update({ review })
+		.eq('id', loanId)
+		.select()
+		.maybeSingle();
+	if (error) throw error;
+	if (!data) throw new Error('Could not update review.');
+}
+
+// ---------------------------------------------------------------------------
+// Friendships
+
+const FRIENDSHIP_SELECT =
+	'*, requester_profile:profiles!requester(*), responder_profile:profiles!responder(*)';
+
+function toFriendship(row: Record<string, unknown>): Friendship {
+	return {
+		id: row.id as number,
+		created_at: row.created_at as string,
+		accepted_at: (row.accepted_at as string) ?? null,
+		requester: toProfile(row.requester_profile as Record<string, unknown>),
+		responder: toProfile(row.responder_profile as Record<string, unknown>),
+		accepted: (row.accepted as boolean | null) ?? null
+	};
+}
+
+const between = (a: string, b: string) =>
+	`and(requester.eq.${a},responder.eq.${b}),and(requester.eq.${b},responder.eq.${a})`;
+
+export async function getFriendshipWith(
+	userId: string,
+	otherUserId: string
+): Promise<Friendship | null> {
+	const { data, error } = await supabase
+		.from('friendships')
+		.select(FRIENDSHIP_SELECT)
+		.or(between(userId, otherUserId))
+		.maybeSingle();
+	if (error) throw error;
+	return data ? toFriendship(data as Record<string, unknown>) : null;
+}
+
+export async function sendFriendRequest(userId: string, targetUserId: string): Promise<Friendship> {
+	if (targetUserId === userId) throw new Error('Cannot send friend request to yourself.');
+	if (await getFriendshipWith(userId, targetUserId)) throw new Error('Friendship already exists.');
+
+	const { data, error } = await supabase
+		.from('friendships')
+		.insert({ requester: userId, responder: targetUserId, accepted: null })
+		.select(FRIENDSHIP_SELECT)
+		.single();
+	if (error) throw error;
+	return toFriendship(data as Record<string, unknown>);
+}
+
+export async function respondToFriendRequest(
+	friendshipId: number,
+	accept: boolean
+): Promise<Friendship> {
+	const { data, error } = await supabase
+		.from('friendships')
+		.update({ accepted: accept, accepted_at: 'now()' })
+		.eq('id', friendshipId)
+		.select(FRIENDSHIP_SELECT)
+		.single();
+	if (error) throw error;
+	return toFriendship(data as Record<string, unknown>);
+}
+
+export async function deleteFriendship(friendshipId: number): Promise<void> {
+	const { error } = await supabase.from('friendships').delete().eq('id', friendshipId);
+	if (error) throw error;
 }

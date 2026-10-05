@@ -2,24 +2,23 @@
 	import type { Snippet } from 'svelte';
 	import Avatar from './Avatar.svelte';
 	import ReviewCard from './ReviewCard.svelte';
+	import Sentinel from './Sentinel.svelte';
 	import TabBar from './TabBar.svelte';
 	import VerticalBookCard from './VerticalBookCard.svelte';
+	import { getBooksForUser, getReviewsForUser } from '#lib/data/api.ts';
 	import type { Book, Loan, Profile } from '#lib/data/models.ts';
+	import { createPaged } from '#lib/paged.svelte.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 
 	// Header, bio and Books/Reviews tabs shared by the own and other profile
 	// pages (ProfileCommonHelpers in the Flutter app).
 	let {
 		profile,
-		books,
-		reviews,
 		emptyBooks,
 		emptyReviews,
 		actions
 	}: {
 		profile: Profile;
-		books: Book[];
-		reviews: Loan[];
 		emptyBooks: string;
 		emptyReviews: string;
 		/** Buttons under the username. */
@@ -27,6 +26,17 @@
 	} = $props();
 
 	let tab = $state(0);
+
+	// Both tabs page in like ProfileCommonController (infinite scroll).
+	const PAGE_SIZE = 30;
+	const books = createPaged<Book>(
+		(page) => getBooksForUser(profile.id, { page, pageSize: PAGE_SIZE }),
+		PAGE_SIZE
+	);
+	const reviews = createPaged<Loan>(
+		(page) => getReviewsForUser(profile.id, { page, pageSize: PAGE_SIZE }),
+		PAGE_SIZE
+	);
 
 </script>
 
@@ -53,23 +63,25 @@
 </div>
 
 {#if tab === 0}
-	{#if books.length === 0}
+	{#if books.items.length === 0 && !books.loading && !books.hasMore}
 		<p class="empty">{emptyBooks}</p>
 	{:else}
 		<div class="grid">
-			{#each books as book (book.id)}
+			{#each books.items as book (book.id)}
 				<VerticalBookCard {book} />
 			{/each}
 		</div>
 	{/if}
-{:else if reviews.length === 0}
+	<Sentinel onvisible={books.loadMore} />
+{:else if reviews.items.length === 0 && !reviews.loading && !reviews.hasMore}
 	<p class="empty">{emptyReviews}</p>
 {:else}
 	<div class="list">
-		{#each reviews as loan (loan.id)}
+		{#each reviews.items as loan (loan.id)}
 			<ReviewCard {loan} />
 		{/each}
 	</div>
+	<Sentinel onvisible={reviews.loadMore} />
 {/if}
 
 <style>

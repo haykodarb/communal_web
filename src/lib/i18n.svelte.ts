@@ -248,7 +248,8 @@ const es: Record<string, string> = {
 		'No se encontraron usuarios, probablemente un error de red.',
 	Previous: 'Anterior',
 	'No books.': 'Sin libros.',
-	'No reviews.': 'Sin reseñas.'
+	'No reviews.': 'Sin reseñas.',
+	'Created this topic': 'Creó esta conversación'
 };
 
 function readInitial(): Locale {

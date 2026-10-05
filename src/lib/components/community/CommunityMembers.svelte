@@ -86,18 +86,18 @@
 	<ul class="list">
 		{#each members.items as member (member.id)}
 			<li class="member" class:busy={busyId === member.id}>
-				<a class="who" href={profileHref(member)}>
-					<Avatar profile={member} size={44} />
-					<span class="name">{member.username}</span>
+				<!-- Flutter member Card: 60px tall, tags and the owner menu inside it. -->
+				<div class="card">
+					<a class="who" href={profileHref(member)}>
+						<Avatar profile={member} size={40} />
+						<span class="name">{member.username}</span>
+					</a>
 					{#if member.is_admin}<span class="tag">admin</span>{/if}
-					{#if member.id === userId}<span class="tag you">{t('you')}</span>{/if}
-				</a>
-
-				{#if member.id !== userId}
-					{#if isOwner}
+					{#if member.id === userId}<span class="tag">{t('you')}</span>{/if}
+					{#if member.id !== userId && isOwner}
 						<div class="menu-wrap">
 							<button
-								class="icon-btn"
+								class="more"
 								type="button"
 								aria-label={t('More')}
 								aria-expanded={menuFor === member.id}
@@ -120,8 +120,10 @@
 							{/if}
 						</div>
 					{/if}
+				</div>
+				{#if member.id !== userId}
 					<button
-						class="icon-btn message"
+						class="message"
 						type="button"
 						aria-label={t('Messages')}
 						onclick={() => goto(`/messages/${member.id}`)}
@@ -153,7 +155,7 @@
 		text-decoration: none;
 	}
 	.search {
-		padding: 10px 20px;
+		padding: 0 10px 10px;
 	}
 	.list {
 		list-style: none;
@@ -173,53 +175,59 @@
 		opacity: 0.5;
 		pointer-events: none;
 	}
+	.card {
+		flex: 1;
+		min-width: 0;
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		height: 60px;
+		padding: 0 15px;
+		border-radius: 10px;
+		background: var(--surface-container);
+	}
 	.who {
 		flex: 1;
 		min-width: 0;
 		display: flex;
 		align-items: center;
-		gap: 12px;
-		height: 60px;
-		padding: 0 10px;
-		border-radius: 5px;
-		background: var(--surface-container);
+		gap: 10px;
 		color: inherit;
 		text-decoration: none;
 	}
 	.name {
 		min-width: 0;
-		font-weight: 600;
+		font-size: 14px;
+		font-weight: 500;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 	.tag {
-		padding: 2px 8px;
-		border-radius: 999px;
-		background: color-mix(in srgb, var(--secondary) 20%, transparent);
-		color: var(--secondary);
-		font-size: 12px;
+		padding: 6px 16px;
+		border: 1px solid var(--primary);
+		border-radius: 20px;
+		font-size: 13px;
 	}
-	.tag.you {
-		background: color-mix(in srgb, var(--primary) 20%, transparent);
-		color: var(--primary);
-	}
-	.icon-btn {
+	.more {
 		display: flex;
-		align-items: center;
-		justify-content: center;
-		width: 44px;
-		height: 60px;
+		padding: 6px;
 		border: none;
-		border-radius: 5px;
-		background: var(--surface-container);
+		background: none;
 		color: var(--on-surface);
 		cursor: pointer;
 	}
-	.icon-btn.message {
-		width: 60px;
+	.message {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 40px;
+		height: 60px;
+		border: none;
+		border-radius: 5px;
 		background: var(--primary);
 		color: var(--on-primary);
+		cursor: pointer;
 	}
 	.menu-wrap {
 		position: relative;

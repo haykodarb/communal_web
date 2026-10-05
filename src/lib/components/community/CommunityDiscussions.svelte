@@ -1,4 +1,5 @@
 <script lang="ts">
+	import Avatar from '../Avatar.svelte';
 	import SearchBar from '../SearchBar.svelte';
 	import Sentinel from '../Sentinel.svelte';
 	import { getTopics } from '#lib/data/api.ts';
@@ -18,6 +19,7 @@
 
 	const formatDate = (date: string) =>
 		new Intl.DateTimeFormat(i18n.locale === 'es' ? 'es-ES' : 'en-US', {
+			weekday: 'short',
 			month: 'short',
 			day: 'numeric'
 		}).format(new Date(date));
@@ -28,18 +30,20 @@
 {#if topics.items.length > 0}
 	<ul class="list">
 		{#each topics.items as topic (topic.id)}
+			{@const who = topic.last_message?.sender ?? topic.creator}
 			<li>
 				<a class="topic" href={`/communities/${communityId}/discussions/${topic.id}`}>
-					<div class="top">
-						<span class="name">{topic.name}</span>
-						<span class="date">{formatDate(topic.last_message?.created_at ?? topic.created_at)}</span>
+					<span class="name">{topic.name}</span>
+					<div class="row">
+						<Avatar profile={who} size={50} />
+						<div class="lines">
+							<div class="top">
+								<span class="who">{who.username}</span>
+								<span class="date">{formatDate(topic.last_message?.created_at ?? topic.created_at)}</span>
+							</div>
+							<span class="preview">{topic.last_message?.content ?? t('Created this topic')}</span>
+						</div>
 					</div>
-					{#if topic.last_message}
-						<span class="preview">
-							<strong>{topic.last_message.sender.username}:</strong>
-							{topic.last_message.content}
-						</span>
-					{/if}
 				</a>
 			</li>
 		{/each}
@@ -54,7 +58,7 @@
 
 <style>
 	.search {
-		padding: 10px 20px;
+		padding: 0 10px 10px;
 	}
 	.list {
 		list-style: none;
@@ -62,43 +66,54 @@
 		padding: 0 10px;
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: 5px;
 	}
+	/* Flutter topic Card: 20px padding, name then the latest activity row. */
 	.topic {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
-		padding: 15px;
-		border-radius: 12px;
+		gap: 10px;
+		padding: 20px;
+		border-radius: 10px;
 		background: var(--surface-container);
 		color: inherit;
 		text-decoration: none;
 	}
-	.top {
-		display: flex;
-		align-items: baseline;
-		gap: 10px;
-	}
 	.name {
-		flex: 1;
-		min-width: 0;
 		font-size: 16px;
 		font-weight: 600;
 	}
-	.date {
-		font-size: 12px;
-		color: var(--on-surface-variant);
+	.row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
 	}
-	.preview {
-		font-size: 13px;
-		color: var(--on-surface-variant);
+	.lines {
+		flex: 1;
+		min-width: 0;
+		font-size: 14px;
+	}
+	.top {
+		display: flex;
+		gap: 10px;
+	}
+	.who {
+		flex: 1;
+		min-width: 0;
+		font-weight: 600;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	.preview strong {
-		font-weight: 600;
-		color: var(--secondary);
+	.date,
+	.preview {
+		color: var(--on-surface-variant);
+	}
+	.preview {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 	.empty,
 	.muted {

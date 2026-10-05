@@ -115,6 +115,7 @@
 		display: flex;
 		flex-direction: column;
 	}
+	/* Flutter AppBar: back, centered title, settings action. */
 	.bar {
 		display: flex;
 		align-items: center;
@@ -124,7 +125,8 @@
 	h1 {
 		flex: 1;
 		min-width: 0;
-		font-size: 20px;
+		text-align: center;
+		font-size: 16px;
 		font-weight: 600;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -142,15 +144,12 @@
 		flex: 1;
 		padding-bottom: 100px;
 	}
-	/* Flutter: 70px pill 10px off the bottom, selected item 3:2. It is 200px
-	   wide there; 240px here so the selected label is not clipped. */
+	/* Flutter: 70px pill 10px off the bottom and sides, selected item 3:2. */
 	.tabbar {
 		position: sticky;
 		bottom: 10px;
-		align-self: center;
 		z-index: 14;
 		display: flex;
-		width: 240px;
 		height: 70px;
 		margin: 0 10px 10px;
 		padding: 0 8px;

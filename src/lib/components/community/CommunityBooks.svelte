@@ -36,7 +36,7 @@
 
 <style>
 	.search {
-		padding: 10px 20px;
+		padding: 0 10px 10px;
 	}
 	.grid {
 		display: grid;

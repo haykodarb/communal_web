@@ -103,6 +103,33 @@ Routes follow the Flutter app's `lib/routes.dart` (e.g. `/book/:id`,
   `public` schema, RLS decides what arrives). Notifications, chats, discussion
   threads and the drawer badges update live.
 
+## Matching the Flutter app
+
+Every screen was compared side by side with the Flutter web build.
+
+- **Icons**: `Icon.svelte` renders the same Atlas glyphs as the Flutter app
+  (`static/fonts/atlas`, from the MIT-licensed `atlas_icons` package) plus
+  Material paths for Flutter's few `Icons.*`.
+- **Avatars**: without a photo, `Avatar.svelte` shows one of Flutter's six
+  default emblems (`static/default_avatars`), picked from the username the
+  same way as `CommonCircularAvatar`.
+- **App bars**: `PageBar` is Flutter's AppBar (centered 18px title). On mobile
+  only drawer destinations get the menu bar; pushed pages show their own
+  back bar, as in Flutter.
+- **Lists** use `CommonListView` spacing (10px padding, 5px gaps, 2-column
+  book grids) and load more on scroll (`createPaged` + `Sentinel`).
+
+Bugs found in the Flutter app while comparing (not fixed there):
+
+- On web, `main()` awaits the notification-permission prompt before
+  `runApp`, so the app stays blank until the user answers it.
+- `BooksBackend.deleteBook` never removes the cover: `image_path` starts
+  with `/` but storage object names don't (fixed in this port).
+- The loan timeline shows `created_at` for every step.
+- The notifications query works, but `getNotificationById` embeds
+  `memberships`, which `notifications` has no relationship to, so it fails.
+- Search results can show a stale cover (list items reuse their image).
+
 ## SvelteKit 3 conventions
 
 - `$lib` was renamed to the Node subpath import **`#lib`** (configured in

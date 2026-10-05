@@ -52,7 +52,7 @@
 			submit();
 		}}
 	>
-		<ImagePicker bind:image={avatar} aspect={1} maxWidth={320} height={300} />
+		<ImagePicker bind:image={avatar} aspect={1} maxWidth={320} fill />
 
 		<div class="fields">
 			<TextField label={t('Name')} bind:value={name} error={nameError} onsubmit={submit} />

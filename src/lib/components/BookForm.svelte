@@ -71,6 +71,7 @@
 		bind:image={cover}
 		aspect={3 / 4}
 		fill
+		height={350}
 		maxWidth={540}
 		bucket="book_covers"
 		path={book?.image_path}

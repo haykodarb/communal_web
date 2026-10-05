@@ -35,7 +35,7 @@
 	}
 </script>
 
-<div class="container">
+<div class="form-page">
 	<div class="header">
 		<button class="back" type="button" aria-label="Back" onclick={() => goto('/auth')}>
 			<svg
@@ -85,6 +85,8 @@
 		{#if errorMessage}
 			<p class="error">{errorMessage}</p>
 		{/if}
+		<!-- Flutter: Divider(height: 30) before the button. -->
+		<div class="before-submit"></div>
 		<Button type="submit" loading={loading}>{t('Login')}</Button>
 	</form>
 </div>
@@ -94,8 +96,7 @@
 		display: flex;
 		align-items: center;
 		gap: 16px;
-		padding-top: 60px;
-		margin-bottom: 28px;
+		margin-bottom: 40px;
 	}
 	h1 {
 		font-size: 40px;
@@ -112,7 +113,7 @@
 	.form {
 		display: flex;
 		flex-direction: column;
-		gap: 16px;
+		gap: 5px;
 	}
 	.row {
 		display: flex;
@@ -129,5 +130,8 @@
 	.error {
 		color: var(--error);
 		font-size: 15px;
+	}
+	.before-submit {
+		height: 25px;
 	}
 </style>

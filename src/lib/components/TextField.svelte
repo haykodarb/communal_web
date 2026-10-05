@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { HTMLInputAttributes } from 'svelte/elements';
+	import Icon from './Icon.svelte';
+	import { t } from '#lib/i18n.svelte.ts';
 
 	let {
 		label,
@@ -24,6 +26,8 @@
 		onsubmit?: () => void;
 	} = $props();
 
+	let visible = $state(false);
+
 	function onkeydown(event: KeyboardEvent) {
 		if (event.key === 'Enter' && onsubmit) {
 			event.preventDefault();
@@ -44,17 +48,32 @@
 			{oninput}
 		></textarea>
 	{:else}
-		<input
-			{type}
-			bind:value
-			{autocomplete}
-			{maxlength}
-			placeholder={label}
-			aria-label={label}
-			class:error={error.length > 0}
-			{oninput}
-			{onkeydown}
-		/>
+		<span class="control">
+			<input
+				type={type === 'password' && visible ? 'text' : type}
+				bind:value
+				{autocomplete}
+				{maxlength}
+				placeholder={label}
+				aria-label={label}
+				class:error={error.length > 0}
+				class:with-toggle={type === 'password'}
+				{oninput}
+				{onkeydown}
+			/>
+			{#if type === 'password'}
+				<!-- CommonPasswordField's visibility toggle. -->
+				<button
+					type="button"
+					class="toggle"
+					aria-label={visible ? t('Hide password') : t('Show password')}
+					aria-pressed={visible}
+					onclick={() => (visible = !visible)}
+				>
+					<Icon name={visible ? 'eye' : 'eye-off'} size={20} />
+				</button>
+			{/if}
+		</span>
 	{/if}
 	{#if error}
 		<span class="error-text">{error}</span>
@@ -81,8 +100,29 @@
 		outline: none;
 		transition: border-color 150ms ease;
 	}
+	.control {
+		position: relative;
+		display: flex;
+	}
 	input {
+		flex: 1;
+		min-width: 0;
 		height: 60px;
+	}
+	input.with-toggle {
+		padding-right: 56px;
+	}
+	.toggle {
+		position: absolute;
+		top: 50%;
+		right: 12px;
+		transform: translateY(-50%);
+		display: flex;
+		padding: 6px;
+		border: none;
+		background: none;
+		color: var(--on-surface-variant);
+		cursor: pointer;
 	}
 	textarea {
 		padding: 18px 20px;

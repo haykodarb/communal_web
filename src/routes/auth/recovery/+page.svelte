@@ -29,7 +29,7 @@
 	}
 </script>
 
-<div class="container">
+<div class="form-page">
 	<div class="header">
 		<button class="back" type="button" aria-label="Back" onclick={() => goto('/auth/login')}>
 			<svg
@@ -83,8 +83,7 @@
 		display: flex;
 		align-items: center;
 		gap: 16px;
-		padding-top: 60px;
-		margin-bottom: 28px;
+		margin-bottom: 40px;
 	}
 	h1 {
 		font-size: 34px;

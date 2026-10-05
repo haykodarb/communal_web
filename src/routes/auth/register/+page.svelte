@@ -53,7 +53,7 @@
 		</div>
 	</div>
 {:else}
-	<div class="container">
+	<div class="form-page">
 		<div class="header">
 			<button class="back" type="button" aria-label="Back" onclick={() => goto('/auth')}>
 				<svg
@@ -101,9 +101,16 @@
 				autocomplete="new-password"
 				onsubmit={submit}
 			/>
+			<div class="row">
+				<button type="button" class="link" onclick={() => goto('/auth/register/resend')}>
+					{t('Resend confirmation')}
+				</button>
+			</div>
 			{#if errorMessage}
 				<p class="error">{errorMessage}</p>
 			{/if}
+			<!-- Flutter: Divider(height: 30) before the button. -->
+			<div class="before-submit"></div>
 			<Button type="submit" loading={loading}>{t('Register')}</Button>
 		</form>
 	</div>
@@ -114,8 +121,7 @@
 		display: flex;
 		align-items: center;
 		gap: 16px;
-		padding-top: 60px;
-		margin-bottom: 28px;
+		margin-bottom: 40px;
 	}
 	h1 {
 		font-size: 40px;
@@ -132,7 +138,7 @@
 	.form {
 		display: flex;
 		flex-direction: column;
-		gap: 16px;
+		gap: 5px;
 	}
 	.error {
 		color: var(--error);
@@ -157,5 +163,20 @@
 	}
 	.confirm-action {
 		margin-top: 40px;
+	}
+	.row {
+		display: flex;
+		justify-content: flex-end;
+	}
+	.link {
+		background: none;
+		border: none;
+		color: var(--secondary);
+		font-size: 14px;
+		cursor: pointer;
+		padding: 0;
+	}
+	.before-submit {
+		height: 25px;
 	}
 </style>

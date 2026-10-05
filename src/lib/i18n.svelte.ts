@@ -185,7 +185,24 @@ const es: Record<string, string> = {
 	'You became friends with ': 'Ahora sos amigo de ',
 	'You have been invited to join ': 'Te invitaron a unirte a ',
 	'You have joined community ': 'Te uniste a la comunidad ',
-	'Unknown notification type:': 'Tipo de notificación desconocido:'
+	'Unknown notification type:': 'Tipo de notificación desconocido:',
+	'Show password': 'Mostrar contraseña',
+	'Hide password': 'Ocultar contraseña',
+	Send: 'Enviar',
+	'Reset password': 'Reestablecer contraseña',
+	'Confirmation email resent. Please check your inbox.':
+		'Se reenvió el email de confirmación. Revisá tu bandeja de entrada.',
+	'Server error. Could not resend confirmation email.':
+		'Error del servidor. No se pudo reenviar el email de confirmación.',
+	'Password must be at least 6 characters long': 'La contraseña debe tener al menos 6 caracteres',
+	'Password should only include ASCII characters':
+		'La contraseña solo puede incluir caracteres ASCII',
+	'Password updated succesfully, you can now login with your new password.':
+		'Contraseña actualizada, ya podés ingresar con tu nueva contraseña.',
+	'Please request a new password reset and follow the link in your email.':
+		'Pedí un nuevo reestablecimiento de contraseña y seguí el link de tu email.',
+	'Wrong link. Please re-request a password reset.':
+		'Link inválido. Pedí un nuevo reestablecimiento de contraseña.'
 };
 
 function readInitial(): Locale {

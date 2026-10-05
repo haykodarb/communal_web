@@ -106,7 +106,8 @@ p {
 
 .container {
 	width: 100%;
-	max-width: 600px;
+	/* Flutter: 30px padding around a 600px SizedBox. */
+	max-width: 660px;
 	margin: 0 auto;
 	padding: 30px;
 }
@@ -116,4 +117,13 @@ p {
 	-webkit-background-clip: text;
 	background-clip: text;
 	color: transparent;
+}
+
+/* Auth sub-pages (login, register, recovery): Flutter uses a 600px box
+   with 100px top and 40px side padding. */
+.form-page {
+	width: 100%;
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 100px 40px 40px;
 }

@@ -52,8 +52,23 @@ export const auth = {
 	},
 
 	async resetPassword(email: string): Promise<void> {
+		// Lands on the set-new-password page, like the Flutter app's /auth/reset.
 		const { error } = await supabase.auth.resetPasswordForEmail(email, {
-			redirectTo: `${window.location.origin}/auth/callback`
+			redirectTo: `${window.location.origin}/auth/reset`
+		});
+		if (error) throw error;
+	},
+
+	async updatePassword(password: string): Promise<void> {
+		const { error } = await supabase.auth.updateUser({ password });
+		if (error) throw error;
+	},
+
+	async resendConfirmation(email: string): Promise<void> {
+		const { error } = await supabase.auth.resend({
+			type: 'signup',
+			email,
+			options: { emailRedirectTo: `${window.location.origin}/auth` }
 		});
 		if (error) throw error;
 	},

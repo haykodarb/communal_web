@@ -245,7 +245,8 @@ const es: Record<string, string> = {
 	'No books found in any of the communities you are a part of.':
 		'No se encontraron libros en ninguna de tus comunidades.',
 	'No users found, likely a network issue.':
-		'No se encontraron usuarios, probablemente un error de red.'
+		'No se encontraron usuarios, probablemente un error de red.',
+	Previous: 'Anterior'
 };
 
 function readInitial(): Locale {

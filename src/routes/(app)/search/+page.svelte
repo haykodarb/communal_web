@@ -118,4 +118,10 @@
 		text-align: center;
 		color: var(--on-surface-variant);
 	}
+	/* Flutter adds a 20px spacer above the search bar on desktop. */
+	@media (min-width: 800px) {
+		.page {
+			padding-top: 20px;
+		}
+	}
 </style>

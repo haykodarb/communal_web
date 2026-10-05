@@ -41,6 +41,8 @@
 		<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
 		<path d="M16 17l5-5-5-5" />
 		<path d="M21 12H9" />
+	{:else if name === 'chevron-right'}
+		<path d="M9 18l6-6-6-6" />
 	{:else if name === 'chevron-left'}
 		<path d="M15 18l-6-6 6-6" />
 	{:else if name === 'globe'}

@@ -84,4 +84,10 @@
 		flex-direction: column;
 		gap: 12px;
 	}
+	/* Flutter adds a 20px spacer above the search bar on desktop. */
+	@media (min-width: 800px) {
+		.page {
+			padding-top: 20px;
+		}
+	}
 </style>

@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import BookForm from '#lib/components/BookForm.svelte';
 	import Icon from '#lib/components/Icon.svelte';
+	import { auth } from '#lib/auth.svelte.ts';
+	import { addBook } from '#lib/data/api.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 </script>
 
@@ -9,7 +12,13 @@
 		<Icon name="chevron-left" size={32} />
 	</button>
 	<h1>{t('Add book')}</h1>
-	<p class="muted">{t('This form has not been ported yet.')}</p>
+	<BookForm
+		submitLabel="Add"
+		onsubmit={async (form, cover) => {
+			const book = await addBook(auth.user!.id, form, cover!);
+			await goto(`/my-books/${book.id}`, { replaceState: true });
+		}}
+	/>
 </div>
 
 <style>
@@ -27,9 +36,6 @@
 	h1 {
 		font-size: 32px;
 		font-weight: 800;
-	}
-	.muted {
-		margin-top: 12px;
-		color: var(--on-surface-variant);
+		margin-bottom: 20px;
 	}
 </style>

@@ -12,7 +12,8 @@ const en: Record<string, string> = {
 		'Request books from your peers or lend out yours. Track loans and discuss reads with others.',
 	'form-invalid-email': 'Please enter a valid email',
 	'form-short-password': 'Password must be at least 6 characters',
-	'form-short-username': 'Username must be at least 3 characters'
+	'form-short-username': 'Username must be at least 3 characters',
+	'form-min-length': 'Must be at least {n} characters long.'
 };
 
 const es: Record<string, string> = {
@@ -103,7 +104,30 @@ const es: Record<string, string> = {
 	'You have not uploaded any books.':
 		'No subiste ningún libro.\n\nPodés empezar desde la página "Mis Libros".',
 	'You have not reviewed any books yet.':
-		'Aún no reseñaste ningún libro.\n\nPodés dejar reseñas en los libros que recibís de otras personas.'
+		'Aún no reseñaste ningún libro.\n\nPodés dejar reseñas en los libros que recibís de otras personas.',
+	'form-min-length': 'Debe tener al menos {n} caracteres.',
+	'Please enter something': 'Por favor ingresar algo',
+	'Please add a book cover image.': 'Por favor agregá una imagen de portada.',
+	'Add\nimage': 'Agregar\nimagen',
+	Title: 'Título',
+	Author: 'Autor',
+	'Review (Optional)': 'Reseña (Opcional)',
+	'Publicly visible?': '¿Públicamente visible?',
+	Add: 'Agregar',
+	Save: 'Guardar',
+	Edit: 'Editar',
+	Delete: 'Borrar',
+	'Edit book': 'Editar libro',
+	'Delete book?': '¿Borrar libro?',
+	Yes: 'Sí',
+	No: 'No',
+	Added: 'Agregado',
+	Visibility: 'Visibilidad',
+	Public: 'Público',
+	Private: 'Privado',
+	Status: 'Estado',
+	'View loan': 'Ver préstamo',
+	'No reviews': 'Sin reseñas'
 };
 
 function readInitial(): Locale {

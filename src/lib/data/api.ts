@@ -293,3 +293,152 @@ export async function signedStorageUrl(
 	signedUrlCache.set(key, data.signedUrl);
 	return data.signedUrl;
 }
+
+// ---------------------------------------------------------------------------
+// Images
+
+/**
+ * Center-crops an image file to `aspect` (width / height) and re-encodes it as
+ * a JPEG no wider than `maxWidth`. Stands in for the Flutter app's cropper +
+ * FlutterImageCompress (quality 50).
+ */
+export async function processImage(
+	file: Blob,
+	{ aspect, maxWidth, quality = 0.5 }: { aspect: number; maxWidth: number; quality?: number }
+): Promise<Blob> {
+	const bitmap = await createImageBitmap(file);
+
+	let sw = bitmap.width;
+	let sh = bitmap.height;
+	if (sw / sh > aspect) sw = Math.round(sh * aspect);
+	else sh = Math.round(sw / aspect);
+	const sx = Math.round((bitmap.width - sw) / 2);
+	const sy = Math.round((bitmap.height - sh) / 2);
+
+	const width = Math.min(sw, maxWidth);
+	const height = Math.round(width / aspect);
+
+	const canvas = document.createElement('canvas');
+	canvas.width = width;
+	canvas.height = height;
+	canvas.getContext('2d')!.drawImage(bitmap, sx, sy, sw, sh, 0, 0, width, height);
+	bitmap.close();
+
+	return new Promise((resolve, reject) =>
+		canvas.toBlob(
+			(blob) => (blob ? resolve(blob) : reject(new Error('Could not encode image.'))),
+			'image/jpeg',
+			quality
+		)
+	);
+}
+
+/** Uploads a JPEG to `/<userId>/<timestamp>.jpeg`, the path scheme the Flutter app uses. */
+async function uploadImage(bucket: string, userId: string, image: Blob): Promise<string> {
+	const path = `/${userId}/${Date.now()}.jpeg`;
+	const { error } = await supabase.storage
+		.from(bucket)
+		.upload(path, image, { contentType: 'image/jpeg' });
+	if (error) throw error;
+	return path;
+}
+
+// ---------------------------------------------------------------------------
+// Book mutations
+
+export interface BookForm {
+	title: string;
+	author: string;
+	review: string | null;
+	public: boolean;
+}
+
+export async function addBook(userId: string, form: BookForm, cover: Blob): Promise<Book> {
+	const imagePath = await uploadImage('book_covers', userId, cover);
+	const { data, error } = await supabase
+		.from('books')
+		.insert({
+			title: form.title,
+			author: form.author,
+			owner: userId,
+			image_path: imagePath,
+			public: form.public,
+			review: form.review
+		})
+		.select('*, profiles(*)')
+		.single();
+	if (error) throw error;
+	return toBook(data as Record<string, unknown>);
+}
+
+export async function updateBook(
+	userId: string,
+	book: Book,
+	form: BookForm,
+	cover: Blob | null
+): Promise<Book> {
+	const imagePath = cover ? await uploadImage('book_covers', userId, cover) : book.image_path;
+	const { data, error } = await supabase
+		.from('books')
+		.update({
+			title: form.title,
+			author: form.author,
+			image_path: imagePath,
+			public: form.public,
+			review: form.review
+		})
+		.eq('id', book.id)
+		.select('*, profiles(*)')
+		.single();
+	if (error) throw error;
+	return toBook(data as Record<string, unknown>);
+}
+
+export async function deleteBook(book: Book): Promise<void> {
+	const { data, error } = await supabase.from('books').delete().eq('id', book.id).select();
+	if (error) throw error;
+	if (data && data.length > 0) {
+		supabase.storage.from('book_covers').remove([book.image_path]);
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Loans for a single book
+
+const LOAN_SELECT =
+	'*, books!left(*, profiles(*)), loanee_profile:profiles!loanee(*), owner_profile:profiles!owner(*)';
+
+/**
+ * The loan currently attached to a book: an accepted loan to another user if
+ * there is one, otherwise the current user's own non-rejected request.
+ */
+export async function getCurrentLoanForBook(
+	userId: string,
+	bookId: string
+): Promise<Loan | null> {
+	const { data, error } = await supabase
+		.from('loans')
+		.select(LOAN_SELECT)
+		.match({ book: bookId, returned: false })
+		.or(`loanee.eq.${userId}, accepted.eq.true`);
+	if (error) throw error;
+
+	const loans = (data ?? []).map((row) => toLoan(row as Record<string, unknown>));
+	return (
+		loans.find((loan) => loan.loanee.id !== userId && loan.accepted) ??
+		loans.find((loan) => loan.loanee.id === userId && !loan.rejected) ??
+		null
+	);
+}
+
+/** Accepted loans of a book that left a review. */
+export async function getReviewsForBook(bookId: string): Promise<Loan[]> {
+	const { data, error } = await supabase
+		.from('loans')
+		.select(LOAN_SELECT)
+		.eq('book', bookId)
+		.eq('accepted', true)
+		.not('review', 'is', null);
+	if (error) throw error;
+	return (data ?? []).map((row) => toLoan(row as Record<string, unknown>));
+}

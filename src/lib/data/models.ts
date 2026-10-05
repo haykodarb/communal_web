@@ -67,3 +67,27 @@ export interface Friendship {
 	/** null while pending, false when rejected. */
 	accepted: boolean | null;
 }
+
+export interface Membership {
+	id: string;
+	created_at: string;
+	joined_at?: string | null;
+	member: Profile;
+	community: Community;
+	member_accepted: boolean | null;
+	admin_accepted: boolean | null;
+	is_admin: boolean;
+}
+
+export interface AppNotification {
+	id: number;
+	/** Source table and event, e.g. loans/accepted or friendships/created. */
+	type: { id: number; table: string; event: string };
+	updated_at: string;
+	seen: boolean;
+	sender: Profile | null;
+	receiver: Profile;
+	loan: Loan | null;
+	friendship: Friendship | null;
+	membership: Membership | null;
+}

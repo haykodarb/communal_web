@@ -1,5 +1,13 @@
 import { supabase } from '#lib/supabase.ts';
-import type { Book, Community, Friendship, Loan, Profile } from './models';
+import type {
+	AppNotification,
+	Book,
+	Community,
+	Friendship,
+	Loan,
+	Membership,
+	Profile
+} from './models';
 
 // The backend is untyped (no generated Database type), so rows are mapped here.
 
@@ -623,5 +631,99 @@ export async function respondToFriendRequest(
 
 export async function deleteFriendship(friendshipId: number): Promise<void> {
 	const { error } = await supabase.from('friendships').delete().eq('id', friendshipId);
+	if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// Memberships + notifications
+
+export function toMembership(row: Record<string, unknown>): Membership {
+	return {
+		id: row.id as string,
+		created_at: row.created_at as string,
+		joined_at: (row.joined_at as string) ?? null,
+		member: toProfile(row.profiles as Record<string, unknown>),
+		community: toCommunity((row.communities as Record<string, unknown>) ?? {}),
+		member_accepted: (row.member_accepted as boolean | null) ?? null,
+		admin_accepted: (row.admin_accepted as boolean | null) ?? null,
+		is_admin: Boolean(row.is_admin)
+	};
+}
+
+/** Accept or reject an invitation to join a community. */
+export async function respondToInvitation(membershipId: string, accept: boolean): Promise<void> {
+	const { data, error } = await supabase
+		.from('memberships')
+		.update({ member_accepted: accept, joined_at: accept ? 'now()' : null })
+		.eq('id', membershipId)
+		.select()
+		.maybeSingle();
+	if (error) throw error;
+	if (!data) throw new Error('Could not respond to invitation, server error.');
+}
+
+const NOTIFICATION_SELECT =
+	'*, type(*), receiver:profiles!receiver(*), sender:profiles!sender(*), ' +
+	'loans!left(*, books!left(*, profiles(*)), loanee_profile:profiles!loanee(*), owner_profile:profiles!owner(*)), ' +
+	'friendships!left(*, requester_profile:profiles!requester(*), responder_profile:profiles!responder(*)), ' +
+	'memberships!left(*, communities(*, profiles(*)), profiles(*))';
+
+function toNotification(row: Record<string, unknown>): AppNotification {
+	const loan = row.loans as Record<string, unknown> | null;
+	const friendship = row.friendships as Record<string, unknown> | null;
+	const membership = row.memberships as Record<string, unknown> | null;
+	return {
+		id: row.id as number,
+		type: row.type as AppNotification['type'],
+		updated_at: row.updated_at as string,
+		seen: Boolean(row.seen),
+		sender: row.sender ? toProfile(row.sender as Record<string, unknown>) : null,
+		receiver: toProfile(row.receiver as Record<string, unknown>),
+		loan: loan ? toLoan(loan) : null,
+		friendship: friendship ? toFriendship(friendship) : null,
+		membership: membership ? toMembership(membership) : null
+	};
+}
+
+export async function getNotifications(
+	userId: string,
+	{ page = 0, pageSize = 20 }: { page?: number; pageSize?: number } = {}
+): Promise<AppNotification[]> {
+	const { data, error } = await supabase
+		.from('notifications')
+		.select(NOTIFICATION_SELECT)
+		.eq('receiver', userId)
+		.order('updated_at', { ascending: false })
+		.range(page * pageSize, page * pageSize + pageSize - 1);
+	if (error) throw error;
+	return (data ?? []).map((row) => toNotification(row as unknown as Record<string, unknown>));
+}
+
+export async function getNotificationById(id: number): Promise<AppNotification | null> {
+	const { data, error } = await supabase
+		.from('notifications')
+		.select(NOTIFICATION_SELECT)
+		.eq('id', id)
+		.maybeSingle();
+	if (error) throw error;
+	return data ? toNotification(data as unknown as Record<string, unknown>) : null;
+}
+
+export async function getUnreadNotificationsCount(userId: string): Promise<number> {
+	const { count, error } = await supabase
+		.from('notifications')
+		.select('*', { count: 'exact', head: true })
+		.eq('receiver', userId)
+		.eq('seen', false);
+	if (error) throw error;
+	return count ?? 0;
+}
+
+export async function setNotificationsRead(userId: string): Promise<void> {
+	const { error } = await supabase
+		.from('notifications')
+		.update({ seen: true })
+		.eq('receiver', userId)
+		.eq('seen', false);
 	if (error) throw error;
 }

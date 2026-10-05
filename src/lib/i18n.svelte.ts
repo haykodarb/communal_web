@@ -168,7 +168,24 @@ const es: Record<string, string> = {
 	'Add {name} as friend?': '¿Agregar a {name} como amigo?',
 	'Remove {name} as friend?': '¿Eliminar a {name} de tus amigos?',
 	'Withdraw friend request?': '¿Retirar solicitud de amistad?',
-	'No books found.': 'No se encontraron libros.'
+	'No books found.': 'No se encontraron libros.',
+	Accept: 'Aceptar',
+	New: 'Nuevas',
+	Today: 'Hoy',
+	'Accept this request?': '¿Aceptar esta solicitud?',
+	'Reject this request?': '¿Rechazar esta solicitud?',
+	'Your request for ': 'Tu solicitud por ',
+	'A request has been submitted for ': 'Ingresó una solicitud por ',
+	'Your loan for ': 'Tu préstamo de ',
+	' has been accepted by ': ' fue aceptada por ',
+	' has been rejected by ': ' fue rechazada por ',
+	' by ': ' de parte de ',
+	' has been marked as returned by ': ' fue marcado como devuelto por ',
+	' sent you a friend request.': ' te envió una solicitud de amistad.',
+	'You became friends with ': 'Ahora sos amigo de ',
+	'You have been invited to join ': 'Te invitaron a unirte a ',
+	'You have joined community ': 'Te uniste a la comunidad ',
+	'Unknown notification type:': 'Tipo de notificación desconocido:'
 };
 
 function readInitial(): Locale {

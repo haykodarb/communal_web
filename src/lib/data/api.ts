@@ -403,7 +403,9 @@ export async function deleteBook(book: Book): Promise<void> {
 	const { data, error } = await supabase.from('books').delete().eq('id', book.id).select();
 	if (error) throw error;
 	if (data && data.length > 0) {
-		supabase.storage.from('book_covers').remove([book.image_path]);
+		// Stored paths start with "/" but object names don't, and remove() only
+		// matches exact names (BooksBackend.deleteBook leaves orphans this way).
+		supabase.storage.from('book_covers').remove([book.image_path.replace(/^\/+/, '')]);
 	}
 }
 

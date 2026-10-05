@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import Avatar from '#lib/components/Avatar.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import CoverImage from '#lib/components/CoverImage.svelte';
@@ -14,6 +15,7 @@
 	} from '#lib/data/api.ts';
 	import type { Loan } from '#lib/data/models.ts';
 	import { auth } from '#lib/auth.svelte.ts';
+	import { formatShortDate } from '#lib/format.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 
 	let loan = $state<Loan | null>(null);
@@ -41,15 +43,6 @@
 	});
 
 	const isOwned = $derived(loan ? loan.owner.id === auth.user?.id : false);
-
-	const formatDate = (date?: string | null) =>
-		date
-			? new Intl.DateTimeFormat('en-GB', {
-					day: '2-digit',
-					month: '2-digit',
-					year: '2-digit'
-				}).format(new Date(date))
-			: '';
 
 	/** Asks for confirmation, runs the action, then reloads the loan. */
 	async function act(title: string, action: () => Promise<void>, leave = false) {
@@ -99,6 +92,7 @@
 	{:else if loan}
 		<p class="who">
 			{#if isOwned}
+				<a href={`/profile/${loan.loanee.id}`}><Avatar profile={loan.loanee} size={50} /></a>
 				<a href={`/profile/${loan.loanee.id}`}>{loan.loanee.username}</a>
 				{t('requested this book')}
 			{:else}
@@ -107,13 +101,14 @@
 			{/if}
 		</p>
 
+		<!-- Flutter _bookCard: title/author left, small cover right. -->
 		<a class="book" href={isOwned ? `/my-books/${loan.book.id}` : `/book/${loan.book.id}`}>
-			<div class="cover">
-				<CoverImage bucket="book_covers" path={loan.book.image_path} alt={loan.book.title} />
-			</div>
 			<div class="info">
 				<h1>{loan.book.title}</h1>
 				<p class="author">{loan.book.author}</p>
+			</div>
+			<div class="cover">
+				<CoverImage bucket="book_covers" path={loan.book.image_path} alt={loan.book.title} />
 			</div>
 		</a>
 
@@ -121,22 +116,19 @@
 		{#if loan.rejected}
 			<p class="muted">{t('Loan rejected')}</p>
 		{:else}
+			{@const steps = [
+				{ label: t('Requested'), date: loan.created_at, active: true },
+				{ label: t('Accepted'), date: loan.accepted_at, active: loan.accepted },
+				{ label: t('Returned'), date: loan.returned_at, active: loan.returned }
+			]}
 			<ol class="timeline" style:--progress={loan.returned ? 1 : loan.accepted ? 0.5 : 0}>
-				<li class="active">
-					<span class="dot"></span>
-					<span class="label">{t('Requested')}</span>
-					<span class="date">{formatDate(loan.created_at)}</span>
-				</li>
-				<li class:active={loan.accepted}>
-					<span class="dot"></span>
-					<span class="label">{t('Accepted')}</span>
-					<span class="date">{formatDate(loan.accepted_at)}</span>
-				</li>
-				<li class:active={loan.returned}>
-					<span class="dot"></span>
-					<span class="label">{t('Returned')}</span>
-					<span class="date">{formatDate(loan.returned_at)}</span>
-				</li>
+				{#each steps as step (step.label)}
+					<li class:active={step.active}>
+						<span class="date">{step.active ? formatShortDate(step.date ?? loan.created_at) : ''}</span>
+						<span class="dot"></span>
+						<span class="label">{step.label}</span>
+					</li>
+				{/each}
 			</ol>
 		{/if}
 
@@ -228,25 +220,34 @@
 		margin-bottom: 12px;
 	}
 	.who {
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		padding: 8px;
 		font-size: 14px;
-		margin-bottom: 16px;
 	}
 	.who a {
+		display: flex;
 		color: var(--secondary);
 		font-weight: 600;
 		text-decoration: none;
 	}
 	.book {
+		margin-top: 8px;
 		display: flex;
-		gap: 20px;
+		align-items: center;
+		gap: 15px;
+		padding: 20px;
+		border-radius: 12px;
+		background: var(--surface-container);
 		color: inherit;
 		text-decoration: none;
 	}
 	.cover {
-		width: 120px;
-		flex: 0 0 120px;
+		flex: 0 0 auto;
+		height: 60px;
 		aspect-ratio: 3 / 4;
-		border-radius: 5px;
+		border-radius: 3px;
 		overflow: hidden;
 	}
 	.info {
@@ -254,20 +255,22 @@
 		min-width: 0;
 	}
 	h1 {
-		font-size: 18px;
-		font-weight: 700;
-		line-height: 1.25;
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 1.2;
 	}
 	h2 {
-		margin: 28px 0 20px;
+		margin: 28px 0 10px;
 		font-size: 16px;
 		font-weight: 700;
 	}
 	.author {
-		margin-top: 4px;
-		font-size: 13px;
+		margin-top: 10px;
+		font-size: 12px;
+		line-height: 1.2;
 		color: var(--on-surface-variant);
 	}
+	/* Flutter _datesCard: date above a ringed dot, uppercase label below. */
 	.timeline {
 		position: relative;
 		list-style: none;
@@ -276,12 +279,11 @@
 		display: flex;
 		justify-content: space-between;
 	}
-	/* Track between the first and last dot: done part, then remaining part. */
 	.timeline::before,
 	.timeline::after {
 		content: '';
 		position: absolute;
-		top: 8px;
+		top: 38px;
 		height: 4px;
 		transition: all 500ms ease;
 	}
@@ -293,34 +295,47 @@
 	.timeline::after {
 		right: 40px;
 		width: calc((100% - 80px) * (1 - var(--progress)));
-		background: var(--tertiary-container, var(--surface-container));
+		background: var(--tertiary-container);
 	}
 	.timeline li {
 		position: relative;
 		z-index: 1;
 		width: 80px;
+		height: 80px;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 6px;
-		color: var(--on-surface-variant);
-		font-size: 12px;
+		justify-content: center;
+		gap: 2px;
+		color: var(--tertiary-container);
 	}
 	.timeline li.active {
 		color: var(--on-surface);
 	}
+	.date {
+		min-height: 14px;
+		font-size: 10px;
+		color: var(--on-surface-variant);
+	}
 	.dot {
 		width: 20px;
 		height: 20px;
+		margin: 5px;
 		border-radius: 50%;
-		background: var(--surface-container);
-		border: 3px solid var(--surface);
+		background: currentColor;
+		position: relative;
 	}
-	.active .dot {
-		background: var(--primary);
+	.dot::after {
+		content: '';
+		position: absolute;
+		inset: 5px;
+		border-radius: 50%;
+		background: var(--surface);
 	}
 	.label {
+		font-size: 12px;
 		font-weight: 600;
+		text-transform: uppercase;
 	}
 	.actions {
 		margin-top: 28px;

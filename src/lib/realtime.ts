@@ -32,13 +32,17 @@ export function subscribeToDatabaseChanges(): void {
 	channel = supabase
 		.channel('all', { config: { broadcast: { self: true } } })
 		.on('postgres_changes', { event: '*', schema: 'public' }, dispatch)
-		.subscribe();
+		.subscribe((status, error) => {
+			if (status !== 'SUBSCRIBED') console.warn('[realtime]', status, error ?? '');
+		});
 }
 
 export async function unsubscribeFromDatabase(): Promise<void> {
 	if (!channel) return;
-	await supabase.removeChannel(channel);
+	// Clear it before awaiting so an immediate re-subscribe opens a new channel.
+	const closing = channel;
 	channel = null;
+	await supabase.removeChannel(closing);
 }
 
 /** Listen to changes on one table; returns an unsubscribe function (usable as an $effect cleanup). */

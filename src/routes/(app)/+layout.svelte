@@ -39,8 +39,10 @@
 	});
 
 	// Realtime + unread counters for the signed-in user (CommonDrawerController.onInit).
+	// Keyed on the id: Supabase emits new session objects (e.g. token refresh)
+	// for the same user, which must not tear the subscription down.
+	const userId = $derived(auth.user?.id);
 	$effect(() => {
-		const userId = auth.user?.id;
 		if (!userId) return;
 		subscribeToDatabaseChanges();
 		unread.start(userId);

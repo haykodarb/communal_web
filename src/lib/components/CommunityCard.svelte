@@ -4,8 +4,12 @@
 	import CoverImage from './CoverImage.svelte';
 	import Icon from './Icon.svelte';
 
-	let { community }: { community: Community } = $props();
-	let pinned = $state(false);
+	// CommonCommunityCard plus the pin button the community list overlays on it.
+	let {
+		community,
+		pinned = false,
+		onpin
+	}: { community: Community; pinned?: boolean; onpin?: () => void } = $props();
 </script>
 
 <div class="wrap">
@@ -19,23 +23,27 @@
 				<span class="desc">{community.description}</span>
 			{/if}
 		</div>
+		<!-- Square image taking 2/5 of the width; it sets the card's height. -->
 		<div class="image">
-			<CoverImage
-				bucket="community_avatars"
-				path={community.image_path}
-				alt={community.name}
-			/>
+			{#if community.image_path}
+				<CoverImage bucket="community_avatars" path={community.image_path} alt={community.name} />
+			{:else}
+				<div class="placeholder"><Icon name="users" size={120} /></div>
+			{/if}
 		</div>
 	</a>
-	<button
-		class="pin"
-		class:pinned
-		type="button"
-		aria-label={t('Pin')}
-		onclick={() => (pinned = !pinned)}
-	>
-		<Icon name="pin" size={20} />
-	</button>
+	{#if onpin}
+		<button
+			class="pin"
+			class:pinned
+			type="button"
+			aria-label={t('Pin')}
+			aria-pressed={pinned}
+			onclick={onpin}
+		>
+			<Icon name="pin" size={20} />
+		</button>
+	{/if}
 </div>
 
 <style>
@@ -44,6 +52,7 @@
 	}
 	.card {
 		display: flex;
+		align-items: flex-start;
 		min-height: 125px;
 		border-radius: 10px;
 		overflow: hidden;
@@ -52,7 +61,7 @@
 		color: inherit;
 	}
 	.body {
-		flex: 3;
+		flex: 3 1 0;
 		min-width: 0;
 		padding: 15px;
 		display: flex;
@@ -73,7 +82,6 @@
 		color: var(--tertiary);
 	}
 	.desc {
-		margin-top: auto;
 		font-size: 12px;
 		color: var(--on-surface-variant);
 		display: -webkit-box;
@@ -83,8 +91,19 @@
 		overflow: hidden;
 	}
 	.image {
-		flex: 2;
+		flex: 2 1 0;
 		min-width: 0;
+		aspect-ratio: 1;
+	}
+	.placeholder {
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: color-mix(in srgb, var(--tertiary) 50%, transparent);
+		color: var(--surface);
+		overflow: hidden;
 	}
 	.pin {
 		position: absolute;

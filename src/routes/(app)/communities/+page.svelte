@@ -7,10 +7,24 @@
 	import type { Community } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import { getPinnedCommunities, setCommunityPinned } from '#lib/pins.ts';
 
 	let communities = $state<Community[]>([]);
 	let loading = $state(true);
 	let error = $state('');
+	let pinned = $state<string[]>(getPinnedCommunities());
+
+	// Pinned communities first, as CommunityListController sorts them.
+	const sorted = $derived([
+		...communities.filter((c) => pinned.includes(c.id)),
+		...communities.filter((c) => !pinned.includes(c.id))
+	]);
+
+	function togglePin(id: string) {
+		const next = !pinned.includes(id);
+		setCommunityPinned(id, next);
+		pinned = next ? [...pinned, id] : pinned.filter((x) => x !== id);
+	}
 
 	$effect(() => {
 		const userId = auth.user?.id;
@@ -42,8 +56,12 @@
 		</div>
 	{:else}
 		<div class="list">
-			{#each communities as community (community.id)}
-				<CommunityCard {community} />
+			{#each sorted as community (community.id)}
+				<CommunityCard
+					{community}
+					pinned={pinned.includes(community.id)}
+					onpin={() => togglePin(community.id)}
+				/>
 			{/each}
 		</div>
 	{/if}
@@ -54,14 +72,14 @@
 <style>
 	.page {
 		min-height: 100vh;
-		padding: 20px 5px 0;
+		padding: 10px 10px 0;
 		display: flex;
 		flex-direction: column;
 	}
 	.list {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 5px;
 	}
 	.muted {
 		padding: 0 10px;

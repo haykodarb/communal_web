@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import PageBar from '#lib/components/PageBar.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
-	import Icon from '#lib/components/Icon.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
 	import ProfileView from '#lib/components/ProfileView.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
@@ -85,13 +85,7 @@
 </script>
 
 <div class="page">
-	<!-- Flutter AppBar: back button with a centered "Profile" title. -->
-	<header class="bar">
-		<button class="back" type="button" aria-label={t('Back')} onclick={() => history.back()}>
-			<Icon name="chevron-left" size={28} />
-		</button>
-		<h1>{t('Profile')}</h1>
-	</header>
+	<PageBar title={t('Profile')} onback={() => history.back()} />
 
 	{#if loading}
 		<p class="muted">{t('Loading…')}</p>
@@ -131,28 +125,6 @@
 <style>
 	.page {
 		padding: 0 0 40px;
-	}
-	.bar {
-		position: relative;
-		display: flex;
-		align-items: center;
-		height: 56px;
-		padding: 0 12px;
-	}
-	.back {
-		display: flex;
-		padding: 4px;
-		background: none;
-		border: none;
-		color: var(--on-surface);
-		cursor: pointer;
-	}
-	h1 {
-		position: absolute;
-		left: 50%;
-		transform: translateX(-50%);
-		font-size: 16px;
-		font-weight: 500;
 	}
 	.error-text {
 		width: 100%;

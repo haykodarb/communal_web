@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import PageBar from '#lib/components/PageBar.svelte';
 	import Fab from '#lib/components/Fab.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import CommunityBooks from '#lib/components/community/CommunityBooks.svelte';
@@ -44,22 +45,20 @@
 </script>
 
 <div class="page">
-	<header class="bar">
-		<button class="icon-btn" type="button" aria-label={t('Back')} onclick={() => goto('/communities')}>
-			<Icon name="chevron-left" size={28} />
-		</button>
-		<h1>{community?.name ?? ''}</h1>
-		{#if community}
-			<button
-				class="icon-btn"
-				type="button"
-				aria-label={t('Settings')}
-				onclick={() => goto(`/communities/${id}/settings`)}
-			>
-				<Icon name="gear" size={22} />
-			</button>
-		{/if}
-	</header>
+	<PageBar title={community?.name ?? ''} onback={() => goto('/communities')}>
+		{#snippet actions()}
+			{#if community}
+				<button
+					class="icon-btn"
+					type="button"
+					aria-label={t('Settings')}
+					onclick={() => goto(`/communities/${id}/settings`)}
+				>
+					<Icon name="gear" size={24} />
+				</button>
+			{/if}
+		{/snippet}
+	</PageBar>
 
 	{#if loading}
 		<p class="muted">{t('Loading…')}</p>
@@ -114,23 +113,6 @@
 		min-height: 100vh;
 		display: flex;
 		flex-direction: column;
-	}
-	/* Flutter AppBar: back, centered title, settings action. */
-	.bar {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 10px 12px;
-	}
-	h1 {
-		flex: 1;
-		min-width: 0;
-		text-align: center;
-		font-size: 16px;
-		font-weight: 600;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 	.icon-btn {
 		display: flex;

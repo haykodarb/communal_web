@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import PageBar from '#lib/components/PageBar.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import ChatComposer from '#lib/components/ChatComposer.svelte';
-	import Icon from '#lib/components/Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import {
 		getTopicById,
@@ -88,17 +88,7 @@
 </script>
 
 <div class="thread">
-	<header class="bar">
-		<button
-			class="back"
-			type="button"
-			aria-label={t('Back')}
-			onclick={() => goto(`/communities/${communityId}?tab=discuss`)}
-		>
-			<Icon name="chevron-left" size={28} />
-		</button>
-		<h1>{topic?.name ?? ''}</h1>
-	</header>
+	<PageBar title={topic?.name ?? ''} onback={() => goto(`/communities/${communityId}?tab=discuss`)} />
 
 	<div class="scroll">
 		{#if loading}
@@ -149,29 +139,6 @@
 		.thread {
 			height: calc(100dvh - 56px);
 		}
-	}
-	.bar {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 10px 12px;
-		border-bottom: 1px solid color-mix(in srgb, var(--on-surface-variant) 30%, transparent);
-	}
-	.back {
-		display: flex;
-		padding: 4px;
-		border: none;
-		background: none;
-		color: var(--on-surface);
-		cursor: pointer;
-	}
-	h1 {
-		min-width: 0;
-		font-size: 18px;
-		font-weight: 600;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 	.scroll {
 		flex: 1;

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import PageBar from '#lib/components/PageBar.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
-	import Icon from '#lib/components/Icon.svelte';
 	import ImagePicker from '#lib/components/ImagePicker.svelte';
 	import TextField from '#lib/components/TextField.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
@@ -112,12 +112,7 @@
 </script>
 
 <div class="page">
-	<header class="bar">
-		<button class="back" type="button" aria-label={t('Back')} onclick={() => goto(`/communities/${id}`)}>
-			<Icon name="chevron-left" size={28} />
-		</button>
-		<h1>{t('Settings')}</h1>
-	</header>
+	<PageBar title={t('Settings')} onback={() => goto(`/communities/${id}`)} />
 
 	{#if loading}
 		<p class="muted">{t('Loading…')}</p>
@@ -160,7 +155,7 @@
 			{#if isOwner}
 				<div class="row">
 					<Button type="submit" loading={saving} disabled={!edited}>{t('Save')}</Button>
-					<Button variant="tonal" loading={deleting} onclick={remove}>{t('Delete')}</Button>
+					<Button variant="outlined" loading={deleting} onclick={remove}>{t('Delete')}</Button>
 				</div>
 			{:else}
 				<Button variant="outlined" onclick={leave}>{t('Leave')}</Button>
@@ -176,24 +171,6 @@
 <style>
 	.page {
 		padding: 10px 20px 40px;
-	}
-	.bar {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		margin-bottom: 16px;
-	}
-	.back {
-		display: flex;
-		padding: 4px;
-		border: none;
-		background: none;
-		color: var(--on-surface);
-		cursor: pointer;
-	}
-	h1 {
-		font-size: 20px;
-		font-weight: 600;
 	}
 	.form {
 		display: flex;

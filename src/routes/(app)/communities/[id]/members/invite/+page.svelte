@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import PageBar from '#lib/components/PageBar.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
-	import Icon from '#lib/components/Icon.svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
 	import { cancelInvite, inviteToCommunity, searchUsersNotInCommunity } from '#lib/data/api.ts';
@@ -53,12 +53,7 @@
 </script>
 
 <div class="page">
-	<header class="bar">
-		<button class="back" type="button" aria-label={t('Back')} onclick={() => goto(`/communities/${id}?tab=members`)}>
-			<Icon name="chevron-left" size={28} />
-		</button>
-		<h1>{t('Invite user')}</h1>
-	</header>
+	<PageBar title={t('Invite user')} onback={() => goto(`/communities/${id}?tab=members`)} />
 
 	<SearchBar bind:value={search} onSearch={() => users.reset()} />
 
@@ -96,24 +91,6 @@
 <style>
 	.page {
 		padding: 10px 20px 40px;
-	}
-	.bar {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		margin-bottom: 16px;
-	}
-	.back {
-		display: flex;
-		padding: 4px;
-		border: none;
-		background: none;
-		color: var(--on-surface);
-		cursor: pointer;
-	}
-	h1 {
-		font-size: 20px;
-		font-weight: 600;
 	}
 	.list {
 		list-style: none;

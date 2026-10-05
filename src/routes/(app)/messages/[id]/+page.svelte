@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import PageBar from '#lib/components/PageBar.svelte';
 	import ChatComposer from '#lib/components/ChatComposer.svelte';
-	import Icon from '#lib/components/Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { getMessagesWith, getProfile, markMessagesRead, sendMessage } from '#lib/data/api.ts';
 	import type { Message, Profile } from '#lib/data/models.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { currentProfile } from '#lib/profile.svelte.ts';
-	import { profileHref } from '#lib/links.ts';
 	import { onTableChange } from '#lib/realtime.ts';
 	import { unread } from '#lib/unread.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
@@ -143,16 +142,8 @@
 </script>
 
 <div class="chat">
-	<header class="bar">
-		<button class="back" type="button" aria-label={t('Back')} onclick={() => goto('/messages')}>
-			<Icon name="chevron-left" size={28} />
-		</button>
-		{#if chatter}
-			<a class="who" href={profileHref(chatter)}>
-				<span>{chatter.username}</span>
-			</a>
-		{/if}
-	</header>
+	<!-- Flutter: the chatter's username is the AppBar title. -->
+	<PageBar title={chatter?.username ?? ''} onback={() => goto('/messages')} />
 
 	<div class="scroll">
 		{#if loading}
@@ -197,28 +188,6 @@
 		.chat {
 			height: calc(100dvh - 56px);
 		}
-	}
-	.bar {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 10px 12px;
-	}
-	.back {
-		display: flex;
-		background: none;
-		border: none;
-		color: var(--on-surface);
-		cursor: pointer;
-		padding: 4px;
-	}
-	.who {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		color: inherit;
-		font-weight: 600;
-		text-decoration: none;
 	}
 	.scroll {
 		flex: 1;

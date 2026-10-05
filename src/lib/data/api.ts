@@ -1029,9 +1029,13 @@ export async function updateCommunity(
 	};
 }
 
-export async function deleteCommunity(communityId: string): Promise<void> {
-	const { error } = await supabase.from('communities').delete().eq('id', communityId);
+export async function deleteCommunity(community: Community): Promise<void> {
+	const { error } = await supabase.from('communities').delete().eq('id', community.id);
 	if (error) throw error;
+	// Also drop the avatar (Flutter leaves it); object names have no leading "/".
+	if (community.image_path) {
+		supabase.storage.from('community_avatars').remove([community.image_path.replace(/^\/+/, '')]);
+	}
 }
 
 // ---------------------------------------------------------------------------

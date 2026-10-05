@@ -87,7 +87,7 @@
 		if (!(await confirmed(title))) return;
 		deleting = true;
 		try {
-			await deleteCommunity(community.id);
+			await deleteCommunity(community);
 			await goto('/communities', { replace: true });
 		} catch (e) {
 			error = errorMessage(e);

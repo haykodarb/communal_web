@@ -22,7 +22,7 @@
 		{ href: '/search', key: 'Search', icon: 'search' },
 		{ href: '/messages', key: 'Messages', icon: 'message' },
 		{ href: '/my-books', key: 'My Books', icon: 'library' },
-		{ href: '/communities', key: 'Communities', icon: 'community' },
+		// Communities is commented out of the Flutter drawer too; the pages still work by URL.
 		{ href: '/loans', key: 'Loans', icon: 'loans' }
 	];
 

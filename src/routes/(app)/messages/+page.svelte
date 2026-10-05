@@ -111,18 +111,25 @@
 <ConfirmDialog bind:this={confirmDialog} title={t('Delete chat?')} />
 
 <style>
+	/* CommonListView padding/separators; each chat is a 90px Card. */
 	.page {
-		padding: 10px 0 40px;
+		padding: 10px;
 	}
 	.list {
 		list-style: none;
 		margin: 0;
 		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
 	}
 	.row {
 		position: relative;
 		display: flex;
 		align-items: center;
+		height: 90px;
+		border-radius: 10px;
+		background: var(--surface-container);
 	}
 	.chat {
 		flex: 1;
@@ -133,9 +140,6 @@
 		padding: 20px;
 		color: inherit;
 		text-decoration: none;
-	}
-	.chat:hover {
-		background: var(--surface-container);
 	}
 	.body {
 		flex: 1;
@@ -185,9 +189,12 @@
 		font-weight: 600;
 		text-align: center;
 	}
+	/* Flutter deletes on long-press; here a hover button overlays the card corner. */
 	.delete {
+		position: absolute;
+		top: 4px;
+		right: 4px;
 		display: flex;
-		margin-right: 12px;
 		padding: 8px;
 		border: none;
 		border-radius: 50%;

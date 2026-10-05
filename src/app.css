@@ -127,3 +127,14 @@ p {
 	margin: 0 auto;
 	padding: 100px 40px 40px;
 }
+
+/* Atlas icon fonts (static/fonts/atlas, MIT) — one family per Atlas category,
+   used by #lib/components/Icon.svelte. */
+@font-face { font-family: 'Atlas-basic-ui'; src: url('/fonts/atlas/basic-ui.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'Atlas-content-box'; src: url('/fonts/atlas/content-box.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'Atlas-school'; src: url('/fonts/atlas/school.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'Atlas-marketing'; src: url('/fonts/atlas/marketing.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'Atlas-thanksgiving'; src: url('/fonts/atlas/thanksgiving.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'Atlas-weather'; src: url('/fonts/atlas/weather.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'Atlas-travel'; src: url('/fonts/atlas/travel.ttf') format('truetype'); font-display: block; }
+@font-face { font-family: 'Atlas-arrow'; src: url('/fonts/atlas/arrow.ttf') format('truetype'); font-display: block; }

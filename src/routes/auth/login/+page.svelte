@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import AuthHeader from '#lib/components/AuthHeader.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import TextField from '#lib/components/TextField.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
@@ -37,23 +38,7 @@
 </script>
 
 <div class="form-page">
-	<div class="header">
-		<button class="back" type="button" aria-label="Back" onclick={() => goto('/auth')}>
-			<svg
-				width="32"
-				height="32"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="2"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-			>
-				<path d="M15 18l-6-6 6-6" />
-			</svg>
-		</button>
-		<h1>{t('Sign in')}</h1>
-	</div>
+	<AuthHeader title={t('Sign in')} back="/auth" />
 
 	<form
 		class="form"
@@ -93,24 +78,6 @@
 </div>
 
 <style>
-	.header {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-		margin-bottom: 40px;
-	}
-	h1 {
-		font-size: 40px;
-		font-weight: 800;
-	}
-	.back {
-		display: inline-flex;
-		background: none;
-		border: none;
-		color: var(--on-surface);
-		cursor: pointer;
-		padding: 0;
-	}
 	.form {
 		display: flex;
 		flex-direction: column;

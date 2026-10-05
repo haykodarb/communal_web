@@ -101,14 +101,14 @@
 		>
 			{#snippet actions()}
 				{#if !friendship}
-					<PillButton icon="user-plus" label={t('Add friend')} filled loading={busy} onclick={addFriend} />
+					<PillButton icon="user-plus-bold" label={t('Add friend')} filled loading={busy} onclick={addFriend} />
 				{:else if friendship.accepted}
 					<PillButton icon="user-check" label={t('Friends')} loading={busy} onclick={removeFriend} />
 				{:else}
 					<PillButton icon="user-minus" label={t('Pending')} loading={busy} onclick={removeFriend} />
 				{/if}
 				<PillButton
-					icon="message"
+					icon="comment-dots-bold"
 					filled={friendship !== null}
 					onclick={() => goto(`/messages/${profile!.id}`)}
 				/>

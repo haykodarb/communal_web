@@ -1,117 +1,89 @@
-<script lang="ts">
-	let { name, size = 24 }: { name: string; size?: number } = $props();
+<script lang="ts" module>
+	// The Flutter app uses Atlas icons (atlas_icons package) plus a few Material
+	// `Icons.*`. Atlas glyphs render from the same fonts (static/fonts/atlas);
+	// Material ones are drawn from their 24px SVG paths (Apache-2.0).
+
+	/** name -> [Atlas font family suffix, code point], from atlas_icons.dart. */
+	const ATLAS: Record<string, [string, number]> = {
+		account: ['basic-ui', 0xe96d], // drawer Profile, avatar fallback
+		user: ['basic-ui', 0xe96d],
+		'account-arrows': ['marketing', 0xe946], // drawer Loans
+		loans: ['marketing', 0xe946],
+		'users-arrows': ['marketing', 0xe987], // loan notifications
+		'add-messages': ['content-box', 0xe967], // new topic FAB
+		bell: ['thanksgiving', 0xe937],
+		book: ['school', 0xe933], // community Books tab
+		library: ['school', 0xe945], // drawer My Books
+		camera: ['travel', 0xe953],
+		chats: ['content-box', 0xe975], // drawer Messages, Discuss tab
+		message: ['content-box', 0xe975],
+		'comment-dots': ['content-box', 0xe97e], // member row message button
+		'comment-dots-bold': ['content-box', 0xe9e0], // profile message button
+		logout: ['arrow', 0xe9d7], // double_arrow_right_circle
+		envelope: ['basic-ui', 0xe991],
+		gear: ['basic-ui', 0xe996],
+		sliders: ['basic-ui', 0xe998], // horizontal_sliders_dots
+		image: ['basic-ui', 0xe99a], // image_gallery
+		search: ['basic-ui', 0xe9aa], // magnifying_glass
+		moon: ['weather', 0xe98b], // moon_bold
+		sun: ['weather', 0xe9a6], // sunny_bold
+		pencil: ['school', 0xe94e],
+		pin: ['school', 0xe952],
+		'user-plus': ['basic-ui', 0xe9d1],
+		'user-plus-bold': ['basic-ui', 0xea3e],
+		'user-check': ['basic-ui', 0xea3c], // user_check_bold
+		'user-minus': ['basic-ui', 0xea3d], // user_minus_bold
+		community: ['basic-ui', 0xe9d2], // users
+		users: ['basic-ui', 0xe9d2]
+	};
+
+	/** Material icon paths for the `Icons.*` the Flutter app uses. */
+	const MATERIAL: Record<string, string> = {
+		'chevron-left': 'M14.71 6.71a.996.996 0 0 0-1.41 0L8.71 11.3a.996.996 0 0 0 0 1.41l4.59 4.59a.996.996 0 1 0 1.41-1.41L10.83 12l3.88-3.88c.39-.39.38-1.03 0-1.41z',
+		'chevron-right': 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z',
+		check: 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z',
+		x: 'M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z',
+		plus: 'M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z',
+		send: 'M3.4 20.4l17.45-7.48c.81-.35.81-1.49 0-1.84L3.4 3.6c-.66-.29-1.39.2-1.39.91L2 9.12c0 .5.37.93.87.99L17 12 2.87 13.88c-.5.07-.87.5-.87 1l.01 4.61c0 .71.73 1.2 1.39.91z',
+		eye: 'M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z',
+		'eye-off': 'M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z',
+		menu: 'M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z',
+		more: 'M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z',
+		trash: 'M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z'
+	};
 </script>
 
-<svg
-	width={size}
-	height={size}
-	viewBox="0 0 24 24"
-	fill="none"
-	stroke="currentColor"
-	stroke-width="2"
-	stroke-linecap="round"
-	stroke-linejoin="round"
-	aria-hidden="true"
->
-	{#if name === 'book'}
-		<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-		<path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-	{:else if name === 'community'}
-		<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-		<circle cx="9" cy="7" r="4" />
-		<path d="M23 21v-2a4 4 0 0 0-3-3.87" />
-		<path d="M16 3.13a4 4 0 0 1 0 7.75" />
-	{:else if name === 'loans'}
-		<path d="M7 16V4M7 4L3 8M7 4l4 4" />
-		<path d="M17 8v12M17 20l4-4M17 20l-4 4" />
-	{:else if name === 'message'}
-		<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-	{:else if name === 'bell'}
-		<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-		<path d="M13.73 21a2 2 0 0 1-3.46 0" />
-	{:else if name === 'user'}
-		<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-		<circle cx="12" cy="7" r="4" />
-	{:else if name === 'search'}
-		<circle cx="11" cy="11" r="7" />
-		<path d="M21 21l-4.3-4.3" />
-	{:else if name === 'plus'}
-		<path d="M12 5v14M5 12h14" />
-	{:else if name === 'logout'}
-		<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-		<path d="M16 17l5-5-5-5" />
-		<path d="M21 12H9" />
-	{:else if name === 'chevron-right'}
-		<path d="M9 18l6-6-6-6" />
-	{:else if name === 'chevron-left'}
-		<path d="M15 18l-6-6 6-6" />
-	{:else if name === 'globe'}
-		<circle cx="12" cy="12" r="9" />
-		<path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
-	{:else if name === 'lock'}
-		<rect x="3" y="11" width="18" height="10" rx="2" />
-		<path d="M7 11V7a5 5 0 0 1 10 0v4" />
-	{:else if name === 'image'}
-		<rect x="3" y="3" width="18" height="18" rx="2" />
-		<circle cx="9" cy="9" r="2" />
-		<path d="M21 15l-5-5L5 21" />
-	{:else if name === 'sun'}
-		<circle cx="12" cy="12" r="4" />
-		<path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-	{:else if name === 'moon'}
-		<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
-	{:else if name === 'pencil'}
-		<path d="M12 20h9" />
-		<path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
-	{:else if name === 'menu'}
-		<path d="M3 6h18M3 12h18M3 18h18" />
-	{:else if name === 'sliders'}
-		<path d="M4 6h16M4 12h16M4 18h16" />
-		<circle cx="9" cy="6" r="2" />
-		<circle cx="15" cy="12" r="2" />
-		<circle cx="9" cy="18" r="2" />
-	{:else if name === 'pin'}
-		<path d="M12 17v5" />
-		<path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" />
-	{:else if name === 'check'}
-		<path d="M20 6L9 17l-5-5" />
-	{:else if name === 'user-plus'}
-		<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-		<circle cx="9" cy="7" r="4" />
-		<path d="M19 8v6M22 11h-6" />
-	{:else if name === 'user-check'}
-		<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-		<circle cx="9" cy="7" r="4" />
-		<path d="M16 11l2 2 4-4" />
-	{:else if name === 'user-minus'}
-		<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-		<circle cx="9" cy="7" r="4" />
-		<path d="M22 11h-6" />
-	{:else if name === 'more'}
-		<circle cx="12" cy="5" r="1.5" />
-		<circle cx="12" cy="12" r="1.5" />
-		<circle cx="12" cy="19" r="1.5" />
-	{:else if name === 'gear'}
-		<circle cx="12" cy="12" r="3" />
-		<path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h0a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h0a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v0a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-	{:else if name === 'chats'}
-		<path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-	{:else if name === 'trash'}
-		<path d="M3 6h18" />
-		<path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-		<path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-	{:else if name === 'send'}
-		<path d="M22 2L11 13" />
-		<path d="M22 2l-7 20-4-9-9-4 20-7z" />
-	{:else if name === 'eye'}
-		<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-		<circle cx="12" cy="12" r="3" />
-	{:else if name === 'eye-off'}
-		<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" />
-		<path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" />
-		<path d="M14.12 14.12a3 3 0 1 1-4.24-4.24" />
-		<path d="M1 1l22 22" />
-	{:else if name === 'x'}
-		<path d="M18 6L6 18M6 6l12 12" />
-	{/if}
-</svg>
+<script lang="ts">
+	let { name, size = 24 }: { name: string; size?: number } = $props();
+
+	const atlas = $derived(ATLAS[name]);
+</script>
+
+{#if atlas}
+	<span
+		class="atlas"
+		style:font-family="'Atlas-{atlas[0]}'"
+		style:font-size="{size}px"
+		aria-hidden="true">{String.fromCodePoint(atlas[1])}</span
+	>
+{:else}
+	<svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+		<path d={MATERIAL[name] ?? ''} />
+	</svg>
+{/if}
+
+<style>
+	.atlas {
+		display: inline-block;
+		width: 1em;
+		height: 1em;
+		line-height: 1;
+		font-style: normal;
+		font-weight: normal;
+		text-align: center;
+		-webkit-font-smoothing: antialiased;
+	}
+	svg {
+		flex: 0 0 auto;
+	}
+</style>

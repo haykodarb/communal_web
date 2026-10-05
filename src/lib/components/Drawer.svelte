@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/state';
+	import Avatar from './Avatar.svelte';
 	import Icon from './Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
-	import { signedStorageUrl } from '#lib/data/api.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { currentProfile } from '#lib/profile.svelte.ts';
 	import { unread } from '#lib/unread.svelte.ts';
@@ -21,22 +21,16 @@
 		{ href: '/notifications', key: 'Notifications', icon: 'bell' },
 		{ href: '/search', key: 'Search', icon: 'search' },
 		{ href: '/messages', key: 'Messages', icon: 'message' },
-		{ href: '/my-books', key: 'My Books', icon: 'book' },
+		{ href: '/my-books', key: 'My Books', icon: 'library' },
 		{ href: '/communities', key: 'Communities', icon: 'community' },
 		{ href: '/loans', key: 'Loans', icon: 'loans' }
 	];
 
 	const profile = $derived(currentProfile.value);
-	let avatarUrl = $state<string | null>(null);
 
 	$effect(() => {
 		const userId = auth.user?.id;
 		if (userId && currentProfile.value?.id !== userId) currentProfile.load(userId);
-	});
-
-	$effect(() => {
-		const path = profile?.avatar_path;
-		if (path) signedStorageUrl('profile_avatars', path).then((url) => (avatarUrl = url));
 	});
 
 	const current = $derived(page.url.pathname);
@@ -56,17 +50,11 @@
 
 <div class="drawer">
 	<button class="header" type="button" onclick={() => go('/my-profile')}>
-		<div class="avatar">
-			{#if avatarUrl}
-				<img src={avatarUrl} alt="" />
-			{:else}
-				<Icon name="user" size={30} />
-			{/if}
-		</div>
+		{#if profile}<Avatar {profile} size={80} />{/if}
 		<span class="username">{profile?.username ?? ''}</span>
 	</button>
 
-	<nav class="items">
+	<nav class="items" style:flex-grow={items.length}>
 		{#each items as item (item.href)}
 			<button
 				class="item"
@@ -111,23 +99,6 @@
 		text-align: left;
 		color: var(--on-surface);
 	}
-	.avatar {
-		width: 80px;
-		height: 80px;
-		flex: 0 0 80px;
-		border-radius: 50%;
-		overflow: hidden;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: color-mix(in srgb, var(--primary) 18%, transparent);
-		color: var(--primary);
-	}
-	.avatar img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-	}
 	.username {
 		font-size: 16px;
 		font-weight: 500;
@@ -135,9 +106,11 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	/* Compact fixed-height rows; the spacer absorbs the remaining space. */
+	/* Flutter: every row (and Logout) is Expanded and a flex-3 spacer sits above
+	   the version line, so rows grow with the window height. */
 	.items {
-		flex: 0 0 auto;
+		flex: 1 1 0;
+		min-height: 0;
 		display: flex;
 		flex-direction: column;
 	}
@@ -146,7 +119,8 @@
 		display: flex;
 		align-items: center;
 		gap: 16px;
-		height: 62px;
+		flex: 1 1 0;
+		min-height: 44px;
 		padding: 0 20px;
 		border: none;
 		background: none;
@@ -161,19 +135,22 @@
 	.item.active {
 		color: var(--primary);
 	}
+	/* Flutter: 25px circle outlined in primary. */
 	.badge {
 		margin-left: auto;
-		min-width: 22px;
-		padding: 2px 7px;
-		border-radius: 999px;
-		background: var(--primary);
-		color: var(--on-primary);
+		width: 25px;
+		height: 25px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border: 1.5px solid var(--primary);
+		border-radius: 50%;
+		color: var(--primary);
 		font-size: 12px;
 		font-weight: 600;
-		text-align: center;
 	}
 	.spacer {
-		flex: 1 1 0;
+		flex: 3 1 0;
 		min-height: 0;
 		border-top: 2px solid var(--surface);
 	}
@@ -185,6 +162,9 @@
 		border-top: 2px solid var(--surface);
 	}
 	.logout {
+		flex: 1 1 0;
+		max-height: 70px;
+		margin-bottom: 10px;
 		border-top: 2px solid var(--surface);
 	}
 </style>

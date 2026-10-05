@@ -60,7 +60,7 @@
 	});
 
 	const icon = $derived(
-		{ loans: 'loans', friendships: 'user-plus', memberships: 'community' }[table] ?? 'bell'
+		{ loans: 'users-arrows', friendships: 'user-plus', memberships: 'envelope' }[table] ?? 'bell'
 	);
 
 	const href = $derived.by(() => {

@@ -126,7 +126,7 @@
 						aria-label={t('Messages')}
 						onclick={() => goto(`/messages/${member.id}`)}
 					>
-						<Icon name="message" size={20} />
+						<Icon name="comment-dots" size={20} />
 					</button>
 				{/if}
 			</li>

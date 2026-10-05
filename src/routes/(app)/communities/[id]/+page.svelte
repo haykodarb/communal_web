@@ -76,7 +76,7 @@
 
 		{#if tab === 'discuss'}
 			<Fab
-				icon="plus"
+				icon="add-messages"
 				bottom={100}
 				label={t('Create topic')}
 				onclick={() => goto(`/communities/${id}/discussions/create`)}

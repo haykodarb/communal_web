@@ -1,10 +1,9 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Icon from './Icon.svelte';
+	import Avatar from './Avatar.svelte';
 	import ReviewCard from './ReviewCard.svelte';
 	import TabBar from './TabBar.svelte';
 	import VerticalBookCard from './VerticalBookCard.svelte';
-	import { signedStorageUrl } from '#lib/data/api.ts';
 	import type { Book, Loan, Profile } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 
@@ -27,24 +26,12 @@
 		actions: Snippet;
 	} = $props();
 
-	let avatarUrl = $state<string | null>(null);
 	let tab = $state(0);
 
-	$effect(() => {
-		const path = profile.avatar_path;
-		avatarUrl = null;
-		if (path) signedStorageUrl('profile_avatars', path).then((url) => (avatarUrl = url));
-	});
 </script>
 
 <div class="header">
-	<div class="avatar">
-		{#if avatarUrl}
-			<img src={avatarUrl} alt="" />
-		{:else}
-			<Icon name="user" size={44} />
-		{/if}
-	</div>
+	<Avatar {profile} size={105} />
 	<div class="info">
 		<span class="username">{profile.username}</span>
 		{#if profile.email}
@@ -90,23 +77,6 @@
 		display: flex;
 		gap: 20px;
 		padding: 10px 20px;
-	}
-	.avatar {
-		width: 105px;
-		height: 105px;
-		flex: 0 0 105px;
-		border-radius: 50%;
-		overflow: hidden;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: color-mix(in srgb, var(--primary) 18%, transparent);
-		color: var(--primary);
-	}
-	.avatar img {
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
 	}
 	.info {
 		flex: 1;

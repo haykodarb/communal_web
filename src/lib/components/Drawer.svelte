@@ -3,9 +3,9 @@
 	import { page } from '$app/state';
 	import Icon from './Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
-	import { getProfile, signedStorageUrl } from '#lib/data/api.ts';
-	import type { Profile } from '#lib/data/models.ts';
+	import { signedStorageUrl } from '#lib/data/api.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { currentProfile } from '#lib/profile.svelte.ts';
 
 	let { onNavigate }: { onNavigate?: () => void } = $props();
 
@@ -20,18 +20,17 @@
 		{ href: '/loans', key: 'Loans', icon: 'loans' }
 	];
 
-	let profile = $state<Profile | null>(null);
+	const profile = $derived(currentProfile.value);
 	let avatarUrl = $state<string | null>(null);
 
 	$effect(() => {
 		const userId = auth.user?.id;
-		if (!userId) return;
-		getProfile(userId).then(async (result) => {
-			profile = result;
-			if (result?.avatar_path) {
-				avatarUrl = await signedStorageUrl('profile_avatars', result.avatar_path);
-			}
-		});
+		if (userId && currentProfile.value?.id !== userId) currentProfile.load(userId);
+	});
+
+	$effect(() => {
+		const path = profile?.avatar_path;
+		if (path) signedStorageUrl('profile_avatars', path).then((url) => (avatarUrl = url));
 	});
 
 	const current = $derived(page.url.pathname);

@@ -7,6 +7,7 @@
 	import type { BookForm } from '#lib/data/api.ts';
 	import type { Book } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { validateLength } from '#lib/validate.ts';
 
 	// Shared by the create and edit pages (BookCreatePage / BookEditPage).
 	let {
@@ -34,15 +35,9 @@
 	let loading = $state(false);
 	let error = $state('');
 
-	function validate(value: string, length: number, optional: boolean): string {
-		if (!value) return optional ? '' : t('Please enter something');
-		if (value.length < length) return t('form-min-length').replace('{n}', String(length));
-		return '';
-	}
-
-	const titleError = $derived(submitted ? validate(title, 3, false) : '');
-	const authorError = $derived(submitted ? validate(author, 3, false) : '');
-	const reviewError = $derived(submitted ? validate(review, 3, true) : '');
+	const titleError = $derived(submitted ? validateLength(title, 3) : '');
+	const authorError = $derived(submitted ? validateLength(author, 3) : '');
+	const reviewError = $derived(submitted ? validateLength(review, 3, true) : '');
 
 	async function submit() {
 		submitted = true;

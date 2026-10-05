@@ -11,7 +11,8 @@
 		maxWidth,
 		bucket,
 		path,
-		round = false
+		round = false,
+		height
 	}: {
 		image?: Blob | null;
 		aspect: number;
@@ -20,6 +21,8 @@
 		bucket?: string;
 		path?: string | null;
 		round?: boolean;
+		/** Overrides the default slot height (350px, or 200px when round). */
+		height?: number;
 	} = $props();
 
 	let input: HTMLInputElement;
@@ -55,7 +58,12 @@
 	const selected = $derived(src !== null);
 </script>
 
-<div class="picker" class:round style:aspect-ratio={aspect}>
+<div
+	class="picker"
+	class:round
+	style:aspect-ratio={aspect}
+	style:height={height ? `${height}px` : undefined}
+>
 	{#if src}
 		<img {src} alt="" />
 	{:else}

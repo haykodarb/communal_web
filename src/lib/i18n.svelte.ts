@@ -127,7 +127,20 @@ const es: Record<string, string> = {
 	Private: 'Privado',
 	Status: 'Estado',
 	'View loan': 'Ver préstamo',
-	'No reviews': 'Sin reseñas'
+	'No reviews': 'Sin reseñas',
+	Name: 'Nombre',
+	'Description (Optional)': 'Descripción (Opcional)',
+	Create: 'Crear',
+	Theme: 'Tema',
+	Language: 'Idioma',
+	'Show email?': '¿Mostrar email?',
+	'Bio (Optional)': 'Bio (Opcional)',
+	'Username must be at least 6 characters long': 'El usuario debe tener al menos 6 caracteres',
+	'Username must be at most 20 characters long': 'El usuario debe tener como máximo 20 caracteres',
+	'Username should only include ASCII characters':
+		'El usuario solo puede incluir caracteres ASCII',
+	'Username is already taken.': 'El usuario ya está en uso.',
+	'Bio must be at least 20 characters long': 'La bio debe tener al menos 20 caracteres'
 };
 
 function readInitial(): Locale {

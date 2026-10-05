@@ -1,7 +1,43 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import Button from '#lib/components/Button.svelte';
 	import Icon from '#lib/components/Icon.svelte';
+	import ImagePicker from '#lib/components/ImagePicker.svelte';
+	import TextField from '#lib/components/TextField.svelte';
+	import { auth } from '#lib/auth.svelte.ts';
+	import { createCommunity } from '#lib/data/api.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { validateLength } from '#lib/validate.ts';
+
+	let name = $state('');
+	let description = $state('');
+	let avatar = $state<Blob | null>(null);
+
+	let submitted = $state(false);
+	let loading = $state(false);
+	let error = $state('');
+
+	const nameError = $derived(submitted ? validateLength(name, 4) : '');
+	const descriptionError = $derived(submitted ? validateLength(description, 4, true) : '');
+
+	async function submit() {
+		submitted = true;
+		error = '';
+		if (nameError || descriptionError) return;
+
+		loading = true;
+		try {
+			const community = await createCommunity(
+				auth.user!.id,
+				{ name, description: description || null },
+				avatar
+			);
+			await goto(`/communities/${community.id}`, { replaceState: true });
+		} catch (e) {
+			error = e instanceof Error ? e.message : String(e);
+			loading = false;
+		}
+	}
 </script>
 
 <div class="page">
@@ -9,7 +45,33 @@
 		<Icon name="chevron-left" size={32} />
 	</button>
 	<h1>{t('Create community')}</h1>
-	<p class="muted">{t('This form has not been ported yet.')}</p>
+
+	<form
+		class="form"
+		novalidate
+		onsubmit={(event) => {
+			event.preventDefault();
+			submit();
+		}}
+	>
+		<ImagePicker bind:image={avatar} aspect={1} maxWidth={320} height={300} />
+
+		<div class="fields">
+			<TextField label={t('Name')} bind:value={name} error={nameError} onsubmit={submit} />
+			<TextField
+				label={t('Description (Optional)')}
+				bind:value={description}
+				rows={5}
+				error={descriptionError}
+			/>
+		</div>
+
+		{#if error}
+			<p class="error-text">{error}</p>
+		{/if}
+
+		<Button type="submit" {loading}>{t('Create')}</Button>
+	</form>
 </div>
 
 <style>
@@ -27,9 +89,21 @@
 	h1 {
 		font-size: 32px;
 		font-weight: 800;
+		margin-bottom: 20px;
 	}
-	.muted {
-		margin-top: 12px;
-		color: var(--on-surface-variant);
+	.form {
+		display: flex;
+		flex-direction: column;
+		gap: 20px;
+	}
+	.fields {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.error-text {
+		text-align: center;
+		font-size: 14px;
+		color: var(--error);
 	}
 </style>

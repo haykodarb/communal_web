@@ -442,3 +442,70 @@ export async function getReviewsForBook(bookId: string): Promise<Loan[]> {
 	if (error) throw error;
 	return (data ?? []).map((row) => toLoan(row as Record<string, unknown>));
 }
+
+// ---------------------------------------------------------------------------
+// Community + profile mutations
+
+export interface CommunityForm {
+	name: string;
+	description: string | null;
+}
+
+export async function createCommunity(
+	userId: string,
+	form: CommunityForm,
+	avatar: Blob | null
+): Promise<Community> {
+	const imagePath = avatar ? await uploadImage('community_avatars', userId, avatar) : null;
+	const { data, error } = await supabase
+		.from('communities')
+		.insert({
+			name: form.name,
+			description: form.description,
+			owner: userId,
+			image_path: imagePath
+		})
+		.select('*, profiles(*)')
+		.single();
+	if (error) throw error;
+	return { ...toCommunity(data as Record<string, unknown>), isCurrentUserAdmin: true };
+}
+
+export async function isUsernameAvailable(username: string): Promise<boolean> {
+	const { data, error } = await supabase
+		.from('profiles')
+		.select('id')
+		.eq('username', username)
+		.maybeSingle();
+	if (error) throw error;
+	return data === null;
+}
+
+export interface ProfileForm {
+	username: string;
+	bio: string | null;
+	show_email: boolean;
+}
+
+export async function updateProfile(
+	profile: Profile,
+	form: ProfileForm,
+	avatar: Blob | null
+): Promise<Profile> {
+	const avatarPath = avatar
+		? await uploadImage('profile_avatars', profile.id, avatar)
+		: profile.avatar_path;
+	const { data, error } = await supabase
+		.from('profiles')
+		.update({
+			username: form.username,
+			show_email: form.show_email,
+			bio: form.bio,
+			avatar_path: avatarPath
+		})
+		.eq('id', profile.id)
+		.select('*')
+		.single();
+	if (error) throw error;
+	return toProfile(data);
+}

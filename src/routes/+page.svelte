@@ -22,29 +22,41 @@
 </script>
 
 <div class="landing">
+	<!-- Flutter: two Expanded halves, the crow and the slide text/controls. -->
 	<div class="container">
-		<div class="hero"><Logo size={280} showWordmark={false} /></div>
-		<h1>{t(slides[index].title)}</h1>
-		<p class="copy">{t(slides[index].copy)}</p>
-		<div class="dots">
-			{#each slides as _slide, i (i)}
-				<span class="dot" class:active={i === index}></span>
-			{/each}
+		<div class="hero"><Logo size="fill" showWordmark={false} /></div>
+		<div class="text">
+			<h1>{t(slides[index].title)}</h1>
+			<p class="copy">{t(slides[index].copy)}</p>
+			<div class="dots">
+				{#each slides as _slide, i (i)}
+					<span class="dot" class:active={i === index}></span>
+				{/each}
+			</div>
+			<Button onclick={next}>{t('Next')}</Button>
 		</div>
-		<Button onclick={next}>{t('Next')}</Button>
 	</div>
 </div>
 
 <style>
 	.landing {
-		min-height: 100vh;
-		display: flex;
-		align-items: center;
+		height: 100vh;
+		height: 100dvh;
 	}
-	.hero {
+	.container {
+		height: 100%;
 		display: flex;
-		justify-content: center;
-		margin: 30px 0;
+		flex-direction: column;
+		gap: 30px;
+	}
+	.hero,
+	.text {
+		flex: 1 1 0;
+		min-height: 0;
+	}
+	.text {
+		display: flex;
+		flex-direction: column;
 	}
 	h1 {
 		font-size: 24px;

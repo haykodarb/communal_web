@@ -48,7 +48,7 @@
 			</Switch>
 		</div>
 
-		<div class="hero"><Logo size={300} /></div>
+		<div class="hero"><Logo size="fill" /></div>
 
 		<div class="actions">
 			<Button variant="outlined" onclick={() => goto('/auth/login')}>{t('Login')}</Button>
@@ -61,10 +61,13 @@
 </div>
 
 <style>
+	/* Flutter StartPage: the logo is Expanded, so it takes the free height. */
 	.auth {
-		min-height: 100vh;
+		height: 100vh;
+		height: 100dvh;
 	}
 	.container {
+		height: 100%;
 		display: flex;
 		flex-direction: column;
 		gap: 22px;
@@ -75,9 +78,9 @@
 		align-items: center;
 	}
 	.hero {
-		display: flex;
-		justify-content: center;
-		padding: 10px 0;
+		flex: 1 1 0;
+		min-height: 0;
+		padding: 20px 0;
 	}
 	.actions {
 		display: flex;

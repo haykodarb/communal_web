@@ -2,11 +2,15 @@
 	let {
 		size = 300,
 		showWordmark = true
-	}: { size?: number; showWordmark?: boolean } = $props();
+	}: {
+		/** Pixel size, or 'fill' to take the parent's free space (Flutter's Expanded crow). */
+		size?: number | 'fill';
+		showWordmark?: boolean;
+	} = $props();
 </script>
 
-<div class="logo">
-	<span class="crow" style="--size: {size}px"></span>
+<div class="logo" class:fill={size === 'fill'}>
+	<span class="crow" style:--size={size === 'fill' ? undefined : `${size}px`}></span>
 	{#if showWordmark}
 		<span class="wordmark logo-gradient">Communal</span>
 	{/if}
@@ -18,6 +22,15 @@
 		flex-direction: column;
 		align-items: center;
 		gap: 12px;
+	}
+	.logo.fill {
+		height: 100%;
+	}
+	.fill .crow {
+		flex: 1;
+		min-height: 0;
+		width: 100%;
+		height: auto;
 	}
 	.crow {
 		display: inline-block;

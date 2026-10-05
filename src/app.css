@@ -1,0 +1,119 @@
+@font-face {
+	font-family: 'Poppins';
+	src: url('/fonts/Poppins-Regular.ttf') format('truetype');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Poppins';
+	src: url('/fonts/Poppins-Medium.ttf') format('truetype');
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Poppins';
+	src: url('/fonts/Poppins-SemiBold.ttf') format('truetype');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Poppins';
+	src: url('/fonts/Poppins-Bold.ttf') format('truetype');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Poppins';
+	src: url('/fonts/Poppins-ExtraBold.ttf') format('truetype');
+	font-weight: 800;
+	font-style: normal;
+	font-display: swap;
+}
+
+:root,
+[data-theme='light'] {
+	--surface: #f2e9e1;
+	--surface-container: #fffaf3;
+	--primary: #d7827e;
+	--on-primary: #fffaf3;
+	--secondary: #286983;
+	--on-secondary: #fffaf3;
+	--tertiary: #907aa9;
+	--on-tertiary: #fffaf3;
+	--tertiary-container: #cbbdcb;
+	--on-surface: #575279;
+	--on-surface-variant: #797593;
+	--shadow: #cecacd;
+	--error: #eb6f92;
+	--outline: color-mix(in srgb, var(--on-surface) 14%, transparent);
+}
+
+[data-theme='dark'] {
+	--surface: #1a1825;
+	--surface-container: #201d2f;
+	--primary: #ebbcba;
+	--on-primary: #191724;
+	--secondary: #9ccfd8;
+	--on-secondary: #191724;
+	--tertiary: #c4a7e7;
+	--on-tertiary: #191724;
+	--tertiary-container: #5d5172;
+	--on-surface: #e0def4;
+	--on-surface-variant: #908caa;
+	--shadow: #524f67;
+	--error: #eb6f92;
+	--outline: color-mix(in srgb, var(--on-surface) 18%, transparent);
+}
+
+* {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+	min-height: 100%;
+}
+
+body {
+	font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+	background: var(--surface);
+	color: var(--on-surface);
+	-webkit-font-smoothing: antialiased;
+	transition: background-color 200ms ease, color 200ms ease;
+}
+
+a {
+	color: var(--secondary);
+}
+
+button,
+input {
+	font-family: inherit;
+}
+
+h1,
+h2,
+h3,
+p {
+	margin: 0;
+}
+
+.container {
+	width: 100%;
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 30px;
+}
+
+.logo-gradient {
+	background: linear-gradient(135deg, var(--primary), var(--tertiary));
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
+}

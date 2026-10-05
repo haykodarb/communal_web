@@ -202,7 +202,12 @@ const es: Record<string, string> = {
 	'Please request a new password reset and follow the link in your email.':
 		'Pedí un nuevo reestablecimiento de contraseña y seguí el link de tu email.',
 	'Wrong link. Please re-request a password reset.':
-		'Link inválido. Pedí un nuevo reestablecimiento de contraseña.'
+		'Link inválido. Pedí un nuevo reestablecimiento de contraseña.',
+	'Delete chat?': '¿Borrar chat?',
+	Seen: 'Visto',
+	'Type something...': 'Escribí algo...',
+	'Could not send message, likely network error.':
+		'No se pudo enviar el mensaje, probablemente un error de red.'
 };
 
 function readInitial(): Locale {

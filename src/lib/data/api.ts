@@ -6,6 +6,7 @@ import type {
 	Friendship,
 	Loan,
 	Membership,
+	Message,
 	Profile
 } from './models';
 
@@ -725,5 +726,113 @@ export async function setNotificationsRead(userId: string): Promise<void> {
 		.update({ seen: true })
 		.eq('receiver', userId)
 		.eq('seen', false);
+	if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// Messages
+
+const MESSAGE_SELECT =
+	'*, receiver_profile:profiles!receiver(*), sender_profile:profiles!sender(*)';
+
+function toMessage(row: Record<string, unknown>): Message {
+	return {
+		id: row.id as string,
+		created_at: row.created_at as string,
+		sender: toProfile(row.sender_profile as Record<string, unknown>),
+		receiver: toProfile(row.receiver_profile as Record<string, unknown>),
+		content: (row.content as string) ?? '',
+		is_read: Boolean(row.is_read),
+		unread_messages: (row.unread_messages as number | null) ?? null
+	};
+}
+
+const chatWith = (a: string, b: string) =>
+	`and(sender.eq.${a},receiver.eq.${b}),and(sender.eq.${b},receiver.eq.${a})`;
+
+/**
+ * Latest message of each conversation. distinct_chats has a row per
+ * direction, so keep only the newer row of each sender/receiver pair.
+ */
+export async function getChats(): Promise<Message[]> {
+	const { data, error } = await supabase
+		.from('distinct_chats')
+		.select(MESSAGE_SELECT)
+		.order('created_at', { ascending: false });
+	if (error) throw error;
+
+	const chats = (data ?? []).map((row) => toMessage(row as Record<string, unknown>));
+	return chats.filter(
+		(chat) =>
+			!chats.some(
+				(other) =>
+					other.sender.id === chat.receiver.id &&
+					other.receiver.id === chat.sender.id &&
+					other.created_at > chat.created_at
+			)
+	);
+}
+
+export async function getUnreadChatCount(userId: string): Promise<number> {
+	const { count, error } = await supabase
+		.from('distinct_chats')
+		.select('id', { count: 'exact', head: true })
+		.match({ receiver: userId, is_read: false });
+	if (error) throw error;
+	return count ?? 0;
+}
+
+/** Newest first, 100 per page like MessagesBackend.getMessagesWithUser. */
+export async function getMessagesWith(
+	userId: string,
+	otherUserId: string,
+	page = 0
+): Promise<Message[]> {
+	const { data, error } = await supabase
+		.from('messages')
+		.select(MESSAGE_SELECT)
+		.or(chatWith(userId, otherUserId))
+		.order('created_at', { ascending: false })
+		.range(page * 100, page * 100 + 99);
+	if (error) throw error;
+	return (data ?? []).map((row) => toMessage(row as Record<string, unknown>));
+}
+
+export async function getMessageById(id: string): Promise<Message | null> {
+	const { data, error } = await supabase
+		.from('messages')
+		.select(MESSAGE_SELECT)
+		.eq('id', id)
+		.maybeSingle();
+	if (error) throw error;
+	return data ? toMessage(data as Record<string, unknown>) : null;
+}
+
+export async function sendMessage(
+	userId: string,
+	receiverId: string,
+	content: string
+): Promise<Message> {
+	const { data, error } = await supabase
+		.from('messages')
+		.insert({ sender: userId, receiver: receiverId, content })
+		.select(MESSAGE_SELECT)
+		.single();
+	if (error) throw error;
+	return toMessage(data as Record<string, unknown>);
+}
+
+export async function markMessagesRead(userId: string, otherUserId: string): Promise<void> {
+	const { error } = await supabase
+		.from('messages')
+		.update({ is_read: true })
+		.or(chatWith(userId, otherUserId))
+		.eq('is_read', false)
+		.eq('receiver', userId);
+	if (error) throw error;
+}
+
+export async function deleteChatWith(otherUserId: string): Promise<void> {
+	const { error } = await supabase.rpc('delete_chat_for_user', { chatter_id: otherUserId });
 	if (error) throw error;
 }

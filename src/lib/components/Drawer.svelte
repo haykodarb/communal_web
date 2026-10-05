@@ -6,8 +6,14 @@
 	import { signedStorageUrl } from '#lib/data/api.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { currentProfile } from '#lib/profile.svelte.ts';
+	import { unread } from '#lib/unread.svelte.ts';
 
 	let { onNavigate }: { onNavigate?: () => void } = $props();
+
+	const badges: Record<string, () => number> = {
+		'/notifications': () => unread.notifications,
+		'/messages': () => unread.messages
+	};
 
 	// Order mirrors the Flutter CommonDrawerWidget.
 	const items = [
@@ -70,6 +76,9 @@
 			>
 				<Icon name={item.icon} size={26} />
 				<span>{t(item.key)}</span>
+				{#if (badges[item.href]?.() ?? 0) > 0}
+					<span class="badge">{badges[item.href]()}</span>
+				{/if}
 			</button>
 		{/each}
 	</nav>
@@ -151,6 +160,17 @@
 	}
 	.item.active {
 		color: var(--primary);
+	}
+	.badge {
+		margin-left: auto;
+		min-width: 22px;
+		padding: 2px 7px;
+		border-radius: 999px;
+		background: var(--primary);
+		color: var(--on-primary);
+		font-size: 12px;
+		font-weight: 600;
+		text-align: center;
 	}
 	.spacer {
 		flex: 1 1 0;

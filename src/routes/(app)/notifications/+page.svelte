@@ -4,6 +4,7 @@
 	import NotificationCard from '#lib/components/NotificationCard.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import {
+		getNotificationById,
 		getNotifications,
 		respondToFriendRequest,
 		respondToInvitation,
@@ -11,6 +12,8 @@
 	} from '#lib/data/api.ts';
 	import type { AppNotification } from '#lib/data/models.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
+	import { onTableChange } from '#lib/realtime.ts';
+	import { unread } from '#lib/unread.svelte.ts';
 
 	const PAGE_SIZE = 20;
 
@@ -36,13 +39,31 @@
 			hasMore = next.length === PAGE_SIZE;
 			page += 1;
 			// Rows keep their `seen` flag locally so the "New" header still shows.
-			if (next.some((n) => !n.seen)) setNotificationsRead(userId);
+			if (next.some((n) => !n.seen)) {
+				setNotificationsRead(userId).then(() => unread.refreshNotifications(userId));
+			}
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 			hasMore = false;
 		}
 		loading = false;
 	}
+
+	// Live updates, as in NotificationsController.realtimeListener.
+	$effect(() =>
+		onTableChange('notifications', async (change) => {
+			if (change.event === 'DELETE') {
+				notifications = notifications.filter((n) => n.id !== change.oldRow.id);
+				return;
+			}
+			if (change.newRow.receiver !== userId) return;
+			const fresh = await getNotificationById(change.newRow.id as number);
+			if (!fresh) return;
+			const index = notifications.findIndex((n) => n.id === fresh.id);
+			if (index >= 0) notifications[index] = fresh;
+			else notifications = [fresh, ...notifications];
+		})
+	);
 
 	$effect(() => {
 		if (!sentinel) return;

@@ -91,3 +91,14 @@ export interface AppNotification {
 	friendship: Friendship | null;
 	membership: Membership | null;
 }
+
+export interface Message {
+	id: string;
+	created_at: string;
+	sender: Profile;
+	receiver: Profile;
+	content: string;
+	is_read: boolean;
+	/** Only on rows from the distinct_chats view. */
+	unread_messages?: number | null;
+}

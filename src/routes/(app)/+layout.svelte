@@ -5,6 +5,8 @@
 	import Icon from '#lib/components/Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { subscribeToDatabaseChanges, unsubscribeFromDatabase } from '#lib/realtime.ts';
+	import { unread } from '#lib/unread.svelte.ts';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -33,6 +35,18 @@
 		if (auth.ready && !auth.session) {
 			goto('/auth');
 		}
+	});
+
+	// Realtime + unread counters for the signed-in user (CommonDrawerController.onInit).
+	$effect(() => {
+		const userId = auth.user?.id;
+		if (!userId) return;
+		subscribeToDatabaseChanges();
+		unread.start(userId);
+		return () => {
+			unread.stop();
+			unsubscribeFromDatabase();
+		};
 	});
 </script>
 

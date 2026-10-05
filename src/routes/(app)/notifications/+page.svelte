@@ -4,9 +4,10 @@
 	import NotificationCard from '#lib/components/NotificationCard.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import {
+		acceptFriendRequest,
+		deleteFriendship,
 		getNotificationById,
 		getNotifications,
-		respondToFriendRequest,
 		setNotificationsRead
 	} from '#lib/data/api.ts';
 	import type { AppNotification } from '#lib/data/models.ts';
@@ -101,10 +102,13 @@
 		busyId = notification.id;
 		error = '';
 		try {
-			await respondToFriendRequest(notification.friendship!.id, accept);
 			if (accept) {
+				await acceptFriendRequest(notification.friendship!.id);
 				notification.type = { ...notification.type, event: 'accepted' };
 			} else {
+				// Rejecting deletes the request (its notification cascades), so the
+				// sender can ask again later.
+				await deleteFriendship(notification.friendship!.id);
 				notifications = notifications.filter((n) => n.id !== notification.id);
 			}
 		} catch (e) {

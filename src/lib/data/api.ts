@@ -616,13 +616,11 @@ export async function sendFriendRequest(userId: string, targetUserId: string): P
 	return toFriendship(data as Record<string, unknown>);
 }
 
-export async function respondToFriendRequest(
-	friendshipId: number,
-	accept: boolean
-): Promise<Friendship> {
+/** Rejecting a request deletes it instead (deleteFriendship), so it can be sent again. */
+export async function acceptFriendRequest(friendshipId: number): Promise<Friendship> {
 	const { data, error } = await supabase
 		.from('friendships')
-		.update({ accepted: accept, accepted_at: 'now()' })
+		.update({ accepted: true, accepted_at: 'now()' })
 		.eq('id', friendshipId)
 		.select(FRIENDSHIP_SELECT)
 		.single();

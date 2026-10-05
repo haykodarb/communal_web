@@ -191,21 +191,6 @@ export async function getCommunitiesForUser(
 	);
 }
 
-/** Public community search by name. */
-export async function searchCommunities(
-	search: string,
-	{ page = 0, pageSize = 30 }: CommunitiesQuery = {}
-): Promise<Community[]> {
-	const { data, error } = await supabase
-		.from('communities')
-		.select('*, profiles(*)')
-		.ilike('name', `%${search}%`)
-		.range(page * pageSize, page * pageSize + pageSize - 1);
-
-	if (error) throw error;
-	return (data ?? []).map((row) => toCommunity(row as Record<string, unknown>));
-}
-
 /** Loans where the user left a review (accepted loans they borrowed). */
 export async function getReviewsForUser(
 	userId: string,
@@ -1159,4 +1144,41 @@ export async function sendTopicMessage(
 		.single();
 	if (error) throw error;
 	return toDiscussionMessage(data as Record<string, unknown>);
+}
+
+// ---------------------------------------------------------------------------
+// Search
+
+/** get_books_friends_of_friends RPC: books from your friends' circle (search's Books tab). */
+export async function searchFriendsBooks(
+	search: string,
+	{ page = 0, pageSize = 20 }: { page?: number; pageSize?: number } = {}
+): Promise<Book[]> {
+	const { data, error } = await supabase
+		.rpc('get_books_friends_of_friends', {
+			offset_num: page * pageSize,
+			limit_num: pageSize,
+			search_query: search
+		})
+		.select('*, profiles(*)')
+		.order('created_at', { ascending: false })
+		.limit(pageSize);
+	if (error) throw error;
+	return ((data ?? []) as Record<string, unknown>[]).map(toBook);
+}
+
+/** Everyone except the current user whose username matches. */
+export async function searchUsers(
+	userId: string,
+	search: string,
+	{ page = 0, pageSize = 20 }: { page?: number; pageSize?: number } = {}
+): Promise<Profile[]> {
+	const { data, error } = await supabase
+		.from('profiles')
+		.select('*')
+		.neq('id', userId)
+		.ilike('username', `%${search}%`)
+		.range(page * pageSize, page * pageSize + pageSize - 1);
+	if (error) throw error;
+	return (data ?? []).map((row) => toProfile(row as Record<string, unknown>));
 }

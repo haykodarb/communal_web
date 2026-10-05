@@ -229,7 +229,23 @@ const es: Record<string, string> = {
 	'community-books-no-items': 'No se encontraron libros en esta comunidad.',
 	'community-members-no-items':
 		'No se encontraron usuarios en esta comunidad.\nEsto es probablemente un error de conexión o un bug.',
-	'community-topics-no-items': 'No se crearon conversaciones en esta comunidad.'
+	'community-topics-no-items': 'No se crearon conversaciones en esta comunidad.',
+	Leave: 'Salir',
+	Requests: 'Solicitudes',
+	'No pending requests.': 'No hay solicitudes pendientes.',
+	'Accept membership request?': '¿Aceptar solicitud de membresía?',
+	'Reject membership request?': '¿Rechazar solicitud de membresía?',
+	'Confirm delete of community {name}?': '¿Confirmás borrar la comunidad {name}?',
+	'Are you sure you want to leave community {name}?':
+		'¿Seguro que querés salir de la comunidad {name}?',
+	'Undo invitation to {name}?': '¿Deshacer la invitación a {name}?',
+	'Error in inviting user.': 'Error al invitar al usuario.',
+	'Error in rescinding invitation.': 'Error al deshacer la invitación.',
+	Users: 'Usuarios',
+	'No books found in any of the communities you are a part of.':
+		'No se encontraron libros en ninguna de tus comunidades.',
+	'No users found, likely a network issue.':
+		'No se encontraron usuarios, probablemente un error de red.'
 };
 
 function readInitial(): Locale {

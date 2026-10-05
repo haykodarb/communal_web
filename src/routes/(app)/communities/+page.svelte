@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import CommunityCard from '#lib/components/CommunityCard.svelte';
-	import Icon from '#lib/components/Icon.svelte';
+	import Fab from '#lib/components/Fab.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { getCommunitiesForUser } from '#lib/data/api.ts';
 	import type { Community } from '#lib/data/models.ts';
@@ -47,20 +47,15 @@
 		</div>
 	{/if}
 
-	<button
-		class="fab"
-		type="button"
-		onclick={() => goto('/communities/create')}
-		aria-label={t('Create community')}
-	>
-		<Icon name="plus" size={30} />
-	</button>
+	<Fab icon="plus" label={t('Create community')} onclick={() => goto('/communities/create')} />
 </div>
 
 <style>
 	.page {
 		min-height: 100vh;
-		padding: 20px 5px 90px;
+		padding: 20px 5px 0;
+		display: flex;
+		flex-direction: column;
 	}
 	.list {
 		display: flex;
@@ -83,22 +78,5 @@
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
-	}
-	.fab {
-		position: fixed;
-		right: 24px;
-		bottom: 24px;
-		width: 56px;
-		height: 56px;
-		border: none;
-		border-radius: 20px;
-		background: var(--primary);
-		color: var(--on-primary);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
-		box-shadow: 0 4px 12px color-mix(in srgb, var(--shadow) 60%, transparent);
-		z-index: 15;
 	}
 </style>

@@ -19,8 +19,11 @@
 </div>
 
 <style>
+	/* margin-top: auto pins it to the bottom of a short page when the parent is a
+	   full-height flex column. */
 	.slot {
 		position: sticky;
+		margin-top: auto;
 		bottom: 24px;
 		display: flex;
 		justify-content: flex-end;

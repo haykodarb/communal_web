@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import Avatar from '#lib/components/Avatar.svelte';
+	import ChatComposer from '#lib/components/ChatComposer.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { getMessagesWith, getProfile, markMessagesRead, sendMessage } from '#lib/data/api.ts';
@@ -139,13 +140,6 @@
 			error = t('Could not send message, likely network error.');
 		}
 	}
-
-	function onkeydown(event: KeyboardEvent) {
-		if (event.key === 'Enter' && !event.shiftKey) {
-			event.preventDefault();
-			send();
-		}
-	}
 </script>
 
 <div class="chat">
@@ -189,24 +183,7 @@
 		<p class="error-text">{error}</p>
 	{/if}
 
-	<form
-		class="composer"
-		onsubmit={(event) => {
-			event.preventDefault();
-			send();
-		}}
-	>
-		<textarea
-			bind:value={draft}
-			rows="1"
-			placeholder={t('Type something...')}
-			aria-label={t('Type something...')}
-			{onkeydown}
-		></textarea>
-		<button type="submit" class="send" aria-label={t('Send')} disabled={!draft.trim()}>
-			<Icon name="send" size={20} />
-		</button>
-	</form>
+	<ChatComposer bind:value={draft} onsend={send} />
 </div>
 
 <style>
@@ -293,43 +270,6 @@
 	.top {
 		min-height: 1px;
 		text-align: center;
-	}
-	.composer {
-		display: flex;
-		align-items: flex-end;
-		gap: 10px;
-		padding: 12px 20px 20px;
-	}
-	textarea {
-		flex: 1;
-		max-height: 9em;
-		padding: 14px 20px;
-		border: 2px solid transparent;
-		border-radius: 30px;
-		background: var(--surface-container);
-		color: var(--on-surface);
-		font: inherit;
-		font-size: 14px;
-		line-height: 1.4;
-		resize: none;
-		field-sizing: content;
-		outline: none;
-	}
-	textarea:focus {
-		border-color: var(--primary);
-	}
-	.send {
-		display: flex;
-		padding: 14px;
-		border: none;
-		border-radius: 50%;
-		background: var(--primary);
-		color: var(--on-primary);
-		cursor: pointer;
-	}
-	.send:disabled {
-		opacity: 0.5;
-		cursor: default;
 	}
 	.error-text {
 		padding: 0 20px;

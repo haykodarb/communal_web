@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import BookCard from '#lib/components/BookCard.svelte';
-	import Icon from '#lib/components/Icon.svelte';
+	import Fab from '#lib/components/Fab.svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { getBooksForUser } from '#lib/data/api.ts';
@@ -52,15 +52,14 @@
 		</div>
 	{/if}
 
-	<button class="fab" type="button" onclick={() => goto('/my-books/create')} aria-label={t('Add book')}>
-		<Icon name="plus" size={30} />
-	</button>
+	<Fab icon="plus" label={t('Add book')} onclick={() => goto('/my-books/create')} />
 </div>
 
 <style>
 	.page {
 		min-height: 100vh;
-		padding-bottom: 90px;
+		display: flex;
+		flex-direction: column;
 	}
 	.list {
 		display: flex;
@@ -84,22 +83,5 @@
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
-	}
-	.fab {
-		position: fixed;
-		right: 24px;
-		bottom: 24px;
-		width: 56px;
-		height: 56px;
-		border: none;
-		border-radius: 20px;
-		background: var(--primary);
-		color: var(--on-primary);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		cursor: pointer;
-		box-shadow: 0 4px 12px color-mix(in srgb, var(--shadow) 60%, transparent);
-		z-index: 15;
 	}
 </style>

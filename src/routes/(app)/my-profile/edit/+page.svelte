@@ -88,21 +88,6 @@
 <div class="page">
 	<PageBar title={t('Edit profile')} mobileTitle onback={() => goto('/my-profile')} />
 
-	<div class="row">
-		<span>{t('Theme')}</span>
-		<Switch value={!theme.isDark} onchange={theme.toggle} ariaLabel={t('Toggle theme')}>
-			{#snippet left()}<Icon name="sun" size={20} />{/snippet}
-			{#snippet right()}<Icon name="moon" size={20} />{/snippet}
-		</Switch>
-	</div>
-	<div class="row">
-		<span>{t('Language')}</span>
-		<Switch value={i18n.locale === 'en'} onchange={i18n.toggle} ariaLabel={t('Change language')}>
-			{#snippet left()}EN{/snippet}
-			{#snippet right()}ES{/snippet}
-		</Switch>
-	</div>
-
 	{#if profile}
 		<form
 			class="form"
@@ -121,14 +106,6 @@
 				round
 			/>
 
-			<div class="row">
-				<span>{t('Show email?')}</span>
-				<Switch value={showEmail} onchange={() => (showEmail = !showEmail)} ariaLabel={t('Show email?')}>
-					{#snippet left()}<Icon name="check" size={20} />{/snippet}
-					{#snippet right()}<Icon name="x" size={20} />{/snippet}
-				</Switch>
-			</div>
-
 			<div class="fields">
 				<TextField
 					label={t('Username')}
@@ -145,6 +122,29 @@
 					maxlength={1000}
 					error={bioError}
 				/>
+			</div>
+
+			<!-- Flutter order: avatar, username, bio, show email, language, theme. -->
+			<div class="row">
+				<span>{t('Show email?')}</span>
+				<Switch value={showEmail} onchange={() => (showEmail = !showEmail)} ariaLabel={t('Show email?')}>
+					{#snippet left()}<Icon name="check" size={20} />{/snippet}
+					{#snippet right()}<Icon name="x" size={20} />{/snippet}
+				</Switch>
+			</div>
+			<div class="row">
+				<span>{t('Language')}</span>
+				<Switch value={i18n.locale === 'en'} onchange={i18n.toggle} ariaLabel={t('Change language')}>
+					{#snippet left()}EN{/snippet}
+					{#snippet right()}ES{/snippet}
+				</Switch>
+			</div>
+			<div class="row">
+				<span>{t('Theme')}</span>
+				<Switch value={!theme.isDark} onchange={theme.toggle} ariaLabel={t('Toggle theme')}>
+					{#snippet left()}<Icon name="sun" size={20} />{/snippet}
+					{#snippet right()}<Icon name="moon" size={20} />{/snippet}
+				</Switch>
 			</div>
 
 			{#if error}

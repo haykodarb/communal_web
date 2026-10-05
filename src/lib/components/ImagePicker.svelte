@@ -59,7 +59,8 @@
 	}
 
 	const src = $derived(previewUrl ?? existingUrl);
-	const selected = $derived(src !== null);
+	// Flutter styles the button as "selected" once a new image is picked.
+	const selected = $derived(image !== null);
 </script>
 
 <div
@@ -74,6 +75,13 @@
 	{:else}
 		<span class="empty">{t('Add\nimage')}</span>
 	{/if}
+	{#if !round}{@render pickButton()}{/if}
+	<input bind:this={input} type="file" accept="image/*" hidden {onchange} />
+</div>
+<!-- Flutter puts the button under a round avatar rather than over it. -->
+{#if round}<div class="below">{@render pickButton()}</div>{/if}
+
+{#snippet pickButton()}
 	<button
 		type="button"
 		class="pick"
@@ -83,8 +91,7 @@
 	>
 		<Icon name="image" size={24} />
 	</button>
-	<input bind:this={input} type="file" accept="image/*" hidden {onchange} />
-</div>
+{/snippet}
 {#if error}
 	<p class="error-text">{error}</p>
 {/if}
@@ -136,8 +143,14 @@
 		color: var(--on-primary);
 		cursor: pointer;
 	}
-	.round .pick {
-		bottom: 12px;
+	.below {
+		display: flex;
+		justify-content: center;
+		margin-top: 10px;
+	}
+	.below .pick {
+		position: static;
+		transform: none;
 	}
 	.pick.selected {
 		background: var(--surface-container);

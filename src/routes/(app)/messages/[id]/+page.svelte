@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import Avatar from '#lib/components/Avatar.svelte';
 	import ChatComposer from '#lib/components/ChatComposer.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
@@ -150,7 +149,6 @@
 		</button>
 		{#if chatter}
 			<a class="who" href={profileHref(chatter)}>
-				<Avatar profile={chatter} size={36} />
 				<span>{chatter.username}</span>
 			</a>
 		{/if}
@@ -205,7 +203,6 @@
 		align-items: center;
 		gap: 8px;
 		padding: 10px 12px;
-		border-bottom: 1px solid color-mix(in srgb, var(--on-surface-variant) 30%, transparent);
 	}
 	.back {
 		display: flex;

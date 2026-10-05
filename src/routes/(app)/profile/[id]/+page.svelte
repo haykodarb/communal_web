@@ -85,9 +85,13 @@
 </script>
 
 <div class="page">
-	<button class="back" type="button" aria-label={t('Back')} onclick={() => history.back()}>
-		<Icon name="chevron-left" size={32} />
-	</button>
+	<!-- Flutter AppBar: back button with a centered "Profile" title. -->
+	<header class="bar">
+		<button class="back" type="button" aria-label={t('Back')} onclick={() => history.back()}>
+			<Icon name="chevron-left" size={28} />
+		</button>
+		<h1>{t('Profile')}</h1>
+	</header>
 
 	{#if loading}
 		<p class="muted">{t('Loading…')}</p>
@@ -96,8 +100,8 @@
 			{profile}
 			{books}
 			{reviews}
-			emptyBooks={t('No books found.')}
-			emptyReviews={t('No reviews')}
+			emptyBooks={t('No books.')}
+			emptyReviews={t('No reviews.')}
 		>
 			{#snippet actions()}
 				{#if !friendship}
@@ -126,15 +130,29 @@
 
 <style>
 	.page {
-		padding: 16px 0 40px;
+		padding: 0 0 40px;
+	}
+	.bar {
+		position: relative;
+		display: flex;
+		align-items: center;
+		height: 56px;
+		padding: 0 12px;
 	}
 	.back {
+		display: flex;
+		padding: 4px;
 		background: none;
 		border: none;
 		color: var(--on-surface);
 		cursor: pointer;
-		padding: 0 20px;
-		margin-bottom: 4px;
+	}
+	h1 {
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		font-size: 16px;
+		font-weight: 500;
 	}
 	.error-text {
 		width: 100%;

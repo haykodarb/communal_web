@@ -4,7 +4,7 @@
 
 	let {
 		value = $bindable(''),
-		placeholder = t('Search'),
+		placeholder = `${t('Search')}...`,
 		onSearch,
 		onFilter
 	}: {

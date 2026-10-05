@@ -192,7 +192,7 @@
 	/* Flutter deletes on long-press; here a hover button overlays the card corner. */
 	.delete {
 		position: absolute;
-		top: 4px;
+		bottom: 4px;
 		right: 4px;
 		display: flex;
 		padding: 8px;

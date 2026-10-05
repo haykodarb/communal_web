@@ -111,7 +111,7 @@
 		border-radius: 10px;
 		background: var(--surface-container);
 		color: inherit;
-		font-weight: 600;
+		font-size: 14px;
 		text-decoration: none;
 	}
 	.muted {

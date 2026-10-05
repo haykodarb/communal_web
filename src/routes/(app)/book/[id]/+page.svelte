@@ -97,9 +97,10 @@
 	<BookDetail
 		{book}
 		{reviews}
+		large
 		onback={() => history.back()}
 		info={[
-			{ label: t('Owner'), value: book.owner.username },
+			{ label: t('Owner'), value: book.owner.username, href: `/profile/${book.owner.id}` },
 			{ label: t('Added'), value: formatShortDate(book.created_at) },
 			{ label: t('Status'), value: busy ? '' : statusText }
 		]}

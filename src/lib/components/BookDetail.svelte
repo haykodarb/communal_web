@@ -14,13 +14,16 @@
 		book,
 		reviews,
 		info,
+		large = false,
 		onback,
 		actions
 	}: {
 		book: Book;
 		/** Completed loans with a review. */
 		reviews: Loan[];
-		info: { label: string; value: string }[];
+		info: { label: string; value: string; href?: string }[];
+		/** BookForeignPage uses a bigger title (24/20 vs 18/16). */
+		large?: boolean;
 		onback: () => void;
 		actions: Snippet;
 	} = $props();
@@ -47,7 +50,7 @@
 			<CoverImage bucket="book_covers" path={book.image_path} alt={book.title} />
 		</div>
 
-		<div class="title">
+		<div class="title" class:large>
 			<h1>{book.title}</h1>
 			<p class="author">{book.author}</p>
 		</div>
@@ -56,7 +59,9 @@
 			{#each info as item (item.label)}
 				<div>
 					<dt>{item.label}</dt>
-					<dd>{item.value}</dd>
+					<dd>
+						{#if item.href}<a href={item.href}>{item.value}</a>{:else}{item.value}{/if}
+					</dd>
 				</div>
 			{/each}
 		</dl>
@@ -65,7 +70,7 @@
 			{#if cards.length === 0}
 				<p class="no-reviews">{t('No reviews')}</p>
 			{:else}
-				<div class="carousel">
+				<div class="carousel" class:single={cards.length < 2}>
 					<button
 						class="nav"
 						type="button"
@@ -178,6 +183,16 @@
 		font-size: 16px;
 		color: var(--on-surface-variant);
 	}
+	.large h1 {
+		font-size: 24px;
+	}
+	.large .author {
+		font-size: 20px;
+	}
+	dd a {
+		color: var(--primary);
+		text-decoration: none;
+	}
 	/* Flutter: 65px pill, radius 40, three centered columns. */
 	.info {
 		flex: 0 0 65px;
@@ -209,10 +224,10 @@
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
 		gap: 10px;
 	}
 	.no-reviews {
+		margin: auto 0;
 		text-align: center;
 		font-size: 18px;
 		color: var(--on-surface-variant);
@@ -234,14 +249,16 @@
 	.nav:disabled {
 		visibility: hidden;
 	}
+	/* Flutter only shows the arrows when there is more than one review. */
+	.single .nav {
+		display: none;
+	}
 	.review {
 		flex: 1;
 		min-width: 0;
 		max-height: 100%;
 		overflow-y: auto;
-		padding: 12px 15px;
-		border-radius: 5px;
-		background: var(--surface);
+		padding: 0 10px;
 	}
 	.reviewer {
 		display: flex;

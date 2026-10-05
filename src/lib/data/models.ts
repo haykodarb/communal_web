@@ -89,7 +89,6 @@ export interface AppNotification {
 	receiver: Profile;
 	loan: Loan | null;
 	friendship: Friendship | null;
-	membership: Membership | null;
 }
 
 export interface Message {

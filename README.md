@@ -130,5 +130,9 @@ Not ported:
   nothing in its UI links to them (invitations arrive as notifications).
 
 Intentional differences from Flutter are noted in the commit messages (e.g. the
-loan timeline shows real accepted/returned dates; membership notifications load
-their membership and accept/reject the invitation).
+loan timeline shows real accepted/returned dates; deleting a book also deletes
+its cover).
+
+Note: `notifications` has `loan` and `friendship` columns but no membership
+column, so community-invite notifications carry no membership and can't be
+answered from the notifications list (in either app).

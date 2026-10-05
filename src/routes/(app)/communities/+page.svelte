@@ -6,6 +6,7 @@
 	import { getCommunitiesForUser } from '#lib/data/api.ts';
 	import type { Community } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	let communities = $state<Community[]>([]);
 	let loading = $state(true);
@@ -21,7 +22,7 @@
 				communities = result;
 			})
 			.catch((e) => {
-				error = e instanceof Error ? e.message : String(e);
+				error = errorMessage(e);
 			})
 			.finally(() => {
 				loading = false;

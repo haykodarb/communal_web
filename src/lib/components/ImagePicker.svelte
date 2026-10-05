@@ -2,6 +2,7 @@
 	import Icon from './Icon.svelte';
 	import { processImage, signedStorageUrl } from '#lib/data/api.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// Image slot with a pick button overlaid at the bottom, like the Flutter
 	// create/edit forms. `image` receives the cropped + compressed JPEG.
@@ -50,7 +51,7 @@
 		try {
 			image = await processImage(file, { aspect, maxWidth });
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 	}
 

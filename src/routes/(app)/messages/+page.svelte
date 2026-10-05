@@ -7,6 +7,7 @@
 	import type { Message, Profile } from '#lib/data/models.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { onTableChange } from '#lib/realtime.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// MessagesPage: one row per conversation with its latest message.
 	let chats = $state<Message[]>([]);
@@ -19,7 +20,7 @@
 	const load = () =>
 		getChats()
 			.then((result) => (chats = result))
-			.catch((e) => (error = e instanceof Error ? e.message : String(e)))
+			.catch((e) => (error = errorMessage(e)))
 			.finally(() => (loading = false));
 
 	$effect(() => {
@@ -56,7 +57,7 @@
 			await deleteChatWith(other.id);
 			chats = chats.filter((c) => chatter(c).id !== other.id);
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 	}
 </script>

@@ -12,7 +12,7 @@
 	}: {
 		notification: AppNotification;
 		loading?: boolean;
-		/** Accept/reject for friendship and membership invitations. */
+		/** Accept/reject a friend request. */
 		onrespond: (accept: boolean) => void;
 	} = $props();
 
@@ -48,39 +48,30 @@
 				return event === 'created'
 					? [{ text: sender, strong: true }, { text: t(' sent you a friend request.') }]
 					: [{ text: t('You became friends with ') }, { text: sender, strong: true }];
-			case 'memberships': {
-				const community = notification.membership?.community.name ?? '';
+			// Notifications have no membership column, so (as in Flutter) these rows
+			// carry no community name and nothing to act on.
+			case 'memberships':
 				return event === 'created'
-					? [
-							{ text: t('You have been invited to join ') },
-							{ text: community, strong: true },
-							{ text: t(' by ') },
-							{ text: sender, strong: true }
-						]
-					: [{ text: t('You have joined community ') }, { text: community, strong: true }];
-			}
+					? [{ text: t('You have been invited to join ') }, { text: t(' by ') }, { text: sender, strong: true }]
+					: [{ text: t('You have joined community ') }];
 			default:
 				return [{ text: `${t('Unknown notification type:')} ${table}` }];
 		}
 	});
 
 	const icon = $derived(
-		table === 'loans' ? 'loans' : table === 'friendships' ? 'user-plus' : table === 'memberships' ? 'community' : 'bell'
+		{ loans: 'loans', friendships: 'user-plus', memberships: 'community' }[table] ?? 'bell'
 	);
 
 	const href = $derived.by(() => {
 		if (table === 'loans' && notification.loan) return `/loans/${notification.loan.id}`;
 		if (table === 'friendships' && event === 'accepted' && notification.sender)
 			return profileHref(notification.sender);
-		if (table === 'memberships' && event === 'accepted' && notification.membership)
-			return `/communities/${notification.membership.community.id}`;
 		return null;
 	});
 
 	const canRespond = $derived(
-		event === 'created' &&
-			((table === 'friendships' && notification.friendship) ||
-				(table === 'memberships' && notification.membership))
+		event === 'created' && table === 'friendships' && notification.friendship !== null
 	);
 </script>
 
@@ -111,7 +102,7 @@
 		align-items: center;
 		gap: 10px;
 		padding: 15px;
-		border-radius: 12px;
+		border-radius: 10px;
 		background: var(--surface-container);
 		transition: opacity 150ms ease;
 	}

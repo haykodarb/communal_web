@@ -1,3 +1,5 @@
+import { errorMessage } from './errors';
+
 // Infinite-scroll list state (a slim CommonListViewController): call
 // loadMore() when the end of the list comes into view, reset() on a new search.
 export function createPaged<T>(load: (page: number) => Promise<T[]>, pageSize: number) {
@@ -20,7 +22,7 @@ export function createPaged<T>(load: (page: number) => Promise<T[]>, pageSize: n
 			page += 1;
 		} catch (e) {
 			if (current !== generation) return;
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 			hasMore = false;
 		} finally {
 			if (current === generation) loading = false;

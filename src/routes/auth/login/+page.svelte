@@ -4,6 +4,7 @@
 	import TextField from '#lib/components/TextField.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { errorMessage as describeError } from '#lib/errors.ts';
 
 	let email = $state('');
 	let password = $state('');
@@ -28,7 +29,7 @@
 			await auth.signIn(email, password);
 			goto('/my-books');
 		} catch (e) {
-			errorMessage = e instanceof Error ? e.message : String(e);
+			errorMessage = describeError(e);
 		} finally {
 			loading = false;
 		}

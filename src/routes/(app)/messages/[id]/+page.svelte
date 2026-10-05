@@ -12,6 +12,7 @@
 	import { profileHref } from '#lib/links.ts';
 	import { onTableChange } from '#lib/realtime.ts';
 	import { unread } from '#lib/unread.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// MessagesSpecificPage: one conversation, newest message at the bottom.
 	let chatter = $state<Profile | null>(null);
@@ -39,7 +40,7 @@
 				pageIndex = 1;
 				markRead();
 			})
-			.catch((e) => (error = e instanceof Error ? e.message : String(e)))
+			.catch((e) => (error = errorMessage(e)))
 			.finally(() => (loading = false));
 	});
 

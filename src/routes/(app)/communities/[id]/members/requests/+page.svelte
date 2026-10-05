@@ -8,6 +8,7 @@
 	import type { Membership } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { profileHref } from '#lib/links.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// CommunityRequestsPage: admins accept or reject requests to join.
 	let requests = $state<Membership[]>([]);
@@ -22,7 +23,7 @@
 	$effect(() => {
 		getMembershipRequests(id)
 			.then((result) => (requests = result))
-			.catch((e) => (error = e instanceof Error ? e.message : String(e)))
+			.catch((e) => (error = errorMessage(e)))
 			.finally(() => (loading = false));
 	});
 
@@ -35,7 +36,7 @@
 			await respondToMembershipRequest(request.id, accept);
 			requests = requests.filter((r) => r.id !== request.id);
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 		busyId = null;
 	}

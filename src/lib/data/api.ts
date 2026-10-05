@@ -649,28 +649,14 @@ export function toMembership(row: Record<string, unknown>): Membership {
 	};
 }
 
-/** Accept or reject an invitation to join a community. */
-export async function respondToInvitation(membershipId: string, accept: boolean): Promise<void> {
-	const { data, error } = await supabase
-		.from('memberships')
-		.update({ member_accepted: accept, joined_at: accept ? 'now()' : null })
-		.eq('id', membershipId)
-		.select()
-		.maybeSingle();
-	if (error) throw error;
-	if (!data) throw new Error('Could not respond to invitation, server error.');
-}
-
 const NOTIFICATION_SELECT =
 	'*, type(*), receiver:profiles!receiver(*), sender:profiles!sender(*), ' +
 	'loans!left(*, books!left(*, profiles(*)), loanee_profile:profiles!loanee(*), owner_profile:profiles!owner(*)), ' +
-	'friendships!left(*, requester_profile:profiles!requester(*), responder_profile:profiles!responder(*)), ' +
-	'memberships!left(*, communities(*, profiles(*)), profiles(*))';
+	'friendships!left(*, requester_profile:profiles!requester(*), responder_profile:profiles!responder(*))';
 
 function toNotification(row: Record<string, unknown>): AppNotification {
 	const loan = row.loans as Record<string, unknown> | null;
 	const friendship = row.friendships as Record<string, unknown> | null;
-	const membership = row.memberships as Record<string, unknown> | null;
 	return {
 		id: row.id as number,
 		type: row.type as AppNotification['type'],
@@ -679,8 +665,7 @@ function toNotification(row: Record<string, unknown>): AppNotification {
 		sender: row.sender ? toProfile(row.sender as Record<string, unknown>) : null,
 		receiver: toProfile(row.receiver as Record<string, unknown>),
 		loan: loan ? toLoan(loan) : null,
-		friendship: friendship ? toFriendship(friendship) : null,
-		membership: membership ? toMembership(membership) : null
+		friendship: friendship ? toFriendship(friendship) : null
 	};
 }
 

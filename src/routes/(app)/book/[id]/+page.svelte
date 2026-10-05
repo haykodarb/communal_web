@@ -15,6 +15,7 @@
 	import type { Book, Loan } from '#lib/data/models.ts';
 	import { formatShortDate } from '#lib/format.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// Another user's book (BookForeignPage): request, withdraw or view the loan.
 	let book = $state<Book | null>(null);
@@ -73,7 +74,7 @@
 		try {
 			currentLoan = await requestLoan(userId, id);
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 		busy = false;
 	}
@@ -86,7 +87,7 @@
 			await deleteLoan(currentLoan.id);
 			await checkLoanStatus();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 			busy = false;
 		}
 	}

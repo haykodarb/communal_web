@@ -8,6 +8,7 @@
 	import { createTopic } from '#lib/data/api.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { validateLength } from '#lib/validate.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// CommunityDiscussionsTopicCreatePage.
 	let name = $state('');
@@ -27,7 +28,7 @@
 			const topic = await createTopic(auth.user!.id, id, name);
 			await goto(`/communities/${id}/discussions/${topic.id}`, { replace: true });
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 			loading = false;
 		}
 	}

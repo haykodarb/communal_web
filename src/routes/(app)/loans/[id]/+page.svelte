@@ -17,6 +17,7 @@
 	import { auth } from '#lib/auth.svelte.ts';
 	import { formatShortDate } from '#lib/format.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	let loan = $state<Loan | null>(null);
 	let loading = $state(true);
@@ -58,7 +59,7 @@
 			}
 			await load();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 		busy = false;
 	}
@@ -71,7 +72,7 @@
 			await load();
 			editingReview = false;
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 		busy = false;
 	}

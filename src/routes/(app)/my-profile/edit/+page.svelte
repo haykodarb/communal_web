@@ -12,6 +12,7 @@
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { currentProfile } from '#lib/profile.svelte.ts';
 	import { theme } from '#lib/theme.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	let profile = $state<Profile | null>(null);
 	let username = $state('');
@@ -77,7 +78,7 @@
 			currentProfile.set(updated);
 			await goto('/my-profile', { replace: true });
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 			loading = false;
 		}
 	}

@@ -14,6 +14,7 @@
 	import type { Book, Loan } from '#lib/data/models.ts';
 	import { formatShortDate } from '#lib/format.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// BookOwnedPage.
 	let book = $state<Book | null>(null);
@@ -43,7 +44,7 @@
 			await deleteBook(book);
 			await goto('/my-books', { replace: true });
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 			deleting = false;
 		}
 	}

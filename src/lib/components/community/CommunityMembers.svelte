@@ -15,6 +15,7 @@
 	import { t } from '#lib/i18n.svelte.ts';
 	import { profileHref } from '#lib/links.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// CommunityMembersPage: members with admin/kick actions for the owner and a
 	// pending-requests banner for admins.
@@ -48,7 +49,7 @@
 		try {
 			await action();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 		busyId = null;
 	}

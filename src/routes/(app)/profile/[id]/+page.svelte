@@ -16,6 +16,7 @@
 	} from '#lib/data/api.ts';
 	import type { Book, Friendship, Loan, Profile } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// Another user's profile (ProfileOtherPage), with friendship and message buttons.
 	let profile = $state<Profile | null>(null);
@@ -61,7 +62,7 @@
 		try {
 			await action();
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 		busy = false;
 	}

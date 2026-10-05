@@ -8,6 +8,7 @@
 	import { createCommunity } from '#lib/data/api.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { validateLength } from '#lib/validate.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	let name = $state('');
 	let description = $state('');
@@ -34,7 +35,7 @@
 			);
 			await goto(`/communities/${community.id}`, { replace: true });
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 			loading = false;
 		}
 	}

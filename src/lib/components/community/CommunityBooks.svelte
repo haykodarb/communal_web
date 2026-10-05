@@ -40,8 +40,9 @@
 	}
 	.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-		gap: 10px;
+		/* CommonListView grid: 2 columns, 8px spacing. */
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 8px;
 		padding: 10px 20px;
 	}
 	.empty,

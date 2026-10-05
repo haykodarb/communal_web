@@ -10,6 +10,7 @@
 	import type { Profile } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { profileHref } from '#lib/links.ts';
+	import { errorMessage } from '#lib/errors.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
 
 	// CommunityInvitePage: search users outside the community and invite them;
@@ -31,7 +32,7 @@
 		try {
 			sent[user.id] = await inviteToCommunity(id, user.id);
 		} catch (e) {
-			error = e instanceof Error ? e.message : t('Error in inviting user.');
+			error = errorMessage(e) || t('Error in inviting user.');
 		}
 		busyId = null;
 	}

@@ -7,13 +7,13 @@
 		getNotificationById,
 		getNotifications,
 		respondToFriendRequest,
-		respondToInvitation,
 		setNotificationsRead
 	} from '#lib/data/api.ts';
 	import type { AppNotification } from '#lib/data/models.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { onTableChange } from '#lib/realtime.ts';
 	import { unread } from '#lib/unread.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	const PAGE_SIZE = 20;
 
@@ -43,7 +43,7 @@
 				setNotificationsRead(userId).then(() => unread.refreshNotifications(userId));
 			}
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 			hasMore = false;
 		}
 		loading = false;
@@ -101,26 +101,21 @@
 		busyId = notification.id;
 		error = '';
 		try {
-			if (notification.type.table === 'friendships') {
-				await respondToFriendRequest(notification.friendship!.id, accept);
-			} else {
-				await respondToInvitation(notification.membership!.id, accept);
-			}
+			await respondToFriendRequest(notification.friendship!.id, accept);
 			if (accept) {
 				notification.type = { ...notification.type, event: 'accepted' };
 			} else {
 				notifications = notifications.filter((n) => n.id !== notification.id);
 			}
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 		busyId = null;
 	}
 </script>
 
-<div class="container">
-	<h1>{t('Notifications')}</h1>
-
+<!-- CommonListView: 10px padding, 5px separators; the title is only in the mobile app bar. -->
+<div class="page">
 	{#if error}
 		<p class="error-text">{error}</p>
 	{/if}
@@ -155,18 +150,16 @@
 <ConfirmDialog bind:this={confirmDialog} title={confirmTitle} />
 
 <style>
-	h1 {
-		font-size: 32px;
-		font-weight: 800;
-		margin-bottom: 20px;
+	.page {
+		padding: 10px;
 	}
 	.list {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
+		gap: 5px;
 	}
 	.header {
-		margin-top: 8px;
+		margin-top: 5px;
 		font-size: 14px;
 		color: var(--on-surface-variant);
 	}

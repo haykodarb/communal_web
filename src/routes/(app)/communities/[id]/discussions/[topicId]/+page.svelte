@@ -16,6 +16,7 @@
 	import { profileHref } from '#lib/links.ts';
 	import { currentProfile } from '#lib/profile.svelte.ts';
 	import { onTableChange } from '#lib/realtime.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// CommunityDiscussionsTopicMessagesPage: a group thread in a topic.
 	let topic = $state<DiscussionTopic | null>(null);
@@ -36,7 +37,7 @@
 				topic = tp;
 				messages = msgs;
 			})
-			.catch((e) => (error = e instanceof Error ? e.message : String(e)))
+			.catch((e) => (error = errorMessage(e)))
 			.finally(() => (loading = false));
 	});
 

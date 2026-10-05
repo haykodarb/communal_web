@@ -5,6 +5,7 @@
 	import { getLoansForUser } from '#lib/data/api.ts';
 	import type { Loan } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	let loans = $state<Loan[]>([]);
 	let loading = $state(true);
@@ -18,7 +19,7 @@
 		try {
 			loans = await getLoansForUser(userId, { search });
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		} finally {
 			loading = false;
 		}

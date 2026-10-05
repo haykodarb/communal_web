@@ -16,6 +16,7 @@
 	import type { Community } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { validateLength } from '#lib/validate.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// CommunitySettingsPage: the owner edits or deletes; everyone else can leave.
 	let community = $state<Community | null>(null);
@@ -75,7 +76,7 @@
 			avatar = null;
 			submitted = false;
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 		saving = false;
 	}
@@ -89,7 +90,7 @@
 			await deleteCommunity(community.id);
 			await goto('/communities', { replace: true });
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 			deleting = false;
 		}
 	}
@@ -105,7 +106,7 @@
 			await leaveCommunity(community.id, userId);
 			await goto('/communities', { replace: true });
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		}
 	}
 </script>

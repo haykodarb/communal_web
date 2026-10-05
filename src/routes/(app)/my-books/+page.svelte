@@ -7,6 +7,7 @@
 	import { getBooksForUser } from '#lib/data/api.ts';
 	import type { Book } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	let books = $state<Book[]>([]);
 	let loading = $state(true);
@@ -20,7 +21,7 @@
 		try {
 			books = await getBooksForUser(userId, { search });
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 		} finally {
 			loading = false;
 		}

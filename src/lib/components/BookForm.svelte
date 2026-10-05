@@ -8,6 +8,7 @@
 	import type { Book } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { validateLength } from '#lib/validate.ts';
+	import { errorMessage } from '#lib/errors.ts';
 
 	// Shared by the create and edit pages (BookCreatePage / BookEditPage).
 	let {
@@ -52,7 +53,7 @@
 		try {
 			await onsubmit({ title, author, review: review || null, public: isPublic }, cover);
 		} catch (e) {
-			error = e instanceof Error ? e.message : String(e);
+			error = errorMessage(e);
 			loading = false;
 		}
 	}

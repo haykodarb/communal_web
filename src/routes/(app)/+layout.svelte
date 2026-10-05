@@ -23,13 +23,14 @@
 		'/messages': 'Messages',
 		'/notifications': 'Notifications',
 		'/my-profile': 'My Profile',
-		'/search': 'Search',
-		'/profile/': 'Profile',
-		'/book/': 'Book'
+		'/search': 'Search'
 	};
 	const titleKey = $derived(
 		Object.keys(titles).find((path) => page.url.pathname.startsWith(path)) ?? '/my-books'
 	);
+	// Like Flutter, only the drawer destinations get the menu app bar on mobile;
+	// pushed pages (books, loans, chats, ...) show their own back bar instead.
+	const topLevel = $derived(page.url.pathname in titles);
 
 	$effect(() => {
 		if (auth.ready && !auth.session) {
@@ -55,6 +56,7 @@
 {#if auth.ready && auth.session}
 	{#if isMobile}
 		<div class="mobile-shell">
+			{#if topLevel}
 			<header class="appbar">
 				<button
 					class="appbar-btn"
@@ -67,6 +69,7 @@
 				<span class="appbar-title">{t(titles[titleKey])}</span>
 				<span class="appbar-spacer"></span>
 			</header>
+			{/if}
 
 			{#if drawerOpen}
 				<button

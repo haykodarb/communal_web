@@ -183,12 +183,6 @@
 		height: 100vh;
 		height: 100dvh;
 	}
-	/* Below the 56px app bar of the mobile shell (see (app)/+layout.svelte). */
-	@media (max-width: 799px) {
-		.chat {
-			height: calc(100dvh - 56px);
-		}
-	}
 	.scroll {
 		flex: 1;
 		min-height: 0;

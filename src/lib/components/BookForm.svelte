@@ -29,7 +29,7 @@
 	// svelte-ignore state_referenced_locally
 	let review = $state(book?.review ?? '');
 	// svelte-ignore state_referenced_locally
-	let isPublic = $state(book?.public ?? false);
+	let isPublic = $state(book?.public ?? true); // Book.empty() is public
 	let cover = $state<Blob | null>(null);
 
 	let submitted = $state(false);
@@ -70,6 +70,7 @@
 	<ImagePicker
 		bind:image={cover}
 		aspect={3 / 4}
+		fill
 		maxWidth={540}
 		bucket="book_covers"
 		path={book?.image_path}

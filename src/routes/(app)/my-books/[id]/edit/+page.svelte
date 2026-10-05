@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import PageBar from '#lib/components/PageBar.svelte';
 	import BookForm from '#lib/components/BookForm.svelte';
-	import Icon from '#lib/components/Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { getBookById, updateBook } from '#lib/data/api.ts';
 	import type { Book } from '#lib/data/models.ts';
@@ -22,10 +22,7 @@
 </script>
 
 <div class="page">
-	<button class="back" type="button" aria-label={t('Back')} onclick={() => goto(`/my-books/${id}`)}>
-		<Icon name="chevron-left" size={32} />
-	</button>
-	<h1>{t('Edit book')}</h1>
+	<PageBar title={t('Edit book')} mobileTitle onback={() => goto(`/my-books/${id}`)} />
 
 	{#if loading}
 		<p class="muted">{t('Loading…')}</p>
@@ -46,19 +43,6 @@
 <style>
 	.page {
 		padding: 16px 20px 40px;
-	}
-	.back {
-		background: none;
-		border: none;
-		color: var(--on-surface);
-		cursor: pointer;
-		padding: 0;
-		margin-bottom: 12px;
-	}
-	h1 {
-		font-size: 32px;
-		font-weight: 800;
-		margin-bottom: 20px;
 	}
 	.muted {
 		color: var(--on-surface-variant);

@@ -119,11 +119,6 @@
 		display: flex;
 		flex-direction: column;
 	}
-	@media (max-width: 799px) {
-		.detail {
-			height: calc(100dvh - 56px);
-		}
-	}
 	/* Flutter: the bottom 4/5 of the page is a card with 30px top corners. */
 	.card-bg {
 		position: absolute;

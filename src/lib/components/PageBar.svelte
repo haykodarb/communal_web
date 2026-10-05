@@ -7,16 +7,23 @@
 	// back button, centered title and optional trailing actions.
 	let {
 		title,
+		mobileTitle = false,
 		onback,
 		actions
-	}: { title: string; onback: () => void; actions?: Snippet } = $props();
+	}: {
+		title: string;
+		/** Only show the title on mobile, like Flutter's `Responsive.isMobile(context) ? Text(...) : null`. */
+		mobileTitle?: boolean;
+		onback: () => void;
+		actions?: Snippet;
+	} = $props();
 </script>
 
 <header class="bar">
 	<button class="icon-btn" type="button" aria-label={t('Back')} onclick={onback}>
 		<Icon name="chevron-left" size={30} />
 	</button>
-	<h1>{title}</h1>
+	<h1 class:mobile-only={mobileTitle}>{title}</h1>
 	<div class="actions">{@render actions?.()}</div>
 </header>
 
@@ -36,6 +43,11 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+	@media (min-width: 800px) {
+		h1.mobile-only {
+			visibility: hidden;
+		}
 	}
 	.icon-btn {
 		justify-self: start;

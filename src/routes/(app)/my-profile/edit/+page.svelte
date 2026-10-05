@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
+	import PageBar from '#lib/components/PageBar.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import ImagePicker from '#lib/components/ImagePicker.svelte';
@@ -85,10 +86,7 @@
 </script>
 
 <div class="page">
-	<button class="back" type="button" aria-label={t('Back')} onclick={() => goto('/my-profile')}>
-		<Icon name="chevron-left" size={32} />
-	</button>
-	<h1>{t('Edit profile')}</h1>
+	<PageBar title={t('Edit profile')} mobileTitle onback={() => goto('/my-profile')} />
 
 	<div class="row">
 		<span>{t('Theme')}</span>
@@ -166,18 +164,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 20px;
-	}
-	.back {
-		align-self: flex-start;
-		background: none;
-		border: none;
-		color: var(--on-surface);
-		cursor: pointer;
-		padding: 0;
-	}
-	h1 {
-		font-size: 32px;
-		font-weight: 800;
 	}
 	.row {
 		display: flex;

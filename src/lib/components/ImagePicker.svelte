@@ -13,6 +13,7 @@
 		bucket,
 		path,
 		round = false,
+		fill = false,
 		height
 	}: {
 		image?: Blob | null;
@@ -22,6 +23,8 @@
 		bucket?: string;
 		path?: string | null;
 		round?: boolean;
+		/** Full-width card (the book forms' 350px image area) instead of an aspect box. */
+		fill?: boolean;
 		/** Overrides the default slot height (350px, or 200px when round). */
 		height?: number;
 	} = $props();
@@ -62,7 +65,8 @@
 <div
 	class="picker"
 	class:round
-	style:aspect-ratio={aspect}
+	class:fill
+	style:aspect-ratio={fill ? undefined : aspect}
 	style:height={height ? `${height}px` : undefined}
 >
 	{#if src}
@@ -97,6 +101,9 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+	}
+	.picker.fill {
+		width: 100%;
 	}
 	.picker.round {
 		height: 200px;

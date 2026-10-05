@@ -49,7 +49,8 @@
 		{#if error}
 			<p class="error-text">{error}</p>
 		{/if}
-		<Button type="submit" {loading}>{t('Create')}</Button>
+		<!-- Flutter: a compact centered button (expand: false). -->
+		<div class="submit"><Button type="submit" expand={false} {loading}>{t('Create')}</Button></div>
 	</form>
 </div>
 
@@ -61,6 +62,10 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
+	}
+	.submit {
+		display: flex;
+		justify-content: center;
 	}
 	.error-text {
 		font-size: 14px;

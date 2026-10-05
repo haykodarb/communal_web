@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import PageBar from '#lib/components/PageBar.svelte';
 	import Button from '#lib/components/Button.svelte';
-	import Icon from '#lib/components/Icon.svelte';
 	import ImagePicker from '#lib/components/ImagePicker.svelte';
 	import TextField from '#lib/components/TextField.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
@@ -42,10 +42,7 @@
 </script>
 
 <div class="page">
-	<button class="back" type="button" aria-label={t('Back')} onclick={() => goto('/communities')}>
-		<Icon name="chevron-left" size={32} />
-	</button>
-	<h1>{t('Create community')}</h1>
+	<PageBar title={t('Create community')} mobileTitle onback={() => goto('/communities')} />
 
 	<form
 		class="form"
@@ -78,19 +75,6 @@
 <style>
 	.page {
 		padding: 16px 20px 40px;
-	}
-	.back {
-		background: none;
-		border: none;
-		color: var(--on-surface);
-		cursor: pointer;
-		padding: 0;
-		margin-bottom: 12px;
-	}
-	h1 {
-		font-size: 32px;
-		font-weight: 800;
-		margin-bottom: 20px;
 	}
 	.form {
 		display: flex;

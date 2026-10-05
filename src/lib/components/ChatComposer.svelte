@@ -28,7 +28,7 @@
 		aria-label={t('Type something...')}
 		{onkeydown}
 	></textarea>
-	<button type="submit" class="send" aria-label={t('Send')} disabled={!value.trim()}>
+	<button type="submit" class="send" aria-label={t('Send')}>
 		<Icon name="send" size={20} />
 	</button>
 </form>
@@ -38,7 +38,7 @@
 		display: flex;
 		align-items: flex-end;
 		gap: 10px;
-		padding: 12px 20px 20px;
+		padding: 10px;
 	}
 	textarea {
 		flex: 1;
@@ -66,9 +66,5 @@
 		background: var(--primary);
 		color: var(--on-primary);
 		cursor: pointer;
-	}
-	.send:disabled {
-		opacity: 0.5;
-		cursor: default;
 	}
 </style>

@@ -75,7 +75,7 @@
 				avatar
 			);
 			currentProfile.set(updated);
-			await goto('/my-profile', { replaceState: true });
+			await goto('/my-profile', { replace: true });
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 			loading = false;

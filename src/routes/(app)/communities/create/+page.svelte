@@ -32,7 +32,7 @@
 				{ name, description: description || null },
 				avatar
 			);
-			await goto(`/communities/${community.id}`, { replaceState: true });
+			await goto(`/communities/${community.id}`, { replace: true });
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 			loading = false;

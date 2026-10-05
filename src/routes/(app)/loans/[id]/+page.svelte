@@ -60,7 +60,7 @@
 		try {
 			await action();
 			if (leave) {
-				await goto('/loans', { replaceState: true });
+				await goto('/loans', { replace: true });
 				return;
 			}
 			await load();

@@ -13,7 +13,11 @@ const en: Record<string, string> = {
 	'form-invalid-email': 'Please enter a valid email',
 	'form-short-password': 'Password must be at least 6 characters',
 	'form-short-username': 'Username must be at least 3 characters',
-	'form-min-length': 'Must be at least {n} characters long.'
+	'form-min-length': 'Must be at least {n} characters long.',
+	'community-books-no-items': 'No books found in this community.',
+	'community-members-no-items':
+		'No members found in this community.\n\nThis is likely an internet error or a bug with the app.',
+	'community-topics-no-items': 'No topics have been created in this community.'
 };
 
 const es: Record<string, string> = {
@@ -207,7 +211,25 @@ const es: Record<string, string> = {
 	Seen: 'Visto',
 	'Type something...': 'Escribí algo...',
 	'Could not send message, likely network error.':
-		'No se pudo enviar el mensaje, probablemente un error de red.'
+		'No se pudo enviar el mensaje, probablemente un error de red.',
+	Discuss: 'Conversar',
+	Members: 'Miembros',
+	Settings: 'Configuración',
+	'Create topic': 'Crear conversación',
+	'Invite user': 'Invitar usuario',
+	Invite: 'Invitar',
+	Undo: 'Deshacer',
+	you: 'tú',
+	More: 'Más',
+	'Make admin': 'Hacer admin',
+	'Remove admin': 'Quitar admin',
+	Kick: 'Echar',
+	'request pending': 'solicitud pendiente',
+	'requests pending': 'solicitudes pendientes',
+	'community-books-no-items': 'No se encontraron libros en esta comunidad.',
+	'community-members-no-items':
+		'No se encontraron usuarios en esta comunidad.\nEsto es probablemente un error de conexión o un bug.',
+	'community-topics-no-items': 'No se crearon conversaciones en esta comunidad.'
 };
 
 function readInitial(): Locale {

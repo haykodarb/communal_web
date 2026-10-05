@@ -42,7 +42,7 @@
 		getBookById(id)
 			.then((result) => {
 				// Your own books live under /my-books.
-				if (result?.owner.id === userId) goto(`/my-books/${id}`, { replaceState: true });
+				if (result?.owner.id === userId) goto(`/my-books/${id}`, { replace: true });
 				book = result;
 			})
 			.finally(() => (loading = false));

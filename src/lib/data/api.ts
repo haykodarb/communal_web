@@ -3,8 +3,11 @@ import type {
 	AppNotification,
 	Book,
 	Community,
+	DiscussionMessage,
+	DiscussionTopic,
 	Friendship,
 	Loan,
+	Member,
 	Membership,
 	Message,
 	Profile
@@ -134,14 +137,22 @@ export async function getBookById(id: string): Promise<Book | null> {
 	return data ? toBook(data as Record<string, unknown>) : null;
 }
 
-export async function getCommunityById(id: string): Promise<Community | null> {
-	const { data, error } = await supabase
-		.from('communities')
-		.select('*, profiles(*)')
-		.eq('id', id)
-		.maybeSingle();
-	if (error) throw error;
-	return data ? toCommunity(data as Record<string, unknown>) : null;
+/** Also resolves whether `userId` is an admin, like CommunitiesBackend.getCommunityById. */
+export async function getCommunityById(id: string, userId: string): Promise<Community | null> {
+	const [community, membership] = await Promise.all([
+		supabase.from('communities').select('*, profiles(*)').eq('id', id).maybeSingle(),
+		supabase
+			.from('memberships')
+			.select('is_admin')
+			.match({ member: userId, community: id, member_accepted: true, admin_accepted: true })
+			.maybeSingle()
+	]);
+	if (community.error) throw community.error;
+	if (!community.data) return null;
+	return {
+		...toCommunity(community.data as Record<string, unknown>),
+		isCurrentUserAdmin: Boolean(membership.data?.is_admin)
+	};
 }
 
 export async function getLoanById(id: string): Promise<Loan | null> {
@@ -835,4 +846,317 @@ export async function markMessagesRead(userId: string, otherUserId: string): Pro
 export async function deleteChatWith(otherUserId: string): Promise<void> {
 	const { error } = await supabase.rpc('delete_chat_for_user', { chatter_id: otherUserId });
 	if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// Community books, members and requests
+
+/** get_books_community RPC: books shared in a community, newest first. */
+export async function getBooksInCommunity(
+	communityId: string,
+	{ search = '', page = 0, pageSize = 30 }: { search?: string; page?: number; pageSize?: number } = {}
+): Promise<Book[]> {
+	const { data, error } = await supabase
+		.rpc('get_books_community', {
+			community_id: communityId,
+			offset_num: page * pageSize,
+			limit_num: pageSize,
+			search_query: search
+		})
+		.select('*, profiles(*)')
+		.order('created_at', { ascending: false })
+		.limit(pageSize);
+	if (error) throw error;
+	return ((data ?? []) as Record<string, unknown>[]).map(toBook);
+}
+
+/** Accepted members whose username matches `search`. */
+export async function getCommunityMembers(
+	communityId: string,
+	{ search = '', page = 0, pageSize = 20 }: { search?: string; page?: number; pageSize?: number } = {}
+): Promise<Member[]> {
+	// !inner so the username filter drops non-matching memberships rather than
+	// returning them with a null profile.
+	const { data, error } = await supabase
+		.from('memberships')
+		.select('is_admin, profiles!inner(*)')
+		.match({ community: communityId, member_accepted: true, admin_accepted: true })
+		.ilike('profiles.username', `%${search}%`)
+		.range(page * pageSize, page * pageSize + pageSize - 1);
+	if (error) throw error;
+	return (data ?? []).map((row) => ({
+		...toProfile(row.profiles as unknown as Record<string, unknown>),
+		is_admin: Boolean(row.is_admin)
+	}));
+}
+
+export async function setMemberAdmin(
+	communityId: string,
+	userId: string,
+	isAdmin: boolean
+): Promise<void> {
+	const { data, error } = await supabase
+		.from('memberships')
+		.update({ is_admin: isAdmin })
+		.match({ member: userId, community: communityId })
+		.select();
+	if (error) throw error;
+	if (!data?.length) throw new Error('Could not update member.');
+}
+
+export async function removeMember(communityId: string, userId: string): Promise<void> {
+	const { data, error } = await supabase
+		.from('memberships')
+		.delete()
+		.match({ member: userId, community: communityId })
+		.select();
+	if (error) throw error;
+	if (!data?.length) throw new Error('Could not remove member.');
+}
+
+export async function leaveCommunity(communityId: string, userId: string): Promise<void> {
+	const { data, error } = await supabase
+		.from('memberships')
+		.delete()
+		.match({ member: userId, community: communityId, member_accepted: true })
+		.select()
+		.maybeSingle();
+	if (error) throw error;
+	if (!data) throw new Error('Could not leave community.');
+}
+
+const MEMBERSHIP_SELECT = '*, communities(*, profiles(*)), profiles(*)';
+
+/** Pending join requests (member asked, admins haven't answered). */
+export async function getMembershipRequests(communityId: string): Promise<Membership[]> {
+	const { data, error } = await supabase
+		.from('memberships')
+		.select(MEMBERSHIP_SELECT)
+		.is('admin_accepted', null)
+		.match({ community: communityId, member_accepted: true });
+	if (error) throw error;
+	return (data ?? []).map((row) => toMembership(row as Record<string, unknown>));
+}
+
+export async function getMembershipRequestCount(communityId: string): Promise<number> {
+	const { count, error } = await supabase
+		.from('memberships')
+		.select('id', { count: 'exact', head: true })
+		.is('admin_accepted', null)
+		.match({ community: communityId, member_accepted: true });
+	if (error) throw error;
+	return count ?? 0;
+}
+
+export async function respondToMembershipRequest(
+	membershipId: string,
+	accept: boolean
+): Promise<void> {
+	const { error } = await supabase
+		.from('memberships')
+		.update({ admin_accepted: accept, joined_at: accept ? 'now()' : null })
+		.eq('id', membershipId);
+	if (error) throw error;
+}
+
+/** The user's membership row for a community, in any state. */
+export async function getMembership(
+	communityId: string,
+	userId: string
+): Promise<Membership | null> {
+	const { data, error } = await supabase
+		.from('memberships')
+		.select(MEMBERSHIP_SELECT)
+		.match({ community: communityId, member: userId })
+		.maybeSingle();
+	if (error) throw error;
+	return data ? toMembership(data as Record<string, unknown>) : null;
+}
+
+/** Ask to join a community; admins then accept or reject. */
+export async function requestToJoin(communityId: string, userId: string): Promise<Membership> {
+	const { data, error } = await supabase
+		.from('memberships')
+		.insert({ member: userId, community: communityId, is_admin: false, member_accepted: true })
+		.select(MEMBERSHIP_SELECT)
+		.single();
+	if (error) throw error;
+	return toMembership(data as Record<string, unknown>);
+}
+
+/** get_users_not_in_community RPC, used by the invite page. */
+export async function searchUsersNotInCommunity(
+	communityId: string,
+	search: string,
+	page = 0
+): Promise<Profile[]> {
+	const { data, error } = await supabase.rpc('get_users_not_in_community', {
+		community_id: communityId,
+		search_query: search,
+		offset_num: page * 20,
+		limit_num: 20
+	});
+	if (error) throw error;
+	return ((data ?? []) as Record<string, unknown>[]).map(toProfile);
+}
+
+/** Invite a user (admin side); returns the membership id so the invite can be undone. */
+export async function inviteToCommunity(communityId: string, userId: string): Promise<string> {
+	const { data, error } = await supabase
+		.from('memberships')
+		.insert({
+			member: userId,
+			community: communityId,
+			is_admin: false,
+			admin_accepted: true,
+			member_accepted: null
+		})
+		.select('id')
+		.single();
+	if (error) throw error;
+	return data.id as string;
+}
+
+export async function cancelInvite(membershipId: string): Promise<void> {
+	const { error } = await supabase.from('memberships').delete().eq('id', membershipId);
+	if (error) throw error;
+}
+
+/** Invitations the user hasn't answered yet. */
+export async function getInvitations(userId: string): Promise<Membership[]> {
+	const { data, error } = await supabase
+		.from('memberships')
+		.select(MEMBERSHIP_SELECT)
+		.eq('member', userId)
+		.is('member_accepted', null);
+	if (error) throw error;
+	return (data ?? []).map((row) => toMembership(row as Record<string, unknown>));
+}
+
+export async function updateCommunity(
+	userId: string,
+	community: Community,
+	form: CommunityForm,
+	avatar: Blob | null
+): Promise<Community> {
+	const imagePath = avatar
+		? await uploadImage('community_avatars', userId, avatar)
+		: community.image_path;
+	const { data, error } = await supabase
+		.from('communities')
+		.update({ name: form.name, description: form.description, image_path: imagePath })
+		.eq('id', community.id)
+		.select('*, profiles(*)')
+		.single();
+	if (error) throw error;
+	return {
+		...toCommunity(data as Record<string, unknown>),
+		isCurrentUserAdmin: community.isCurrentUserAdmin
+	};
+}
+
+export async function deleteCommunity(communityId: string): Promise<void> {
+	const { error } = await supabase.from('communities').delete().eq('id', communityId);
+	if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// Discussions
+
+const TOPIC_SELECT =
+	'*, profiles(*), communities(*, profiles(*)), last_message(*, profiles(*))';
+
+function toDiscussionMessage(row: Record<string, unknown>): DiscussionMessage {
+	return {
+		id: row.id as string,
+		created_at: row.created_at as string,
+		sender: toProfile(row.profiles as Record<string, unknown>),
+		content: (row.content as string) ?? '',
+		topicId: row.topic as string
+	};
+}
+
+function toTopic(row: Record<string, unknown>): DiscussionTopic {
+	const last = row.last_message as Record<string, unknown> | null;
+	return {
+		id: row.id as string,
+		created_at: row.created_at as string,
+		creator: toProfile(row.profiles as Record<string, unknown>),
+		community: toCommunity((row.communities as Record<string, unknown>) ?? {}),
+		name: (row.name as string) ?? '',
+		last_message: last ? toDiscussionMessage(last) : null
+	};
+}
+
+export async function getTopics(
+	communityId: string,
+	{ search = '', page = 0, pageSize = 20 }: { search?: string; page?: number; pageSize?: number } = {}
+): Promise<DiscussionTopic[]> {
+	const { data, error } = await supabase
+		.from('discussion_topics')
+		.select(TOPIC_SELECT)
+		.eq('community', communityId)
+		.ilike('name', `%${search}%`)
+		.range(page * pageSize, page * pageSize + pageSize - 1);
+	if (error) throw error;
+	return ((data ?? []) as unknown as Record<string, unknown>[]).map(toTopic);
+}
+
+export async function getTopicById(id: string): Promise<DiscussionTopic | null> {
+	const { data, error } = await supabase
+		.from('discussion_topics')
+		.select(TOPIC_SELECT)
+		.eq('id', id)
+		.maybeSingle();
+	if (error) throw error;
+	return data ? toTopic(data as unknown as Record<string, unknown>) : null;
+}
+
+export async function createTopic(
+	userId: string,
+	communityId: string,
+	name: string
+): Promise<DiscussionTopic> {
+	const { data, error } = await supabase
+		.from('discussion_topics')
+		.insert({ creator: userId, community: communityId, name })
+		.select('*, profiles(*), communities(*, profiles(*))')
+		.single();
+	if (error) throw error;
+	return toTopic(data as Record<string, unknown>);
+}
+
+/** Newest first. */
+export async function getTopicMessages(topicId: string): Promise<DiscussionMessage[]> {
+	const { data, error } = await supabase
+		.from('discussion_messages')
+		.select('*, profiles(*)')
+		.eq('topic', topicId)
+		.order('created_at', { ascending: false });
+	if (error) throw error;
+	return (data ?? []).map((row) => toDiscussionMessage(row as Record<string, unknown>));
+}
+
+export async function getTopicMessageById(id: string): Promise<DiscussionMessage | null> {
+	const { data, error } = await supabase
+		.from('discussion_messages')
+		.select('*, profiles(*)')
+		.eq('id', id)
+		.maybeSingle();
+	if (error) throw error;
+	return data ? toDiscussionMessage(data as Record<string, unknown>) : null;
+}
+
+export async function sendTopicMessage(
+	userId: string,
+	topicId: string,
+	content: string
+): Promise<DiscussionMessage> {
+	const { data, error } = await supabase
+		.from('discussion_messages')
+		.insert({ sender: userId, topic: topicId, content })
+		.select('*, profiles(*)')
+		.single();
+	if (error) throw error;
+	return toDiscussionMessage(data as Record<string, unknown>);
 }

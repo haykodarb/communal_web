@@ -47,7 +47,7 @@
 		<p class="muted">{t('Loading…')}</p>
 	{:else if done}
 		<p class="message">{message}</p>
-		<Button onclick={() => goto('/auth/login', { replaceState: true })}>{t('Login')}</Button>
+		<Button onclick={() => goto('/auth/login', { replace: true })}>{t('Login')}</Button>
 	{:else if linkInvalid}
 		<p class="message failed">{t('Wrong link. Please re-request a password reset.')}</p>
 		<Button variant="outlined" onclick={() => goto('/auth/recovery')}>{t('Recover password')}</Button>

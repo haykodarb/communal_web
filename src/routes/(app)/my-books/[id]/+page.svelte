@@ -55,7 +55,7 @@
 		error = '';
 		try {
 			await deleteBook(book);
-			await goto('/my-books', { replaceState: true });
+			await goto('/my-books', { replace: true });
 		} catch (e) {
 			error = e instanceof Error ? e.message : String(e);
 			deleting = false;

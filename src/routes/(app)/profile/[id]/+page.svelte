@@ -34,7 +34,7 @@
 
 	$effect(() => {
 		if (id === userId) {
-			goto('/my-profile', { replaceState: true });
+			goto('/my-profile', { replace: true });
 			return;
 		}
 		loading = true;

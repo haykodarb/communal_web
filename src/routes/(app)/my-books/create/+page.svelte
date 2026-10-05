@@ -16,7 +16,7 @@
 		submitLabel="Add"
 		onsubmit={async (form, cover) => {
 			const book = await addBook(auth.user!.id, form, cover!);
-			await goto(`/my-books/${book.id}`, { replaceState: true });
+			await goto(`/my-books/${book.id}`, { replace: true });
 		}}
 	/>
 </div>

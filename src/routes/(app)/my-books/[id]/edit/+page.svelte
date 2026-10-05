@@ -35,7 +35,7 @@
 			submitLabel="Save"
 			onsubmit={async (form, cover) => {
 				await updateBook(auth.user!.id, book!, form, cover);
-				await goto(`/my-books/${id}`, { replaceState: true });
+				await goto(`/my-books/${id}`, { replace: true });
 			}}
 		/>
 	{:else}

@@ -102,3 +102,25 @@ export interface Message {
 	/** Only on rows from the distinct_chats view. */
 	unread_messages?: number | null;
 }
+
+/** A community member's profile plus their admin flag. */
+export interface Member extends Profile {
+	is_admin: boolean;
+}
+
+export interface DiscussionMessage {
+	id: string;
+	created_at: string;
+	sender: Profile;
+	content: string;
+	topicId: string;
+}
+
+export interface DiscussionTopic {
+	id: string;
+	created_at: string;
+	creator: Profile;
+	community: Community;
+	name: string;
+	last_message: DiscussionMessage | null;
+}

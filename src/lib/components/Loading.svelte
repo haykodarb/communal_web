@@ -31,6 +31,8 @@
 </script>
 
 <script lang="ts">
+	import FillCenter from './FillCenter.svelte';
+
 	let {
 		size = 50,
 		color = 'var(--primary)',
@@ -49,30 +51,6 @@
 		 */
 		fill?: boolean;
 	} = $props();
-
-	let block = $state<HTMLElement>();
-	let offset = $state(0);
-
-	// The filled loader takes no space in the layout (so a short page doesn't
-	// start scrolling); its animation is placed in the middle of the remaining
-	// height instead.
-	$effect(() => {
-		if (inline || !fill || !block) return;
-		const el = block;
-		// Inside a scrolling panel (chats), the space ends at the panel's bottom.
-		let scroller: HTMLElement | null = el.parentElement;
-		while (scroller && !/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)) {
-			scroller = scroller.parentElement;
-		}
-		const place = () => {
-			const bottom = scroller ? scroller.getBoundingClientRect().bottom : window.innerHeight;
-			const remaining = bottom - el.getBoundingClientRect().top;
-			offset = Math.max(20, remaining / 2 - size / 2);
-		};
-		place();
-		window.addEventListener('resize', place);
-		return () => window.removeEventListener('resize', place);
-	});
 
 	let t = $state(0);
 
@@ -135,9 +113,7 @@
 {#if inline}
 	{@render circle()}
 {:else if fill}
-	<div class="fill" bind:this={block}>
-		<div class="spot" style:top="{offset}px">{@render circle()}</div>
-	</div>
+	<FillCenter>{@render circle()}</FillCenter>
 {:else}
 	<div class="block">{@render circle()}</div>
 {/if}
@@ -151,14 +127,5 @@
 		display: flex;
 		justify-content: center;
 		padding: 20px 0;
-	}
-	.fill {
-		position: relative;
-		height: 0;
-	}
-	.spot {
-		position: absolute;
-		left: 50%;
-		transform: translateX(-50%);
 	}
 </style>

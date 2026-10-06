@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { goto } from '$app/navigation';
 	import PillButton from '#lib/components/PillButton.svelte';
 	import ProfileView from '#lib/components/ProfileView.svelte';
@@ -24,7 +25,7 @@
 			{/snippet}
 		</ProfileView>
 	{:else}
-		<p class="muted">{t('Profile not found.')}</p>
+		<FillCenter><p class="muted">{t('Profile not found.')}</p></FillCenter>
 	{/if}
 </div>
 

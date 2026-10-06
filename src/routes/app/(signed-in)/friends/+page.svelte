@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import Loading from '#lib/components/Loading.svelte';
@@ -154,7 +155,7 @@
 			{/each}
 		</div>
 	{:else if current.error}
-		<p class="error-text">{current.error}</p>
+		<FillCenter><p class="error-text">{current.error}</p></FillCenter>
 	{:else if !current.loading && !current.hasMore}
 		<p class="muted">{t(empty[tab])}</p>
 	{/if}

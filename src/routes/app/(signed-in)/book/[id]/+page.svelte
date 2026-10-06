@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { goto } from '$app/navigation';
 	import BookDetail from '#lib/components/BookDetail.svelte';
 	import Button from '#lib/components/Button.svelte';
@@ -127,7 +128,7 @@
 		{/snippet}
 	</BookDetail>
 {:else}
-	<p class="muted">{t('Book not found.')}</p>
+	<FillCenter><p class="muted">{t('Book not found.')}</p></FillCenter>
 {/if}
 
 <ConfirmDialog bind:this={confirmDialog} title={confirmTitle} />

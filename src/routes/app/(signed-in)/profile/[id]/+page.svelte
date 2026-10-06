@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
@@ -97,7 +98,7 @@
 		</ProfileView>
 		{/key}
 	{:else}
-		<p class="muted">{t('Profile not found.')}</p>
+		<FillCenter><p class="muted">{t('Profile not found.')}</p></FillCenter>
 	{/if}
 </div>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import Avatar from '#lib/components/Avatar.svelte';
@@ -203,7 +204,7 @@
 			{/if}
 		</div>
 	{:else}
-		<p class="muted">{t('Loan not found.')}</p>
+		<FillCenter><p class="muted">{t('Loan not found.')}</p></FillCenter>
 	{/if}
 </div>
 

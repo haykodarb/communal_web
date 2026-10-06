@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import FilterRow from '#lib/components/FilterRow.svelte';
 	import Loading from '#lib/components/Loading.svelte';
@@ -89,7 +90,7 @@
 			{/each}
 		</div>
 	{:else if loans.error}
-		<p class="error">{loans.error}</p>
+		<FillCenter><p class="error">{loans.error}</p></FillCenter>
 	{:else if !loans.loading && !loans.hasMore}
 		<div class="empty">
 			<p>{t('No loans found.')}</p>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { page } from '$app/state';
 	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
@@ -37,7 +38,7 @@
 			}}
 		/>
 	{:else}
-		<p class="muted">{t('Book not found.')}</p>
+		<FillCenter><p class="muted">{t('Book not found.')}</p></FillCenter>
 	{/if}
 </div>
 

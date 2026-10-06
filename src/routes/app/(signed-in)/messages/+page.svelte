@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import Icon from '#lib/components/Icon.svelte';
@@ -64,11 +65,13 @@
 </script>
 
 <div class="page">
-	{#if error}
+	{#if error && chats.length > 0}
 		<p class="error-text">{error}</p>
 	{/if}
 
-	{#if chats.length === 0}
+	{#if chats.length === 0 && error}
+		<FillCenter><p class="error-text">{error}</p></FillCenter>
+	{:else if chats.length === 0}
 		<div class="empty">
 			<Icon name="message" size={40} />
 			<p>{t('No messages yet.')}</p>

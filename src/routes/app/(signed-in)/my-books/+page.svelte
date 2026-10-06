@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import Loading from '#lib/components/Loading.svelte';
@@ -71,7 +72,7 @@
 			{/each}
 		</div>
 	{:else if books.error}
-		<p class="error">{books.error}</p>
+		<FillCenter><p class="error">{books.error}</p></FillCenter>
 	{:else if !books.loading && !books.hasMore}
 		<div class="empty">
 			<p>{t('No books found in your library.')}</p>

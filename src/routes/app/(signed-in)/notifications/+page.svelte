@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { onMount, untrack } from 'svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import Loading from '#lib/components/Loading.svelte';
@@ -147,11 +148,13 @@
 
 <!-- CommonListView: 10px padding, 5px separators; the title is only in the mobile app bar. -->
 <div class="page">
-	{#if error}
+	{#if error && notifications.length > 0}
 		<p class="error-text">{error}</p>
 	{/if}
 
-	{#if notifications.length === 0 && !loading && !hasMore}
+	{#if notifications.length === 0 && error}
+		<FillCenter><p class="error-text">{error}</p></FillCenter>
+	{:else if notifications.length === 0 && !loading && !hasMore}
 		<div class="empty">
 			<Icon name="bell" size={40} />
 			<p>{t('No notifications yet.')}</p>

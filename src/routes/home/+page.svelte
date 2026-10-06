@@ -48,7 +48,7 @@
 		{
 			icon: '/assets/messages.svg',
 			title: 'Exchange ideas',
-			text: "Review the books you've read and discuss them with other community members. Share your insights and perspectives with like-minded people."
+			text: "Review the books you've read and discuss them with your friends. Share your insights and perspectives with like-minded people."
 		}
 	];
 </script>

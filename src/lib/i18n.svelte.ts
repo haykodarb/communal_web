@@ -243,6 +243,9 @@ const es: Record<string, string> = {
 	Completed: 'Completado',
 	Own: 'Propio',
 	Foreign: 'Ajeno',
+	'This page does not exist.': 'Esta página no existe.',
+	'Try again': 'Reintentar',
+	'Go to the home page': 'Ir a la página de inicio',
 	// Landing page (/home)
 	"Log in": "Ingresar",
 	"Open Communal": "Abrir Communal",
@@ -269,7 +272,7 @@ const es: Record<string, string> = {
 	"Borrow books": "Pedí libros prestados",
 	"One of your friends has a book on their shelf that you've been dying to read? It's already in your community: ask if you can loan it out for a bit.": "¿Uno de tus amigos tiene en su biblioteca un libro que te morís por leer? Ya está en tu comunidad: preguntale si te lo presta un tiempo.",
 	"Exchange ideas": "Intercambiá ideas",
-	"Review the books you've read and discuss them with other community members. Share your insights and perspectives with like-minded people.": "Reseñá los libros que leíste y charlalos con otros miembros de tu comunidad. Compartí tus ideas y perspectivas con gente afín.",
+	"Review the books you've read and discuss them with your friends. Share your insights and perspectives with like-minded people.": "Reseñá los libros que leíste y charlalos con tus amigos. Compartí tus ideas y perspectivas con gente afín.",
 	"Give your books a new purpose.": "Dale a tus libros un nuevo propósito.",
 	"Designed by": "Diseñado por",
 	"Developed by": "Desarrollado por",

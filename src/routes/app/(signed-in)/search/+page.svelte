@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
 	import Loading from '#lib/components/Loading.svelte';
@@ -87,10 +88,10 @@
 					<VerticalBookCard {book} note={note(book)} />
 				{/each}
 			</div>
+		{:else if books.error}
+			<FillCenter><p class="error">{books.error}</p></FillCenter>
 		{:else if !books.loading && !books.hasMore}
-			<p class="muted">
-				{books.error || t('No books found among your friends and their friends.')}
-			</p>
+			<p class="muted">{t('No books found among your friends and their friends.')}</p>
 		{/if}
 	{:else if users.items.length > 0}
 		<div class="users">
@@ -98,8 +99,10 @@
 				<UserRow profile={user} />
 			{/each}
 		</div>
+	{:else if users.error}
+		<FillCenter><p class="error">{users.error}</p></FillCenter>
 	{:else if !users.loading && !users.hasMore}
-		<p class="muted">{users.error || t('No users found, likely a network issue.')}</p>
+		<p class="muted">{t('No users found, likely a network issue.')}</p>
 	{/if}
 
 	{#if current.loading}
@@ -141,6 +144,9 @@
 		padding: 20px;
 		text-align: center;
 		color: var(--on-surface-variant);
+	}
+	.error {
+		color: var(--error);
 	}
 	/* Flutter adds a 20px spacer above the search bar on desktop. */
 	@media (min-width: 800px) {

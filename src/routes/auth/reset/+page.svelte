@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import Loading from '#lib/components/Loading.svelte';
 	import AuthHeader from '#lib/components/AuthHeader.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import TextField from '#lib/components/TextField.svelte';
@@ -44,7 +45,7 @@
 	<AuthHeader title={t('Reset password')} back="/auth/login" />
 
 	{#if !auth.ready}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{:else if done}
 		<p class="message">{message}</p>
 		<Button onclick={() => goto('/auth/login', { replace: true })}>{t('Login')}</Button>
@@ -89,8 +90,5 @@
 	}
 	.message.failed {
 		color: var(--error);
-	}
-	.muted {
-		color: var(--on-surface-variant);
 	}
 </style>

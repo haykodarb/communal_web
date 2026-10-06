@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import Loading from './Loading.svelte';
 
 	type Variant = 'filled' | 'outlined' | 'tonal' | 'text';
 
@@ -30,7 +31,7 @@
 	onclick={onclick}
 >
 	{#if loading}
-		<span class="spinner" aria-hidden="true"></span>
+		<Loading size={30} color="currentColor" inline />
 	{:else}
 		{@render children()}
 	{/if}
@@ -84,18 +85,5 @@
 		height: auto;
 		padding: 6px 8px;
 		font-size: 16px;
-	}
-	.spinner {
-		width: 20px;
-		height: 20px;
-		border-radius: 50%;
-		border: 2.5px solid currentColor;
-		border-top-color: transparent;
-		animation: spin 700ms linear infinite;
-	}
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
 	}
 </style>

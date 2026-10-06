@@ -1,6 +1,8 @@
 <script lang="ts">
 	import Avatar from '../Avatar.svelte';
+	import Loading from '../Loading.svelte';
 	import SearchBar from '../SearchBar.svelte';
+	import StickySearch from '../StickySearch.svelte';
 	import Sentinel from '../Sentinel.svelte';
 	import { getTopics } from '#lib/data/api.ts';
 	import type { DiscussionTopic } from '#lib/data/models.ts';
@@ -25,7 +27,9 @@
 		}).format(new Date(date));
 </script>
 
-<div class="search"><SearchBar bind:value={search} onSearch={() => topics.reset()} /></div>
+<StickySearch>
+	<div class="search"><SearchBar bind:value={search} onSearch={() => topics.reset()} /></div>
+</StickySearch>
 
 {#if topics.items.length > 0}
 	<ul class="list">
@@ -52,13 +56,13 @@
 	<p class="empty">{topics.error || t('community-topics-no-items')}</p>
 {/if}
 {#if topics.loading}
-	<p class="muted">{t('Loading…')}</p>
+	<Loading />
 {/if}
 <Sentinel onvisible={topics.loadMore} />
 
 <style>
 	.search {
-		padding: 0 10px 10px;
+		padding: 0 10px;
 	}
 	.list {
 		list-style: none;
@@ -115,8 +119,7 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	.empty,
-	.muted {
+	.empty {
 		padding: 30px 20px;
 		text-align: center;
 		white-space: pre-line;

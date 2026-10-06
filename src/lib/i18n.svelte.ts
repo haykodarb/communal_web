@@ -61,7 +61,6 @@ const es: Record<string, string> = {
 	'My Profile': 'Mi Perfil',
 	Admin: 'Admin',
 	member: 'miembro',
-	'Loading…': 'Cargando…',
 	Loaned: 'Prestado',
 	'Borrowed from': 'Recibido de',
 	'Loaned to': 'Prestado a',
@@ -270,10 +269,6 @@ const es: Record<string, string> = {
 	'and {n} more': 'y {n} más',
 	'No books found among your friends and their friends.':
 		'No se encontraron libros entre tus amigos y sus amigos.',
-	'Location (neighbourhood or city)': 'Ubicación (barrio o ciudad)',
-	Apply: 'Aplicar',
-	Location: 'Ubicación',
-	'Location (Optional)': 'Ubicación (Opcional)',
 	'Notify me when available': 'Avisarme cuando esté disponible',
 	'Stop notifying me': 'Dejar de avisarme',
 	' is available again.': ' está disponible de nuevo.',

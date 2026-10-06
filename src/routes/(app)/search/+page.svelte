@@ -1,11 +1,9 @@
 <script lang="ts">
-	import Button from '#lib/components/Button.svelte';
-	import FilterSheet from '#lib/components/FilterSheet.svelte';
-	import PillButton from '#lib/components/PillButton.svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
+	import Loading from '#lib/components/Loading.svelte';
+	import StickySearch from '#lib/components/StickySearch.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
 	import TabBar from '#lib/components/TabBar.svelte';
-	import TextField from '#lib/components/TextField.svelte';
 	import UserRow from '#lib/components/UserRow.svelte';
 	import VerticalBookCard from '#lib/components/VerticalBookCard.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
@@ -15,17 +13,14 @@
 	import { createPaged } from '#lib/paged.svelte.ts';
 
 	// SearchPage: Books (friends and friends of friends) and Users tabs sharing
-	// one query; books can also be filtered by the owner's location.
+	// one query.
 	const PAGE_SIZE = 20;
 
 	let query = $state('');
 	let tab = $state(0);
-	let location = $state('');
-	let locationDraft = $state('');
-	let sheet: FilterSheet;
 
 	const books = createPaged<NetworkBook>(
-		(page) => searchNetworkBooks(query, location, { page, pageSize: PAGE_SIZE }),
+		(page) => searchNetworkBooks(query, { page, pageSize: PAGE_SIZE }),
 		PAGE_SIZE
 	);
 	const users = createPaged<Profile>(
@@ -35,19 +30,8 @@
 
 	const current = $derived(tab === 0 ? books : users);
 
-	function note(book: NetworkBook): string {
-		const parts = [];
-		if (book.via) parts.push(t('via {name}').replace('{name}', book.via.username));
-		if (book.owner.location) parts.push(book.owner.location);
-		return parts.join(' · ');
-	}
-
-	function applyLocation(value: string) {
-		location = value.trim();
-		locationDraft = location;
-		sheet.close();
-		books.reset();
-	}
+	const note = (book: NetworkBook) =>
+		book.via ? t('via {name}').replace('{name}', book.via.username) : undefined;
 </script>
 
 <div class="page">
@@ -60,22 +44,12 @@
 				(i === 0 ? books : users).reset();
 			}}
 		/>
-		<SearchBar
-			bind:value={query}
-			onSearch={() => current.reset()}
-			onFilter={tab === 0
-				? () => {
-						locationDraft = location;
-						sheet.open();
-					}
-				: undefined}
-		/>
-		{#if tab === 0 && location}
-			<div class="active-filter">
-				<PillButton icon="location" label={`${location}  ✕`} onclick={() => applyLocation('')} />
-			</div>
-		{/if}
 	</div>
+	<StickySearch floating={false}>
+		<div class="search">
+			<SearchBar bind:value={query} onSearch={() => current.reset()} />
+		</div>
+	</StickySearch>
 
 	{#if tab === 0}
 		{#if books.items.length > 0}
@@ -92,7 +66,7 @@
 	{:else if users.items.length > 0}
 		<div class="users">
 			{#each users.items as user (user.id)}
-				<UserRow profile={user} subtitle={user.location} />
+				<UserRow profile={user} />
 			{/each}
 		</div>
 	{:else if !users.loading && !users.hasMore}
@@ -100,22 +74,12 @@
 	{/if}
 
 	{#if current.loading}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{/if}
 	{#key tab}
 		<Sentinel onvisible={current.loadMore} />
 	{/key}
 </div>
-
-<FilterSheet bind:this={sheet}>
-	<TextField
-		label={t('Location (neighbourhood or city)')}
-		bind:value={locationDraft}
-		maxlength={60}
-		onsubmit={() => applyLocation(locationDraft)}
-	/>
-	<Button onclick={() => applyLocation(locationDraft)}>{t('Apply')}</Button>
-</FilterSheet>
 
 <style>
 	.page {
@@ -125,22 +89,21 @@
 	.controls {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
 		/* SearchPage: tab bar, search bar and results all inset 10px. */
-		padding: 0 10px;
+		padding: 0 10px 10px;
 	}
-	.active-filter {
-		display: flex;
+	.search {
+		padding: 0 10px;
 	}
 	.grid {
 		display: grid;
 		/* CommonListView grid: 2 columns, 8px spacing. */
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 8px;
-		padding: 10px 10px 20px;
+		padding: 0 10px 20px;
 	}
 	.users {
-		padding: 10px 10px 20px;
+		padding: 0 10px 20px;
 		display: flex;
 		flex-direction: column;
 		gap: 8px;

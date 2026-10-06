@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import Loading from '#lib/components/Loading.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
 	import ProfileView from '#lib/components/ProfileView.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
@@ -24,7 +25,7 @@
 
 <div class="page">
 	{#if loading}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{:else if profile}
 		<ProfileView
 			{profile}

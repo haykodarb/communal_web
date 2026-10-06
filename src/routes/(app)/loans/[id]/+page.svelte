@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import Button from '#lib/components/Button.svelte';
@@ -90,7 +91,7 @@
 	</button>
 
 	{#if loading}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{:else if loan}
 		<p class="who">
 			{#if isOwned}

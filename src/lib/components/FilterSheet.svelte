@@ -17,10 +17,6 @@
 		// showModal() focuses the first chip; Flutter's sheet opens unfocused.
 		(document.activeElement as HTMLElement | null)?.blur();
 	}
-
-	export function close() {
-		dialog.close();
-	}
 </script>
 
 <dialog

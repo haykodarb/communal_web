@@ -26,7 +26,6 @@ function toProfile(row: Record<string, unknown> | null | undefined): Profile {
 		bio: (r.bio as string) ?? null,
 		avatar_path: (r.avatar_path as string) ?? null,
 		fcm_token: (r.fcm_token as string) ?? null,
-		location: (r.location as string) ?? null,
 		extended_circle: r.extended_circle !== false
 	};
 }
@@ -497,7 +496,6 @@ export interface ProfileForm {
 	username: string;
 	bio: string | null;
 	show_email: boolean;
-	location: string | null;
 	extended_circle: boolean;
 }
 
@@ -515,7 +513,6 @@ export async function updateProfile(
 			username: form.username,
 			show_email: form.show_email,
 			bio: form.bio,
-			location: form.location,
 			extended_circle: form.extended_circle,
 			avatar_path: avatarPath
 		})
@@ -1192,19 +1189,16 @@ export async function sendTopicMessage(
 
 /**
  * get_network_books RPC (search's Books tab): available books of your friends
- * and of their friends who opted in, with the connecting friend and an
- * optional owner-location filter.
+ * and of their friends who opted in, with the connecting friend.
  */
 export async function searchNetworkBooks(
 	search: string,
-	location: string,
 	{ page = 0, pageSize = 20 }: { page?: number; pageSize?: number } = {}
 ): Promise<NetworkBook[]> {
 	const { data, error } = await supabase.rpc('get_network_books', {
 		offset_num: page * pageSize,
 		limit_num: pageSize,
-		search_query: search,
-		location_query: location
+		search_query: search
 	});
 	if (error) throw error;
 	const rows = (data ?? []) as {

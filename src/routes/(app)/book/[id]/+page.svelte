@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import BookDetail from '#lib/components/BookDetail.svelte';
 	import Button from '#lib/components/Button.svelte';
@@ -120,7 +121,6 @@
 		onback={() => history.back()}
 		info={[
 			{ label: t('Owner'), value: book.owner.username, href: `/profile/${book.owner.id}` },
-			...(book.owner.location ? [{ label: t('Location'), value: book.owner.location }] : []),
 			{ label: t('Added'), value: formatShortDate(book.created_at) },
 			{ label: t('Status'), value: busy ? '' : statusText }
 		]}
@@ -145,7 +145,11 @@
 		{/snippet}
 	</BookDetail>
 {:else}
-	<p class="muted">{loading ? t('Loading…') : t('Book not found.')}</p>
+	{#if loading}
+	<Loading />
+{:else}
+	<p class="muted">{t('Book not found.')}</p>
+{/if}
 {/if}
 
 <ConfirmDialog bind:this={confirmDialog} title={confirmTitle} />

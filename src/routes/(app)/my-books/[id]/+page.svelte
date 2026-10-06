@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import BookDetail from '#lib/components/BookDetail.svelte';
 	import Button from '#lib/components/Button.svelte';
@@ -77,7 +78,11 @@
 		{/snippet}
 	</BookDetail>
 {:else}
-	<p class="muted">{loading ? t('Loading…') : t('Book not found.')}</p>
+	{#if loading}
+	<Loading />
+{:else}
+	<p class="muted">{t('Book not found.')}</p>
+{/if}
 {/if}
 
 <ConfirmDialog bind:this={confirmDialog} title={t('Delete book?')} />

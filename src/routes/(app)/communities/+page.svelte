@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import Loading from '#lib/components/Loading.svelte';
 	import CommunityCard from '#lib/components/CommunityCard.svelte';
 	import Fab from '#lib/components/Fab.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
@@ -48,7 +49,7 @@
 	{#if error}
 		<p class="error">{error}</p>
 	{:else if loading}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{:else if communities.length === 0}
 		<div class="empty">
 			<p>{t('You are not a member of any communities.')}</p>
@@ -80,10 +81,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 5px;
-	}
-	.muted {
-		padding: 0 10px;
-		color: var(--on-surface-variant);
 	}
 	.error {
 		padding: 0 10px;

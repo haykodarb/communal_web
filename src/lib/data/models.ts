@@ -8,8 +8,6 @@ export interface Profile {
 	bio?: string | null;
 	avatar_path?: string | null;
 	fcm_token?: string | null;
-	/** Rough location (neighbourhood/city), optional. */
-	location?: string | null;
 	/** Show my books to friends of friends (otherwise friends only). */
 	extended_circle?: boolean;
 }

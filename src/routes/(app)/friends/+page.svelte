@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
+	import Loading from '#lib/components/Loading.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
 	import TabBar from '#lib/components/TabBar.svelte';
@@ -148,7 +149,7 @@
 	{/if}
 
 	{#if current.loading}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{/if}
 	{#key tab}
 		<Sentinel onvisible={current.loadMore} />

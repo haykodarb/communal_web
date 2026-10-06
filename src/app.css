@@ -80,6 +80,13 @@ body {
 	min-height: 100%;
 }
 
+/* The desktop shell is sized in vw (see the app layout), which includes the
+   scrollbar, so it can be up to a scrollbar wider than the page: clip that
+   instead of scrolling sideways. */
+html {
+	overflow-x: hidden;
+}
+
 body {
 	font-family: 'Poppins', system-ui, -apple-system, sans-serif;
 	background: var(--surface);

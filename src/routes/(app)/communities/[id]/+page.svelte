@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import Fab from '#lib/components/Fab.svelte';
@@ -61,7 +62,7 @@
 	</PageBar>
 
 	{#if loading}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{:else if community}
 		<div class="content">
 			{#if tab === 'books'}

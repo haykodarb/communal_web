@@ -1,8 +1,10 @@
 <script lang="ts">
 	import FilterRow from '#lib/components/FilterRow.svelte';
+	import Loading from '#lib/components/Loading.svelte';
 	import FilterSheet from '#lib/components/FilterSheet.svelte';
 	import LoanCard from '#lib/components/LoanCard.svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
+	import StickySearch from '#lib/components/StickySearch.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { getLoansForUser, type LoansQuery } from '#lib/data/api.ts';
@@ -54,7 +56,9 @@
 </script>
 
 <div class="page">
-	<SearchBar bind:value={search} onSearch={() => loans.reset()} onFilter={() => sheet.open()} />
+	<StickySearch>
+		<SearchBar bind:value={search} onSearch={() => loans.reset()} onFilter={() => sheet.open()} />
+	</StickySearch>
 
 	{#if loans.items.length > 0}
 		<div class="list">
@@ -70,7 +74,7 @@
 		</div>
 	{/if}
 	{#if loans.loading}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{/if}
 	<Sentinel onvisible={loans.loadMore} />
 </div>
@@ -106,10 +110,6 @@
 		flex-direction: column;
 		gap: 10px;
 		padding: 0 5px;
-	}
-	.muted {
-		padding: 0 10px;
-		color: var(--on-surface-variant);
 	}
 	.error {
 		padding: 0 10px;

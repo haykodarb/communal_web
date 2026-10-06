@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import Button from '#lib/components/Button.svelte';
@@ -19,7 +20,6 @@
 	let username = $state('');
 	let bio = $state('');
 	let showEmail = $state(false);
-	let location = $state('');
 	let extendedCircle = $state(true);
 	let avatar = $state<Blob | null>(null);
 
@@ -36,7 +36,6 @@
 			username = p?.username ?? '';
 			bio = p?.bio ?? '';
 			showEmail = p?.show_email ?? false;
-			location = p?.location ?? '';
 			extendedCircle = p?.extended_circle ?? true;
 		};
 		// Untracked so a later profile refresh doesn't overwrite in-progress edits.
@@ -81,7 +80,6 @@
 					username,
 					bio: bio || null,
 					show_email: showEmail,
-					location: location.trim() || null,
 					extended_circle: extendedCircle
 				},
 				avatar
@@ -132,12 +130,6 @@
 					maxlength={1000}
 					error={bioError}
 				/>
-				<TextField
-					label={t('Location (Optional)')}
-					bind:value={location}
-					maxlength={60}
-					onsubmit={submit}
-				/>
 			</div>
 
 			<!-- Flutter order: avatar, username, bio, show email, language, theme. -->
@@ -184,7 +176,7 @@
 			</Button>
 		</form>
 	{:else}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{/if}
 </div>
 
@@ -216,8 +208,5 @@
 		text-align: center;
 		font-size: 14px;
 		color: var(--error);
-	}
-	.muted {
-		color: var(--on-surface-variant);
 	}
 </style>

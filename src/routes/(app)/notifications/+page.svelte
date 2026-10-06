@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
+	import Loading from '#lib/components/Loading.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import NotificationCard from '#lib/components/NotificationCard.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
@@ -146,7 +147,7 @@
 	{/if}
 
 	{#if loading}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{/if}
 	<div bind:this={sentinel} class="sentinel"></div>
 </div>
@@ -183,10 +184,5 @@
 		text-align: center;
 		font-size: 14px;
 		color: var(--error);
-	}
-	.muted {
-		margin-top: 12px;
-		text-align: center;
-		color: var(--on-surface-variant);
 	}
 </style>

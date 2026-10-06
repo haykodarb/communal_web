@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
@@ -92,7 +93,7 @@
 
 	<div class="scroll">
 		{#if loading}
-			<p class="muted">{t('Loading…')}</p>
+			<Loading />
 		{:else}
 			<ol class="messages">
 				{#each messages as message, i (message.id)}
@@ -198,10 +199,5 @@
 		padding: 0 20px;
 		font-size: 13px;
 		color: var(--error);
-	}
-	.muted {
-		padding: 20px;
-		text-align: center;
-		color: var(--on-surface-variant);
 	}
 </style>

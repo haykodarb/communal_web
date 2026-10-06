@@ -3,7 +3,7 @@
 	import { bookHref } from '#lib/links.ts';
 	import CoverImage from './CoverImage.svelte';
 
-	// `note` is an optional third line, e.g. "via <friend> · <location>".
+	// `note` is an optional third line, e.g. "via <friend>".
 	let { book, note }: { book: Book; note?: string } = $props();
 </script>
 

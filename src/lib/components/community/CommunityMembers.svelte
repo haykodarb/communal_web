@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import Loading from '../Loading.svelte';
 	import Avatar from '../Avatar.svelte';
 	import Icon from '../Icon.svelte';
 	import SearchBar from '../SearchBar.svelte';
+	import StickySearch from '../StickySearch.svelte';
 	import Sentinel from '../Sentinel.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import {
@@ -76,7 +78,9 @@
 	</a>
 {/if}
 
-<div class="search"><SearchBar bind:value={search} onSearch={() => members.reset()} /></div>
+<StickySearch>
+	<div class="search"><SearchBar bind:value={search} onSearch={() => members.reset()} /></div>
+</StickySearch>
 
 {#if error}
 	<p class="error-text">{error}</p>
@@ -138,7 +142,7 @@
 	<p class="empty">{members.error || t('community-members-no-items')}</p>
 {/if}
 {#if members.loading}
-	<p class="muted">{t('Loading…')}</p>
+	<Loading />
 {/if}
 <Sentinel onvisible={members.loadMore} />
 
@@ -155,7 +159,7 @@
 		text-decoration: none;
 	}
 	.search {
-		padding: 0 10px 10px;
+		padding: 0 10px;
 	}
 	.list {
 		list-style: none;
@@ -262,8 +266,7 @@
 		font-size: 13px;
 		color: var(--error);
 	}
-	.empty,
-	.muted {
+	.empty {
 		padding: 30px 20px;
 		text-align: center;
 		white-space: pre-line;

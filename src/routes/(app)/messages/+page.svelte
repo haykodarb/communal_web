@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Avatar from '#lib/components/Avatar.svelte';
+	import Loading from '#lib/components/Loading.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
@@ -68,7 +69,7 @@
 	{/if}
 
 	{#if loading}
-		<p class="muted">{t('Loading…')}</p>
+		<Loading />
 	{:else if chats.length === 0}
 		<div class="empty">
 			<Icon name="message" size={40} />
@@ -226,9 +227,5 @@
 		text-align: center;
 		font-size: 14px;
 		color: var(--error);
-	}
-	.muted {
-		padding: 20px;
-		color: var(--on-surface-variant);
 	}
 </style>

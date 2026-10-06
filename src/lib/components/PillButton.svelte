@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Icon from './Icon.svelte';
+	import Loading from './Loading.svelte';
 
 	// The small rounded buttons in the profile header (edit, friendship, message).
 	let {
@@ -27,7 +28,7 @@
 	{onclick}
 >
 	{#if loading}
-		<span class="spinner" aria-hidden="true"></span>
+		<Loading size={20} color="currentColor" inline />
 	{:else}
 		<Icon name={icon} size={16} />
 		{#if label}<span>{label}</span>{/if}
@@ -61,18 +62,5 @@
 	.pill:disabled {
 		opacity: 0.6;
 		cursor: default;
-	}
-	.spinner {
-		width: 16px;
-		height: 16px;
-		border-radius: 50%;
-		border: 2px solid currentColor;
-		border-top-color: transparent;
-		animation: spin 700ms linear infinite;
-	}
-	@keyframes spin {
-		to {
-			transform: rotate(360deg);
-		}
 	}
 </style>

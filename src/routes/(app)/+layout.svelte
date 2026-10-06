@@ -86,7 +86,9 @@
 				</aside>
 			{/if}
 
-			<main class="content">{@render children()}</main>
+			<main class="content" style:--sticky-top={topLevel ? '56px' : '0px'}>
+				{@render children()}
+			</main>
 		</div>
 	{:else}
 		<div class="desktop-shell">
@@ -103,6 +105,10 @@
 		display: flex;
 		justify-content: center;
 		min-height: 100vh;
+		/* vw includes the scrollbar, so the columns keep their position and width
+		   whether or not the page scrolls (no jump between short and long pages).
+		   The extra width lands in the empty right spacer, under the scrollbar. */
+		width: 100vw;
 	}
 	.side-spacer {
 		flex: 1 1 0;

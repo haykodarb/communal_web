@@ -44,7 +44,7 @@
 		height: 35px;
 		min-width: 35px;
 		padding: 0 12px;
-		border: 2px solid var(--primary);
+		border: 1.5px solid var(--primary);
 		border-radius: 999px;
 		background: none;
 		color: var(--primary);

@@ -9,6 +9,7 @@
 	import {
 		deleteFriendship,
 		getFriendshipWith,
+		getMutualFriends,
 		getProfile,
 		sendFriendRequest
 	} from '#lib/data/api.ts';
@@ -19,6 +20,7 @@
 	// Another user's profile (ProfileOtherPage), with friendship and message buttons.
 	let profile = $state<Profile | null>(null);
 	let friendship = $state<Friendship | null>(null);
+	let mutual = $state<Profile[]>([]);
 	let loading = $state(true);
 	let busy = $state(false);
 	let error = $state('');
@@ -35,10 +37,11 @@
 			return;
 		}
 		loading = true;
-		Promise.all([getProfile(id), getFriendshipWith(userId, id)])
-			.then(([p, f]) => {
+		Promise.all([getProfile(id), getFriendshipWith(userId, id), getMutualFriends(id)])
+			.then(([p, f, m]) => {
 				profile = p;
 				friendship = f;
+				mutual = m;
 			})
 			.finally(() => (loading = false));
 	});
@@ -55,6 +58,15 @@
 		}
 		busy = false;
 	}
+
+	/** How you're connected to a friend of a friend ("via <friend>"). */
+	const viaNote = $derived.by(() => {
+		if (friendship?.accepted || mutual.length === 0) return undefined;
+		const first = t('via {name}').replace('{name}', mutual[0].username);
+		return mutual.length === 1
+			? first
+			: `${first} ${t('and {n} more').replace('{n}', String(mutual.length - 1))}`;
+	});
 
 	const addFriend = () =>
 		run(t('Add {name} as friend?').replace('{name}', profile!.username), async () => {
@@ -83,6 +95,7 @@
 			{profile}
 			emptyBooks={t('No books.')}
 			emptyReviews={t('No reviews.')}
+			note={viaNote}
 		>
 			{#snippet actions()}
 				{#if !friendship}

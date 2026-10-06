@@ -44,6 +44,11 @@
 					{ text: t(loanEnds[event] ?? '') },
 					{ text: sender, strong: true }
 				];
+			case 'books':
+				return [
+					{ text: notification.book?.title ?? '', strong: true },
+					{ text: t(' is available again.') }
+				];
 			case 'friendships':
 				return event === 'created'
 					? [{ text: sender, strong: true }, { text: t(' sent you a friend request.') }]
@@ -60,11 +65,12 @@
 	});
 
 	const icon = $derived(
-		{ loans: 'users-arrows', friendships: 'user-plus', memberships: 'envelope' }[table] ?? 'bell'
+		{ loans: 'users-arrows', friendships: 'user-plus', memberships: 'envelope', books: 'library' }[table] ?? 'bell'
 	);
 
 	const href = $derived.by(() => {
 		if (table === 'loans' && notification.loan) return `/loans/${notification.loan.id}`;
+		if (table === 'books' && notification.book) return `/book/${notification.book.id}`;
 		if (table === 'friendships' && event === 'accepted' && notification.sender)
 			return profileHref(notification.sender);
 		return null;

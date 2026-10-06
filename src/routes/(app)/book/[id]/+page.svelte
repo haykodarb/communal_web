@@ -10,6 +10,9 @@
 		getBookById,
 		getCurrentLoanForBook,
 		getReviewsForBook,
+		isOnWaitlist,
+		joinWaitlist,
+		leaveWaitlist,
 		requestLoan
 	} from '#lib/data/api.ts';
 	import type { Book, Loan } from '#lib/data/models.ts';
@@ -21,6 +24,7 @@
 	let book = $state<Book | null>(null);
 	let currentLoan = $state<Loan | null>(null);
 	let reviews = $state<Loan[]>([]);
+	let waitlisted = $state(false);
 	let loading = $state(true);
 	let busy = $state(true);
 	let error = $state('');
@@ -48,6 +52,7 @@
 			.finally(() => (loading = false));
 		checkLoanStatus();
 		getReviewsForBook(id).then((loans) => (reviews = loans));
+		isOnWaitlist(userId, id).then((value) => (waitlisted = value));
 	});
 
 	const requestedByMe = $derived(currentLoan?.loanee.id === userId);
@@ -79,6 +84,20 @@
 		busy = false;
 	}
 
+	/** "Notify me when available" on a book someone else has borrowed. */
+	async function onToggleWaitlist() {
+		busy = true;
+		error = '';
+		try {
+			if (waitlisted) await leaveWaitlist(userId, id);
+			else await joinWaitlist(userId, id);
+			waitlisted = !waitlisted;
+		} catch (e) {
+			error = errorMessage(e);
+		}
+		busy = false;
+	}
+
 	async function onWithdraw() {
 		if (!currentLoan || !(await confirmed('Withdraw your request for this book?'))) return;
 		busy = true;
@@ -101,6 +120,7 @@
 		onback={() => history.back()}
 		info={[
 			{ label: t('Owner'), value: book.owner.username, href: `/profile/${book.owner.id}` },
+			...(book.owner.location ? [{ label: t('Location'), value: book.owner.location }] : []),
 			{ label: t('Added'), value: formatShortDate(book.created_at) },
 			{ label: t('Status'), value: busy ? '' : statusText }
 		]}
@@ -108,6 +128,10 @@
 		{#snippet actions()}
 			{#if requestedByMe && book!.loaned}
 				<Button onclick={() => goto(`/loans/${currentLoan!.id}`)}>{t('View loan')}</Button>
+			{:else if book!.loaned}
+				<Button variant={waitlisted ? 'outlined' : 'filled'} loading={busy} onclick={onToggleWaitlist}>
+					{waitlisted ? t('Stop notifying me') : t('Notify me when available')}
+				</Button>
 			{:else if requestedByMe}
 				<Button variant="outlined" loading={busy} onclick={onWithdraw}>
 					{t('Withdraw request')}

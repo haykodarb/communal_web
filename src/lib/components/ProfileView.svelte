@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import Avatar from './Avatar.svelte';
+	import Icon from './Icon.svelte';
 	import ReviewCard from './ReviewCard.svelte';
 	import Sentinel from './Sentinel.svelte';
 	import TabBar from './TabBar.svelte';
@@ -16,11 +17,14 @@
 		profile,
 		emptyBooks,
 		emptyReviews,
+		note,
 		actions
 	}: {
 		profile: Profile;
 		emptyBooks: string;
 		emptyReviews: string;
+		/** Extra line under the name, e.g. how you're connected. */
+		note?: string;
 		/** Buttons under the username. */
 		actions: Snippet;
 	} = $props();
@@ -46,6 +50,12 @@
 		<span class="username">{profile.username}</span>
 		{#if profile.email}
 			<span class="email">{profile.email}</span>
+		{/if}
+		{#if profile.location}
+			<span class="location"><Icon name="location" size={16} />{profile.location}</span>
+		{/if}
+		{#if note}
+			<span class="note">{note}</span>
 		{/if}
 		<div class="actions">{@render actions()}</div>
 	</div>
@@ -105,6 +115,17 @@
 	.email {
 		font-size: 16px;
 		color: var(--on-surface-variant);
+	}
+	.location {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		font-size: 14px;
+		color: var(--on-surface-variant);
+	}
+	.note {
+		font-size: 14px;
+		color: var(--tertiary);
 	}
 	.actions {
 		margin-top: 10px;

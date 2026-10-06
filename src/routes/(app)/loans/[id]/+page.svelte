@@ -6,6 +6,7 @@
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import CoverImage from '#lib/components/CoverImage.svelte';
 	import Icon from '#lib/components/Icon.svelte';
+	import PillButton from '#lib/components/PillButton.svelte';
 	import TextField from '#lib/components/TextField.svelte';
 	import {
 		deleteLoan,
@@ -100,6 +101,14 @@
 				{t('You requested this book from')}
 				<a href={`/profile/${loan.owner.id}`}>{loan.owner.username}</a>
 			{/if}
+			<!-- Message the other person to arrange the handover. -->
+			<span class="message">
+				<PillButton
+					icon="comment-dots-bold"
+					label={t('Message')}
+					onclick={() => goto(`/messages/${isOwned ? loan!.loanee.id : loan!.owner.id}`)}
+				/>
+			</span>
 		</p>
 
 		<!-- Flutter _bookCard: title/author left, small cover right. -->
@@ -226,6 +235,9 @@
 		gap: 5px;
 		padding: 8px;
 		font-size: 14px;
+	}
+	.message {
+		margin-left: auto;
 	}
 	.who a {
 		display: flex;

@@ -19,6 +19,8 @@
 	let username = $state('');
 	let bio = $state('');
 	let showEmail = $state(false);
+	let location = $state('');
+	let extendedCircle = $state(true);
 	let avatar = $state<Blob | null>(null);
 
 	let submitted = $state(false);
@@ -34,6 +36,8 @@
 			username = p?.username ?? '';
 			bio = p?.bio ?? '';
 			showEmail = p?.show_email ?? false;
+			location = p?.location ?? '';
+			extendedCircle = p?.extended_circle ?? true;
 		};
 		// Untracked so a later profile refresh doesn't overwrite in-progress edits.
 		const cached = untrack(() => currentProfile.value);
@@ -73,7 +77,13 @@
 			}
 			const updated = await updateProfile(
 				profile,
-				{ username, bio: bio || null, show_email: showEmail },
+				{
+					username,
+					bio: bio || null,
+					show_email: showEmail,
+					location: location.trim() || null,
+					extended_circle: extendedCircle
+				},
 				avatar
 			);
 			currentProfile.set(updated);
@@ -122,12 +132,29 @@
 					maxlength={1000}
 					error={bioError}
 				/>
+				<TextField
+					label={t('Location (Optional)')}
+					bind:value={location}
+					maxlength={60}
+					onsubmit={submit}
+				/>
 			</div>
 
 			<!-- Flutter order: avatar, username, bio, show email, language, theme. -->
 			<div class="row">
 				<span>{t('Show email?')}</span>
 				<Switch value={showEmail} onchange={() => (showEmail = !showEmail)} ariaLabel={t('Show email?')}>
+					{#snippet left()}<Icon name="check" size={20} />{/snippet}
+					{#snippet right()}<Icon name="x" size={20} />{/snippet}
+				</Switch>
+			</div>
+			<div class="row">
+				<span>{t('Show my books to friends of friends')}</span>
+				<Switch
+					value={extendedCircle}
+					onchange={() => (extendedCircle = !extendedCircle)}
+					ariaLabel={t('Show my books to friends of friends')}
+				>
 					{#snippet left()}<Icon name="check" size={20} />{/snippet}
 					{#snippet right()}<Icon name="x" size={20} />{/snippet}
 				</Switch>
@@ -152,6 +179,9 @@
 			{/if}
 
 			<Button type="submit" {loading}>{t('Save')}</Button>
+			<Button variant="outlined" onclick={() => goto('/my-profile/account')}>
+				{t('Account settings')}
+			</Button>
 		</form>
 	{:else}
 		<p class="muted">{t('Loading…')}</p>
@@ -169,6 +199,7 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
+		gap: 16px;
 		font-size: 16px;
 	}
 	.form {

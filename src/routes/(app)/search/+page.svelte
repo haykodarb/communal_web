@@ -126,7 +126,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
-		padding: 10px 20px;
+		/* SearchPage: tab bar, search bar and results all inset 10px. */
+		padding: 0 10px;
 	}
 	.active-filter {
 		display: flex;
@@ -136,10 +137,10 @@
 		/* CommonListView grid: 2 columns, 8px spacing. */
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 8px;
-		padding: 10px 20px;
+		padding: 10px 10px 20px;
 	}
 	.users {
-		padding: 10px 20px;
+		padding: 10px 10px 20px;
 		display: flex;
 		flex-direction: column;
 		gap: 8px;

@@ -162,14 +162,15 @@
 		min-height: 100vh;
 		padding-bottom: 40px;
 	}
+	/* FriendshipsPage: tab bar and list both inset 10px, 5px apart. */
 	.controls {
-		padding: 10px 20px;
+		padding: 0 10px 5px;
 	}
 	.list {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-		padding: 10px 20px;
+		gap: 5px;
+		padding: 0 10px 20px;
 	}
 	.muted {
 		padding: 20px;

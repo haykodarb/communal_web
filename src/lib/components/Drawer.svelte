@@ -12,7 +12,8 @@
 
 	const badges: Record<string, () => number> = {
 		'/notifications': () => unread.notifications,
-		'/messages': () => unread.messages
+		'/messages': () => unread.messages,
+		'/friends': () => unread.friendRequests
 	};
 
 	// Order mirrors the Flutter CommonDrawerWidget.
@@ -21,6 +22,7 @@
 		{ href: '/notifications', key: 'Notifications', icon: 'bell' },
 		{ href: '/search', key: 'Search', icon: 'search' },
 		{ href: '/messages', key: 'Messages', icon: 'message' },
+		{ href: '/friends', key: 'Friends', icon: 'users' },
 		{ href: '/my-books', key: 'My Books', icon: 'library' },
 		// Communities is commented out of the Flutter drawer too; the pages still work by URL.
 		{ href: '/loans', key: 'Loans', icon: 'loans' }

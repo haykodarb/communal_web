@@ -21,6 +21,7 @@
 		'/communities': 'Communities',
 		'/loans': 'Loans',
 		'/messages': 'Messages',
+		'/friends': 'Friends',
 		'/notifications': 'Notifications',
 		'/my-profile': 'My Profile',
 		'/search': 'Search'

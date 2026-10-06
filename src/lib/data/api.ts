@@ -10,6 +10,7 @@ import type {
 	Member,
 	Membership,
 	Message,
+	NetworkBook,
 	Profile
 } from './models';
 
@@ -24,7 +25,9 @@ function toProfile(row: Record<string, unknown> | null | undefined): Profile {
 		email: (r.email as string) ?? null,
 		bio: (r.bio as string) ?? null,
 		avatar_path: (r.avatar_path as string) ?? null,
-		fcm_token: (r.fcm_token as string) ?? null
+		fcm_token: (r.fcm_token as string) ?? null,
+		location: (r.location as string) ?? null,
+		extended_circle: r.extended_circle !== false
 	};
 }
 
@@ -494,6 +497,8 @@ export interface ProfileForm {
 	username: string;
 	bio: string | null;
 	show_email: boolean;
+	location: string | null;
+	extended_circle: boolean;
 }
 
 export async function updateProfile(
@@ -510,6 +515,8 @@ export async function updateProfile(
 			username: form.username,
 			show_email: form.show_email,
 			bio: form.bio,
+			location: form.location,
+			extended_circle: form.extended_circle,
 			avatar_path: avatarPath
 		})
 		.eq('id', profile.id)
@@ -633,6 +640,46 @@ export async function deleteFriendship(friendshipId: number): Promise<void> {
 	if (error) throw error;
 }
 
+export type FriendshipList = 'friends' | 'received' | 'sent';
+
+/** Friends page tabs: accepted friendships, requests to you, requests you sent. */
+export async function getFriendships(
+	userId: string,
+	list: FriendshipList,
+	{ page = 0, pageSize = 30 }: { page?: number; pageSize?: number } = {}
+): Promise<Friendship[]> {
+	let query = supabase.from('friendships').select(FRIENDSHIP_SELECT);
+	if (list === 'friends') {
+		query = query.eq('accepted', true).or(`requester.eq.${userId},responder.eq.${userId}`);
+	} else {
+		query = query
+			.not('accepted', 'is', true)
+			.eq(list === 'received' ? 'responder' : 'requester', userId);
+	}
+	const { data, error } = await query
+		.order(list === 'friends' ? 'accepted_at' : 'created_at', { ascending: false })
+		.range(page * pageSize, page * pageSize + pageSize - 1);
+	if (error) throw error;
+	return (data ?? []).map((row) => toFriendship(row as Record<string, unknown>));
+}
+
+export async function getPendingRequestsCount(userId: string): Promise<number> {
+	const { count, error } = await supabase
+		.from('friendships')
+		.select('*', { count: 'exact', head: true })
+		.eq('responder', userId)
+		.not('accepted', 'is', true);
+	if (error) throw error;
+	return count ?? 0;
+}
+
+/** Friends you share with another user (get_mutual_friends RPC), for "via <friend>". */
+export async function getMutualFriends(otherUserId: string): Promise<Profile[]> {
+	const { data, error } = await supabase.rpc('get_mutual_friends', { other: otherUserId });
+	if (error) throw error;
+	return ((data ?? []) as Record<string, unknown>[]).map(toProfile);
+}
+
 // ---------------------------------------------------------------------------
 // Memberships + notifications
 
@@ -652,11 +699,13 @@ export function toMembership(row: Record<string, unknown>): Membership {
 const NOTIFICATION_SELECT =
 	'*, type(*), receiver:profiles!receiver(*), sender:profiles!sender(*), ' +
 	'loans!left(*, books!left(*, profiles(*)), loanee_profile:profiles!loanee(*), owner_profile:profiles!owner(*)), ' +
-	'friendships!left(*, requester_profile:profiles!requester(*), responder_profile:profiles!responder(*))';
+	'friendships!left(*, requester_profile:profiles!requester(*), responder_profile:profiles!responder(*)), ' +
+	'books!left(*, profiles(*))';
 
 function toNotification(row: Record<string, unknown>): AppNotification {
 	const loan = row.loans as Record<string, unknown> | null;
 	const friendship = row.friendships as Record<string, unknown> | null;
+	const book = row.books as Record<string, unknown> | null;
 	return {
 		id: row.id as number,
 		type: row.type as AppNotification['type'],
@@ -665,7 +714,8 @@ function toNotification(row: Record<string, unknown>): AppNotification {
 		sender: row.sender ? toProfile(row.sender as Record<string, unknown>) : null,
 		receiver: toProfile(row.receiver as Record<string, unknown>),
 		loan: loan ? toLoan(loan) : null,
-		friendship: friendship ? toFriendship(friendship) : null
+		friendship: friendship ? toFriendship(friendship) : null,
+		book: book ? toBook(book) : null
 	};
 }
 
@@ -1140,22 +1190,45 @@ export async function sendTopicMessage(
 // ---------------------------------------------------------------------------
 // Search
 
-/** get_books_friends_of_friends RPC: books from your friends' circle (search's Books tab). */
-export async function searchFriendsBooks(
+/**
+ * get_network_books RPC (search's Books tab): available books of your friends
+ * and of their friends who opted in, with the connecting friend and an
+ * optional owner-location filter.
+ */
+export async function searchNetworkBooks(
 	search: string,
+	location: string,
 	{ page = 0, pageSize = 20 }: { page?: number; pageSize?: number } = {}
-): Promise<Book[]> {
-	const { data, error } = await supabase
-		.rpc('get_books_friends_of_friends', {
-			offset_num: page * pageSize,
-			limit_num: pageSize,
-			search_query: search
-		})
-		.select('*, profiles(*)')
-		.order('created_at', { ascending: false })
-		.limit(pageSize);
+): Promise<NetworkBook[]> {
+	const { data, error } = await supabase.rpc('get_network_books', {
+		offset_num: page * pageSize,
+		limit_num: pageSize,
+		search_query: search,
+		location_query: location
+	});
 	if (error) throw error;
-	return ((data ?? []) as Record<string, unknown>[]).map(toBook);
+	const rows = (data ?? []) as {
+		book: Record<string, unknown>;
+		via: string | null;
+		via_username: string | null;
+	}[];
+
+	// The RPC returns bare book rows; fetch their owners in one query.
+	const ownerIds = [...new Set(rows.map((r) => r.book.owner as string))];
+	const owners = new Map<string, Record<string, unknown>>();
+	if (ownerIds.length > 0) {
+		const { data: profiles, error: profilesError } = await supabase
+			.from('profiles')
+			.select('*')
+			.in('id', ownerIds);
+		if (profilesError) throw profilesError;
+		for (const p of profiles ?? []) owners.set(p.id as string, p);
+	}
+
+	return rows.map((r) => ({
+		...toBook({ ...r.book, profiles: owners.get(r.book.owner as string) }),
+		via: r.via ? { id: r.via, username: r.via_username ?? '' } : null
+	}));
 }
 
 /** Everyone except the current user whose username matches. */
@@ -1172,4 +1245,57 @@ export async function searchUsers(
 		.range(page * pageSize, page * pageSize + pageSize - 1);
 	if (error) throw error;
 	return (data ?? []).map((row) => toProfile(row as Record<string, unknown>));
+}
+
+// ---------------------------------------------------------------------------
+// Waitlist ("notify me when available" on loaned books)
+
+export async function isOnWaitlist(userId: string, bookId: string): Promise<boolean> {
+	const { count, error } = await supabase
+		.from('waitlist')
+		.select('*', { count: 'exact', head: true })
+		.eq('user', userId)
+		.eq('book', bookId);
+	if (error) throw error;
+	return (count ?? 0) > 0;
+}
+
+export async function joinWaitlist(userId: string, bookId: string): Promise<void> {
+	const { error } = await supabase.from('waitlist').insert({ user: userId, book: bookId });
+	if (error) throw error;
+}
+
+export async function leaveWaitlist(userId: string, bookId: string): Promise<void> {
+	const { error } = await supabase
+		.from('waitlist')
+		.delete()
+		.eq('user', userId)
+		.eq('book', bookId);
+	if (error) throw error;
+}
+
+// ---------------------------------------------------------------------------
+// Account
+
+/**
+ * Deletes the signed-in user (delete_user RPC). Rows cascade from the
+ * profile; storage objects don't, so the covers and avatar are removed first.
+ */
+export async function deleteAccount(profile: Profile): Promise<void> {
+	// Paths are stored with a leading '/', object names have none.
+	const objectName = (path: string) => path.replace(/^\//, '');
+	const { data: books, error } = await supabase
+		.from('books')
+		.select('image_path')
+		.eq('owner', profile.id);
+	if (error) throw error;
+
+	const covers = (books ?? []).map((b) => objectName(b.image_path as string)).filter(Boolean);
+	if (covers.length > 0) await supabase.storage.from('book_covers').remove(covers);
+	if (profile.avatar_path) {
+		await supabase.storage.from('profile_avatars').remove([objectName(profile.avatar_path)]);
+	}
+
+	const { error: rpcError } = await supabase.rpc('delete_user', { user_id: profile.id });
+	if (rpcError) throw rpcError;
 }

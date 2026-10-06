@@ -8,6 +8,10 @@ export interface Profile {
 	bio?: string | null;
 	avatar_path?: string | null;
 	fcm_token?: string | null;
+	/** Rough location (neighbourhood/city), optional. */
+	location?: string | null;
+	/** Show my books to friends of friends (otherwise friends only). */
+	extended_circle?: boolean;
 }
 
 export interface Book {
@@ -20,6 +24,11 @@ export interface Book {
 	owner: Profile;
 	loaned: boolean;
 	public: boolean;
+}
+
+/** A book in your network; `via` is the friend connecting you to a friend of a friend. */
+export interface NetworkBook extends Book {
+	via: { id: string; username: string } | null;
 }
 
 export interface Community {
@@ -89,6 +98,8 @@ export interface AppNotification {
 	receiver: Profile;
 	loan: Loan | null;
 	friendship: Friendship | null;
+	/** books/available: a waitlisted book is back. */
+	book: Book | null;
 }
 
 export interface Message {

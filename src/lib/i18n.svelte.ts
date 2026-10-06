@@ -258,7 +258,44 @@ const es: Record<string, string> = {
 	All: 'Todos',
 	Completed: 'Completado',
 	Own: 'Propio',
-	Foreign: 'Ajeno'
+	Foreign: 'Ajeno',
+	Received: 'Recibidas',
+	Sent: 'Enviadas',
+	Remove: 'Eliminar',
+	Withdraw: 'Retirar',
+	'You have no friends yet. Find people in Search.':
+		'Todavía no tenés amigos. Buscá personas en Buscar.',
+	'You have not sent any requests.': 'No enviaste ninguna solicitud.',
+	'via {name}': 'vía {name}',
+	'and {n} more': 'y {n} más',
+	'No books found among your friends and their friends.':
+		'No se encontraron libros entre tus amigos y sus amigos.',
+	'Location (neighbourhood or city)': 'Ubicación (barrio o ciudad)',
+	Apply: 'Aplicar',
+	Location: 'Ubicación',
+	'Location (Optional)': 'Ubicación (Opcional)',
+	'Notify me when available': 'Avisarme cuando esté disponible',
+	'Stop notifying me': 'Dejar de avisarme',
+	' is available again.': ' está disponible de nuevo.',
+	Message: 'Mensaje',
+	'Show my books to friends of friends': 'Mostrar mis libros a amigos de amigos',
+	'Account settings': 'Configuración de la cuenta',
+	'Please enter a valid email': 'Ingresá un email válido',
+	'New email': 'Nuevo email',
+	'Change email': 'Cambiar email',
+	'Check your inbox: we sent a confirmation link to {email}.':
+		'Revisá tu bandeja de entrada: enviamos un link de confirmación a {email}.',
+	'Waiting for confirmation of {email}.': 'Esperando la confirmación de {email}.',
+	'New password': 'Nueva contraseña',
+	'Repeat password': 'Repetir contraseña',
+	'Change password': 'Cambiar contraseña',
+	'Passwords do not match': 'Las contraseñas no coinciden',
+	'Password updated.': 'Contraseña actualizada.',
+	'Delete account': 'Borrar cuenta',
+	'This deletes your profile, books, loans, messages and friendships. It cannot be undone.':
+		'Esto borra tu perfil, libros, préstamos, mensajes y amistades. No se puede deshacer.',
+	'Are you sure you want to delete your account? This is immediate and cannot be undone.':
+		'¿Seguro que querés borrar tu cuenta? Es inmediato y no se puede deshacer.'
 };
 
 function readInitial(): Locale {

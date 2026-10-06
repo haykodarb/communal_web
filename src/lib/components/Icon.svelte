@@ -34,7 +34,8 @@
 		'user-check': ['basic-ui', 0xea3c], // user_check_bold
 		'user-minus': ['basic-ui', 0xea3d], // user_minus_bold
 		community: ['basic-ui', 0xe9d2], // users
-		users: ['basic-ui', 0xe9d2]
+		users: ['basic-ui', 0xe9d2],
+		location: ['basic-ui', 0xe9b7] // pin_destination
 	};
 
 	/** Material icon paths for the `Icons.*` the Flutter app uses. */

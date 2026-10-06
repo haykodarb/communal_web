@@ -64,6 +64,15 @@ export const auth = {
 		if (error) throw error;
 	},
 
+	/** Sends a confirmation link to the new address; the change applies once it's opened. */
+	async updateEmail(email: string): Promise<void> {
+		const { error } = await supabase.auth.updateUser(
+			{ email },
+			{ emailRedirectTo: `${window.location.origin}/my-profile/account` }
+		);
+		if (error) throw error;
+	},
+
 	async resendConfirmation(email: string): Promise<void> {
 		const { error } = await supabase.auth.resend({
 			type: 'signup',

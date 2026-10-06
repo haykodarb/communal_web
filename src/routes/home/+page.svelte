@@ -77,10 +77,10 @@
 				{i18n.locale === 'en' ? 'ES' : 'EN'}
 			</button>
 			{#if auth.session}
-				<a class="pill filled" href="/my-books">{t('Open Communal')}</a>
+				<a class="pill filled" href="/app">{t('Open Communal')}</a>
 			{:else}
-				<a class="pill" href="/auth/login">{t('Log in')}</a>
-				<a class="pill filled" href="/auth/register">{t('Register')}</a>
+				<a class="pill" href="/app/auth/login">{t('Log in')}</a>
+				<a class="pill filled" href="/app/auth/register">{t('Register')}</a>
 			{/if}
 		</nav>
 	</header>
@@ -96,9 +96,9 @@
 				</p>
 				<div class="actions">
 					{#if auth.session}
-						<a class="pill large filled" href="/my-books">{t('Open Communal')}</a>
+						<a class="pill large filled" href="/app">{t('Open Communal')}</a>
 					{:else}
-						<a class="pill large filled" href="/auth/register">{t('Create an account')}</a>
+						<a class="pill large filled" href="/app/auth/register">{t('Create an account')}</a>
 					{/if}
 					<a class="pill large" href={APK_URL} target="_blank" rel="noopener noreferrer">
 						{t('Get the Android app')}
@@ -191,9 +191,9 @@
 		<section class="closing">
 			<h2>{t('Give your books a new purpose.')}</h2>
 			{#if auth.session}
-				<a class="pill large filled" href="/my-books">{t('Open Communal')}</a>
+				<a class="pill large filled" href="/app">{t('Open Communal')}</a>
 			{:else}
-				<a class="pill large filled" href="/auth/register">{t('Create an account')}</a>
+				<a class="pill large filled" href="/app/auth/register">{t('Create an account')}</a>
 			{/if}
 		</section>
 	</main>

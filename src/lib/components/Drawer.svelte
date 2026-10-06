@@ -11,21 +11,21 @@
 	let { onNavigate }: { onNavigate?: () => void } = $props();
 
 	const badges: Record<string, () => number> = {
-		'/notifications': () => unread.notifications,
-		'/messages': () => unread.messages,
-		'/friends': () => unread.friendRequests
+		'/app/notifications': () => unread.notifications,
+		'/app/messages': () => unread.messages,
+		'/app/friends': () => unread.friendRequests
 	};
 
 	// Order mirrors the Flutter CommonDrawerWidget.
 	const items = [
-		{ href: '/my-profile', key: 'Profile', icon: 'user' },
-		{ href: '/notifications', key: 'Notifications', icon: 'bell' },
-		{ href: '/search', key: 'Search', icon: 'search' },
-		{ href: '/messages', key: 'Messages', icon: 'message' },
-		{ href: '/friends', key: 'Friends', icon: 'users' },
-		{ href: '/my-books', key: 'My Books', icon: 'library' },
+		{ href: '/app/my-profile', key: 'Profile', icon: 'user' },
+		{ href: '/app/notifications', key: 'Notifications', icon: 'bell' },
+		{ href: '/app/search', key: 'Search', icon: 'search' },
+		{ href: '/app/messages', key: 'Messages', icon: 'message' },
+		{ href: '/app/friends', key: 'Friends', icon: 'users' },
+		{ href: '/app/my-books', key: 'My Books', icon: 'library' },
 		// Communities is commented out of the Flutter drawer too; the pages still work by URL.
-		{ href: '/loans', key: 'Loans', icon: 'loans' }
+		{ href: '/app/loans', key: 'Loans', icon: 'loans' }
 	];
 
 	const profile = $derived(currentProfile.value);
@@ -46,12 +46,12 @@
 	async function logout() {
 		onNavigate?.();
 		await auth.signOut();
-		goto('/auth');
+		goto('/app/auth');
 	}
 </script>
 
 <div class="drawer">
-	<button class="header" type="button" onclick={() => go('/my-profile')}>
+	<button class="header" type="button" onclick={() => go('/app/my-profile')}>
 		{#if profile}<Avatar {profile} size={80} />{/if}
 		<span class="username">{profile?.username ?? ''}</span>
 	</button>

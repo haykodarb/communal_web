@@ -42,7 +42,7 @@
 	}
 </script>
 
-<a class="card" href={`/loans/${loan.id}`}>
+<a class="card" href={`/app/loans/${loan.id}`}>
 	<div class="body">
 		<span class="title">{loan.book.title}</span>
 		<span class="author">{loan.book.author}</span>

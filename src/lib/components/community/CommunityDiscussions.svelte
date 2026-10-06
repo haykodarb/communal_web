@@ -36,7 +36,7 @@
 		{#each topics.items as topic (topic.id)}
 			{@const who = topic.last_message?.sender ?? topic.creator}
 			<li>
-				<a class="topic" href={`/communities/${communityId}/discussions/${topic.id}`}>
+				<a class="topic" href={`/app/communities/${communityId}/discussions/${topic.id}`}>
 					<span class="name">{topic.name}</span>
 					<div class="row">
 						<Avatar profile={who} size={50} />

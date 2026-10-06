@@ -13,7 +13,7 @@
 </script>
 
 <div class="wrap">
-	<a class="card" href={`/communities/${community.id}`}>
+	<a class="card" href={`/app/communities/${community.id}`}>
 		<div class="body">
 			<span class="name">{community.name}</span>
 			<span class="members"

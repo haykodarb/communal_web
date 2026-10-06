@@ -47,7 +47,7 @@ export const auth = {
 	async signInWithGoogle(): Promise<void> {
 		const { error } = await supabase.auth.signInWithOAuth({
 			provider: 'google',
-			options: { redirectTo: `${window.location.origin}/auth/callback` }
+			options: { redirectTo: `${window.location.origin}/app/auth/callback` }
 		});
 		if (error) throw error;
 	},
@@ -55,7 +55,7 @@ export const auth = {
 	async resetPassword(email: string): Promise<void> {
 		// Lands on the set-new-password page, like the Flutter app's /auth/reset.
 		const { error } = await supabase.auth.resetPasswordForEmail(email, {
-			redirectTo: `${window.location.origin}/auth/reset`
+			redirectTo: `${window.location.origin}/app/auth/reset`
 		});
 		if (error) throw error;
 	},
@@ -69,7 +69,7 @@ export const auth = {
 	async updateEmail(email: string): Promise<void> {
 		const { error } = await supabase.auth.updateUser(
 			{ email },
-			{ emailRedirectTo: `${window.location.origin}/my-profile/account` }
+			{ emailRedirectTo: `${window.location.origin}/app/my-profile/account` }
 		);
 		if (error) throw error;
 	},
@@ -78,7 +78,7 @@ export const auth = {
 		const { error } = await supabase.auth.resend({
 			type: 'signup',
 			email,
-			options: { emailRedirectTo: `${window.location.origin}/auth` }
+			options: { emailRedirectTo: `${window.location.origin}/app/auth` }
 		});
 		if (error) throw error;
 	},

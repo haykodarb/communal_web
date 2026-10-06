@@ -69,22 +69,25 @@ src/
     components/              # Button, TextField, Drawer, cards, dialogs, Fab, ...
       community/             # Books / Discuss / Members tabs
   routes/
-    +page.svelte             # landing carousel
-    auth/                    # start, login, register(+resend), recovery, reset, callback
-    (app)/                   # authenticated shell + pages
-      my-books, my-books/create, my-books/[id], my-books/[id]/edit
-      book/[id]              # someone else's book: request a loan
-      communities, communities/create, communities/[id]
-        [id]/settings, [id]/members/invite, [id]/members/requests
-        [id]/discussions/create, [id]/discussions/[topicId]
-      loans, loans/[id]
-      my-profile, my-profile/edit, profile/[id]
-      messages, messages/[id]
-      notifications, search
+    +page.ts                 # / redirects to /home
+    home/                    # public landing page
+    privacy/                 # privacy policy
+    [...legacy]/             # old root-level app URLs redirect to /app/...
+    app/
+      +page.ts               # /app: your books if signed in, sign-in otherwise
+      auth/                  # start, login, register(+resend), recovery, reset, callback
+      (signed-in)/           # authenticated shell + pages
+        my-books, my-books/create, my-books/[id], my-books/[id]/edit
+        book/[id]            # someone else's book: request a loan
+        communities/...      # disabled (lib/features.ts)
+        loans, loans/[id]
+        my-profile, my-profile/edit, my-profile/account, profile/[id]
+        messages, messages/[id]
+        friends, notifications, search
 ```
 
-Routes follow the Flutter app's `lib/routes.dart` (e.g. `/book/:id`,
-`/profile/:id`, `/auth/reset`).
+App routes follow the Flutter app's `lib/routes.dart` under an `/app` prefix
+(e.g. `/app/book/:id`, `/app/profile/:id`, `/app/auth/reset`).
 
 ## Backend notes
 
@@ -95,8 +98,9 @@ Routes follow the Flutter app's `lib/routes.dart` (e.g. `/book/:id`,
   `signedStorageUrl`). Uploads go to `/<userId>/<timestamp>.jpeg` like the
   Flutter app; images are center-cropped and JPEG-encoded client-side
   (`processImage`) instead of using Flutter's interactive cropper.
-- Supabase Auth uses PKCE. Google sign-in redirects through `/auth/callback`,
-  password recovery through `/auth/reset`, signup confirmation to `/auth`.
+- Supabase Auth uses PKCE. Google sign-in redirects through `/app/auth/callback`,
+  password recovery through `/app/auth/reset`, signup confirmation to
+  `/app/auth`, email changes to `/app/my-profile/account`.
   These URLs must be in the Supabase project's Auth redirect allow-list for
   each origin the app is served from.
 - Realtime: `#lib/realtime.ts` ports `RealtimeBackend` (one channel on the

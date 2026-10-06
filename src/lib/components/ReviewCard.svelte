@@ -16,7 +16,7 @@
 	);
 </script>
 
-<a class="rcard" href={`/loans/${loan.id}`}>
+<a class="rcard" href={`/app/loans/${loan.id}`}>
 	<div class="top">
 		<div class="info">
 			<span class="title">{loan.book.title}</span>

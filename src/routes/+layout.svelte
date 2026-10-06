@@ -1,7 +1,6 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
-	import favicon from '#lib/assets/favicon.svg';
 	import { initAuth } from '#lib/auth.svelte.ts';
 	import { i18n } from '#lib/i18n.svelte.ts';
 	import { theme } from '#lib/theme.svelte.ts';
@@ -22,7 +21,9 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
+	<link rel="icon" href="/assets/favicon.ico" sizes="any" />
+	<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+	<link rel="manifest" href="/manifest.webmanifest" />
 </svelte:head>
 
 {@render children()}

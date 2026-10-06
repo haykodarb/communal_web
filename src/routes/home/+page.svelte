@@ -11,7 +11,7 @@
 	<div id="main-container">
 		<div id="header">
 			<div id="logo">
-				<img id="logo-icon" src="/home/icon-512.png" alt="" />
+				<img id="logo-icon" src="/assets/icon-512.png" alt="" />
 				<p id="logo-title">Communal</p>
 			</div>
 		</div>
@@ -49,14 +49,14 @@
 				</div>
 			</div>
 			<div id="description-hero">
-				<img src="/home/crow.svg" alt="" />
+				<img src="/assets/crow.svg" alt="" />
 			</div>
 		</div>
 
 		<div id="cards-list">
 			<div class="card-container">
 				<div class="card-row">
-					<div class="card-icon"><img src="/home/book.svg" alt="" /></div>
+					<div class="card-icon"><img src="/assets/book.svg" alt="" /></div>
 					<div class="card-title">Open your shelf</div>
 				</div>
 				<div class="card-content">
@@ -66,7 +66,7 @@
 			</div>
 			<div class="card-container">
 				<div class="card-row">
-					<div class="card-icon"><img src="/home/exchange.svg" alt="" /></div>
+					<div class="card-icon"><img src="/assets/exchange.svg" alt="" /></div>
 					<div class="card-title">Borrow books</div>
 				</div>
 				<div class="card-content">
@@ -76,7 +76,7 @@
 			</div>
 			<div class="card-container">
 				<div class="card-row">
-					<div class="card-icon"><img src="/home/messages.svg" alt="" /></div>
+					<div class="card-icon"><img src="/assets/messages.svg" alt="" /></div>
 					<div class="card-title">Exchange ideas</div>
 				</div>
 				<div class="card-content">

@@ -1,0 +1,25 @@
+{
+	"name": "Communal",
+	"short_name": "Communal",
+	"description": "Share books with your friends and their friends.",
+	"start_url": "/my-books",
+	"display": "standalone",
+	"background_color": "#f2e9e1",
+	"theme_color": "#f2e9e1",
+	"icons": [
+		{ "src": "/assets/icon-192.png", "sizes": "192x192", "type": "image/png" },
+		{ "src": "/assets/icon-512.png", "sizes": "512x512", "type": "image/png" },
+		{
+			"src": "/assets/icon-192-maskable.png",
+			"sizes": "192x192",
+			"type": "image/png",
+			"purpose": "maskable"
+		},
+		{
+			"src": "/assets/icon-512-maskable.png",
+			"sizes": "512x512",
+			"type": "image/png",
+			"purpose": "maskable"
+		}
+	]
+}

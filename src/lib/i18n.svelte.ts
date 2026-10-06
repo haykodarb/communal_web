@@ -4,12 +4,6 @@ const STORAGE_KEY = 'communal-locale';
 
 // English strings that are not the same as their lookup key (i.e. landing copy).
 const en: Record<string, string> = {
-	'landing-upload-books':
-		'Snap photos of your physical books to add them to the app. Share your collection and let others discover what you love to read.',
-	'landing-join-communities':
-		'Find groups of friends, clubs, or local book lovers. Build shared libraries by collaborating with people you trust.',
-	'landing-share-books':
-		'Request books from your peers or lend out yours. Track loans and discuss reads with others.',
 	'form-invalid-email': 'Please enter a valid email',
 	'form-short-password': 'Password must be at least 6 characters',
 	'form-short-username': 'Username must be at least 3 characters',
@@ -45,15 +39,6 @@ const es: Record<string, string> = {
 	'A confirmation link has been sent to:': 'Se envió un link de confirmación a:',
 	'Please validate your email and then login.':
 		'Por favor validá tu email y luego iniciá sesión.',
-	'Upload your books': 'Subí tus libros',
-	'Join communities': 'Unite a comunidades',
-	'Share books': 'Compartí libros',
-	'landing-upload-books':
-		'Sacá fotos a tus libros físicos para subirlos a la app. Compartí tu colección y permití que otros descubran lo que te gusta leer.',
-	'landing-join-communities':
-		'Encontrá grupos de amigos, clubes o apasionados de los libros. Construí librerías compartidas junto a tu círculo de confianza.',
-	'landing-share-books':
-		'Solicitá libros de tus compañeros o prestá los tuyos. Seguí tus préstamos y charlá sobre tus lecturas con otros.',
 	Loans: 'Préstamos',
 	Messages: 'Mensajes',
 	Notifications: 'Notificaciones',

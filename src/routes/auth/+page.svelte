@@ -12,7 +12,6 @@
 	let loading = $state(false);
 
 	onMount(() => {
-		localStorage.setItem('communal-welcome-seen', 'true');
 		if (auth.session) goto('/my-books');
 	});
 

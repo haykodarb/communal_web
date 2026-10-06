@@ -72,7 +72,6 @@ src/
     +page.ts                 # / redirects to /home
     home/                    # public landing page
     privacy/                 # privacy policy
-    [...legacy]/             # old root-level app URLs redirect to /app/...
     app/
       +page.ts               # /app: your books if signed in, sign-in otherwise
       auth/                  # start, login, register(+resend), recovery, reset, callback

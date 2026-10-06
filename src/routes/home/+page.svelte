@@ -27,6 +27,24 @@
 		}))
 	);
 
+	// The timeline draws itself once it scrolls into view.
+	let timeline = $state<HTMLElement>();
+	let timelineShown = $state(false);
+	$effect(() => {
+		if (!timeline) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries[0].isIntersecting) {
+					timelineShown = true;
+					observer.disconnect();
+				}
+			},
+			{ threshold: 0.5 }
+		);
+		observer.observe(timeline);
+		return () => observer.disconnect();
+	});
+
 	const steps = [
 		{ name: 'Request', text: "Find a book you've been dying to read and ask its owner to loan it out." },
 		{ name: 'Accept', text: 'Once they agree, arrange the handover through messages.' },
@@ -76,12 +94,8 @@
 			>
 				{i18n.locale === 'en' ? 'ES' : 'EN'}
 			</button>
-			{#if auth.session}
-				<a class="pill filled" href="/app">{t('Open Communal')}</a>
-			{:else}
-				<a class="pill" href="/app/auth/login">{t('Log in')}</a>
-				<a class="pill filled" href="/app/auth/register">{t('Register')}</a>
-			{/if}
+			<a class="pill" href="/app/auth/login">{t('Log in')}</a>
+			<a class="pill filled" href="/app/auth/register">{t('Register')}</a>
 		</nav>
 	</header>
 
@@ -165,9 +179,10 @@
 		<section class="how" aria-labelledby="how-title">
 			<h2 id="how-title">{t('From shelf to shelf')}</h2>
 			<!-- The loan page's own timeline: requested, accepted, returned. -->
-			<ol class="timeline">
-				{#each steps as step (step.name)}
-					<li>
+			<ol class="timeline" class:shown={timelineShown} bind:this={timeline}>
+				<span class="track" aria-hidden="true"></span>
+				{#each steps as step, i (step.name)}
+					<li style:--step={i}>
 						<span class="marker"></span>
 						<h3>{t(step.name)}</h3>
 						<p>{t(step.text)}</p>
@@ -475,6 +490,8 @@
 		flex-direction: column;
 		gap: 40px;
 	}
+	/* Like the loan page's timeline: across the full width, first step at the
+	   left edge, the middle one centered, the last at the right edge. */
 	.timeline {
 		list-style: none;
 		margin: 0;
@@ -484,22 +501,29 @@
 		gap: 32px;
 		position: relative;
 	}
-	/* The line between the markers, as on the loan page: each step draws it
-	   to the next one, so it ends at the last marker. */
-	.timeline li:not(:last-child)::before {
-		content: '';
+	.track {
 		position: absolute;
 		top: 11px;
 		left: 13px;
-		width: calc(100% + 32px);
+		right: 13px;
 		height: 4px;
+		border-radius: 2px;
 		background: var(--on-surface);
+		transform-origin: left center;
 	}
 	.timeline li {
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
+	}
+	.timeline li:nth-of-type(2) {
+		align-items: center;
+		text-align: center;
+	}
+	.timeline li:nth-of-type(3) {
+		align-items: flex-end;
+		text-align: right;
 	}
 	.marker {
 		width: 26px;
@@ -518,9 +542,39 @@
 		background: var(--surface);
 	}
 	.timeline p {
-		max-width: 26em;
+		max-width: 22em;
 		line-height: 1.55;
 		color: var(--on-surface-variant);
+	}
+
+	/* The line draws across and each step appears as it reaches it. Without
+	   motion (or before it scrolls in, for no-JS), everything just shows. */
+	@media (prefers-reduced-motion: no-preference) {
+		.timeline:not(.shown) .track {
+			transform: scaleX(0);
+		}
+		.timeline:not(.shown) .marker {
+			transform: scale(0);
+		}
+		.timeline:not(.shown) h3,
+		.timeline:not(.shown) p {
+			opacity: 0;
+			translate: 0 8px;
+		}
+		.timeline.shown .track {
+			transition: transform 1100ms cubic-bezier(0.65, 0, 0.35, 1);
+		}
+		.timeline.shown .marker {
+			transition: transform 450ms cubic-bezier(0.34, 1.5, 0.64, 1);
+			transition-delay: calc(var(--step) * 500ms);
+		}
+		.timeline.shown h3,
+		.timeline.shown p {
+			transition:
+				opacity 450ms ease,
+				translate 450ms ease;
+			transition-delay: calc(var(--step) * 500ms + 120ms);
+		}
 	}
 
 	/* ---- Features -------------------------------------------------------- */
@@ -608,14 +662,35 @@
 		.cards {
 			grid-template-columns: minmax(0, 1fr);
 		}
-		/* The timeline runs downwards on phones. */
-		.timeline li:not(:last-child)::before {
+		/* The timeline runs downwards on phones. Each step draws the line down to
+		   the next marker, so it ends at the last one (not under its text). */
+		.track {
+			display: none;
+		}
+		.timeline li:not(:last-of-type)::before {
+			content: '';
+			position: absolute;
 			top: 13px;
 			left: 11px;
 			width: 4px;
 			height: calc(100% + 32px);
+			background: var(--on-surface);
+			transform-origin: center top;
 		}
-		.timeline li {
+		@media (prefers-reduced-motion: no-preference) {
+			.timeline:not(.shown) li::before {
+				transform: scaleY(0);
+			}
+			.timeline.shown li::before {
+				transition: transform 500ms cubic-bezier(0.65, 0, 0.35, 1);
+				transition-delay: calc(var(--step) * 500ms + 100ms);
+			}
+		}
+		.timeline li,
+		.timeline li:nth-of-type(2),
+		.timeline li:nth-of-type(3) {
+			align-items: flex-start;
+			text-align: left;
 			padding-left: 48px;
 		}
 		.marker {

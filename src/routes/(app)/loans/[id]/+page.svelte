@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import Button from '#lib/components/Button.svelte';
@@ -16,13 +15,14 @@
 		updateLoanReview
 	} from '#lib/data/api.ts';
 	import type { Loan } from '#lib/data/models.ts';
-	import { auth } from '#lib/auth.svelte.ts';
 	import { formatShortDate } from '#lib/format.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import type { PageProps } from './$types';
 
-	let loan = $state<Loan | null>(null);
-	let loading = $state(true);
+	// The loan comes from the load (through the page cache).
+	let { data }: PageProps = $props();
+	let loan = $derived<Loan | null>(data.loan);
 	let busy = $state(false);
 	let error = $state('');
 
@@ -38,14 +38,7 @@
 		loan = await getLoanById(id);
 	}
 
-	$effect(() => {
-		loading = true;
-		getLoanById(id)
-			.then((result) => (loan = result))
-			.finally(() => (loading = false));
-	});
-
-	const isOwned = $derived(loan ? loan.owner.id === auth.user?.id : false);
+	const isOwned = $derived(loan ? loan.owner.id === data.userId : false);
 
 	/** Asks for confirmation, runs the action, then reloads the loan. */
 	async function act(title: string, action: () => Promise<void>, leave = false) {
@@ -90,9 +83,7 @@
 		<Icon name="chevron-left" size={32} />
 	</button>
 
-	{#if loading}
-		<Loading />
-	{:else if loan}
+	{#if loan}
 		<p class="who">
 			{#if isOwned}
 				<a href={`/profile/${loan.loanee.id}`}><Avatar profile={loan.loanee} size={50} /></a>

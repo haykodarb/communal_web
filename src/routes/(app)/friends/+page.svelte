@@ -1,11 +1,11 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import Loading from '#lib/components/Loading.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
 	import TabBar from '#lib/components/TabBar.svelte';
 	import UserRow from '#lib/components/UserRow.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
 	import {
 		acceptFriendRequest,
 		deleteFriendship,
@@ -15,28 +15,42 @@
 	import type { Friendship } from '#lib/data/models.ts';
 	import { errorMessage } from '#lib/errors.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { store } from '#lib/cache.ts';
+	import { FRIEND_TABS, keys, PAGE_SIZE } from '#lib/data/pages.ts';
+	import { selectTab } from '#lib/tabs.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
+	import type { PageProps } from './$types';
 	import { onTableChange } from '#lib/realtime.ts';
 	import { unread } from '#lib/unread.svelte.ts';
 
-	// Friends / Received / Sent tabs over the friendships table.
-	const PAGE_SIZE = 30;
-	const LISTS: FriendshipList[] = ['friends', 'received', 'sent'];
+	// Friends / Received / Sent tabs over the friendships table. The tab is in the
+	// URL (?tab=), and the load fetches that tab's list (through the page cache).
+	let { data }: PageProps = $props();
 
-	const userId = $derived(auth.user!.id);
+	const userId = $derived(data.userId);
 
-	let tab = $state(0);
+	const tab = $derived<number>(FRIEND_TABS.indexOf(data.list));
 	let busyId = $state<number | null>(null);
 	let error = $state('');
 	let confirmDialog: ConfirmDialog;
 	let confirmTitle = $state('');
 
-	const lists = LISTS.map((list) =>
+	const lists = FRIEND_TABS.map((list: FriendshipList) =>
 		createPaged<Friendship>(
-			(page) => getFriendships(userId, list, { page, pageSize: PAGE_SIZE }),
-			PAGE_SIZE
+			(page) => getFriendships(userId, list, { page, pageSize: PAGE_SIZE.friends }),
+			PAGE_SIZE.friends,
+			{
+				seed: untrack(() => (data.list === list ? data.state : undefined)),
+				onChange: (state) => store(keys.friends(list), state)
+			}
 		)
 	);
+
+	// A tab switch, or a background refresh of the cached list, lands here.
+	$effect(() => {
+		const { list, state } = data;
+		untrack(() => lists[FRIEND_TABS.indexOf(list)].seed(state));
+	});
 	const current = $derived(lists[tab]);
 
 	const other = (f: Friendship) => (f.requester.id === userId ? f.responder : f.requester);
@@ -93,10 +107,7 @@
 		<TabBar
 			tabs={[t('Friends'), t('Received'), t('Sent')]}
 			index={tab}
-			onchange={(i) => {
-				tab = i;
-				lists[i].reset();
-			}}
+			onchange={(i) => selectTab(FRIEND_TABS[i], FRIEND_TABS)}
 		/>
 	</div>
 

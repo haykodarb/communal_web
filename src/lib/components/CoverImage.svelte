@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Icon from './Icon.svelte';
-	import { signedStorageUrl } from '#lib/data/api.ts';
+	import { peekSignedUrl, signedStorageUrl } from '#lib/data/api.ts';
 
 	let {
 		bucket,
@@ -10,18 +10,21 @@
 	}: { bucket: string; path?: string | null; alt?: string; rounded?: boolean } =
 		$props();
 
-	let url = $state<string | null>(null);
-	let failed = $state(false);
+	// A URL signed earlier (or presigned by the page's load) shows right away;
+	// otherwise it's requested, batched with the other covers on screen.
+	let fetched = $state<{ key: string; url: string | null } | null>(null);
+	const key = $derived(`${bucket}:${path}`);
+	const url = $derived(
+		peekSignedUrl(bucket, path) ?? (fetched?.key === key ? fetched.url : null)
+	);
+	const failed = $derived(fetched?.key === key && fetched.url === null);
 
 	$effect(() => {
-		const p = path;
-		failed = false;
-		url = null;
+		const current = key;
+		if (!path || peekSignedUrl(bucket, path)) return;
 		let active = true;
-		signedStorageUrl(bucket, p).then((u) => {
-			if (!active) return;
-			if (u) url = u;
-			else failed = true;
+		signedStorageUrl(bucket, path).then((u) => {
+			if (active) fetched = { key: current, url: u };
 		});
 		return () => {
 			active = false;

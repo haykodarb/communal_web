@@ -12,6 +12,7 @@
 	import { getCommunityById } from '#lib/data/api.ts';
 	import type { Community } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { selectTab, tabFrom } from '#lib/tabs.ts';
 
 	// CommunitySpecificPage: Books / Discuss / Members with the floating
 	// bottom tab bar. The tab lives in ?tab= so back navigation keeps it.
@@ -26,9 +27,8 @@
 	let loading = $state(true);
 
 	const id = $derived(page.params.id!);
-	const tab = $derived<Tab>(
-		(tabs.find((t) => t.key === page.url.searchParams.get('tab'))?.key ?? 'books') as Tab
-	);
+	const tabKeys = tabs.map((t) => t.key) as Tab[];
+	const tab = $derived<Tab>(tabFrom(page.url, tabKeys));
 
 	$effect(() => {
 		loading = true;
@@ -37,12 +37,7 @@
 			.finally(() => (loading = false));
 	});
 
-	function selectTab(key: Tab) {
-		const url = new URL(page.url.href);
-		if (key === 'books') url.searchParams.delete('tab');
-		else url.searchParams.set('tab', key);
-		goto(url, { replace: true, reset: false });
-	}
+	const select = (key: Tab) => selectTab(key, tabKeys);
 </script>
 
 <div class="page">
@@ -97,7 +92,7 @@
 					class="tab"
 					class:selected={tab === item.key}
 					aria-current={tab === item.key ? 'page' : undefined}
-					onclick={() => selectTab(item.key)}
+					onclick={() => select(item.key)}
 				>
 					<Icon name={item.icon} size={22} />
 					<span class="label">{t(item.label)}</span>

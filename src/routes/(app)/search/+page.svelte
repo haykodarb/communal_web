@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
 	import Loading from '#lib/components/Loading.svelte';
 	import StickySearch from '#lib/components/StickySearch.svelte';
@@ -6,27 +7,58 @@
 	import TabBar from '#lib/components/TabBar.svelte';
 	import UserRow from '#lib/components/UserRow.svelte';
 	import VerticalBookCard from '#lib/components/VerticalBookCard.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
+	import { store } from '#lib/cache.ts';
 	import { searchNetworkBooks, searchUsers } from '#lib/data/api.ts';
+	import { keys, PAGE_SIZE, SEARCH_TABS } from '#lib/data/pages.ts';
+	import { selectTab } from '#lib/tabs.ts';
 	import type { NetworkBook, Profile } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
+	import type { PageProps } from './$types';
 
 	// SearchPage: Books (friends and friends of friends) and Users tabs sharing
-	// one query.
-	const PAGE_SIZE = 20;
+	// one query. The tab is in the URL (?tab=users), and the load fetches its
+	// first page (through the page cache).
+	let { data }: PageProps = $props();
 
 	let query = $state('');
-	let tab = $state(0);
+	const tab = $derived(SEARCH_TABS.indexOf(data.tab));
 
 	const books = createPaged<NetworkBook>(
-		(page) => searchNetworkBooks(query, { page, pageSize: PAGE_SIZE }),
-		PAGE_SIZE
+		(page) => searchNetworkBooks(query, { page, pageSize: PAGE_SIZE.network }),
+		PAGE_SIZE.network,
+		{
+			seed: untrack(() => data.books),
+			onChange: (state) => {
+				if (!query) store(keys.network(), state);
+			}
+		}
 	);
 	const users = createPaged<Profile>(
-		(page) => searchUsers(auth.user!.id, query, { page, pageSize: PAGE_SIZE }),
-		PAGE_SIZE
+		(page) => searchUsers(data.userId, query, { page, pageSize: PAGE_SIZE.network }),
+		PAGE_SIZE.network,
+		{
+			seed: untrack(() => data.users),
+			onChange: (state) => {
+				if (!query) store(keys.users(), state);
+			}
+		}
 	);
+
+	// A tab switch, or a background refresh of the cached list, lands here. With
+	// a query typed, the tab's list is searched instead.
+	$effect(() => {
+		const { books: freshBooks, users: freshUsers } = data;
+		untrack(() => {
+			if (freshBooks) {
+				if (query) books.reset();
+				else books.seed(freshBooks);
+			} else if (freshUsers) {
+				if (query) users.reset();
+				else users.seed(freshUsers);
+			}
+		});
+	});
 
 	const current = $derived(tab === 0 ? books : users);
 
@@ -39,10 +71,7 @@
 		<TabBar
 			tabs={[t('Books'), t('Users')]}
 			index={tab}
-			onchange={(i) => {
-				tab = i;
-				(i === 0 ? books : users).reset();
-			}}
+			onchange={(i) => selectTab(SEARCH_TABS[i], SEARCH_TABS)}
 		/>
 	</div>
 	<StickySearch floating={false}>

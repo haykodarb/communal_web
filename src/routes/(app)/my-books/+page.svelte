@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import Loading from '#lib/components/Loading.svelte';
 	import BookCard from '#lib/components/BookCard.svelte';
@@ -8,15 +9,18 @@
 	import SearchBar from '#lib/components/SearchBar.svelte';
 	import StickySearch from '#lib/components/StickySearch.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
+	import { store } from '#lib/cache.ts';
 	import { getBooksForUser, type BooksQuery } from '#lib/data/api.ts';
+	import { keys, PAGE_SIZE } from '#lib/data/pages.ts';
 	import type { Book } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
+	import type { PageProps } from './$types';
 
 	// BookListPage: the user's books, searchable, with BookListController's
-	// order/filter sheet and infinite scroll.
-	const PAGE_SIZE = 30;
+	// order/filter sheet and infinite scroll. The first page comes from the load
+	// (and the page cache, which also keeps every page scrolled through).
+	let { data }: PageProps = $props();
 	const ORDERS: NonNullable<BooksQuery['orderBy']>[] = ['created_at', 'title', 'author'];
 	const FILTERS: (boolean | undefined)[] = [undefined, false, true]; // all / available / loaned
 
@@ -25,17 +29,34 @@
 	let filterIndex = $state(0);
 	let sheet: FilterSheet;
 
+	/** The cache holds the unfiltered list only. */
+	const unfiltered = () => !search && orderIndex === 0 && filterIndex === 0;
+
 	const books = createPaged<Book>(
 		(page) =>
-			getBooksForUser(auth.user!.id, {
+			getBooksForUser(data.userId, {
 				search,
 				orderBy: ORDERS[orderIndex],
 				loaned: FILTERS[filterIndex],
 				page,
-				pageSize: PAGE_SIZE
+				pageSize: PAGE_SIZE.books
 			}),
-		PAGE_SIZE
+		PAGE_SIZE.books,
+		{
+			seed: untrack(() => data.books),
+			onChange: (state) => {
+				if (unfiltered()) store(keys.myBooks(data.userId), state);
+			}
+		}
 	);
+
+	// A background refresh of the cached list lands here.
+	$effect(() => {
+		const fresh = data.books;
+		untrack(() => {
+			if (unfiltered()) books.seed(fresh);
+		});
+	});
 </script>
 
 <div class="page">

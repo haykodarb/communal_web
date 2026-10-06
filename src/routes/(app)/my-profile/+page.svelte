@@ -1,34 +1,21 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import Loading from '#lib/components/Loading.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
 	import ProfileView from '#lib/components/ProfileView.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
-	import { getProfile } from '#lib/data/api.ts';
-	import type { Profile } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import type { PageProps } from './$types';
 
-	let profile = $state<Profile | null>(null);
-	let loading = $state(true);
-
-	$effect(() => {
-		const userId = auth.user?.id;
-		if (!userId) return;
-		loading = true;
-		getProfile(userId)
-			.then((p) => (profile = p))
-			.finally(() => {
-				loading = false;
-			});
-	});
+	// Your own profile; it and its Books/Reviews tabs come from the load
+	// (through the page cache).
+	let { data }: PageProps = $props();
+	const profile = $derived(data.profile);
 </script>
 
 <div class="page">
-	{#if loading}
-		<Loading />
-	{:else if profile}
+	{#if profile}
 		<ProfileView
 			{profile}
+			lists={data.lists}
 			emptyBooks={t('You have not uploaded any books.')}
 			emptyReviews={t('You have not reviewed any books yet.')}
 		>

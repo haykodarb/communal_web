@@ -1,3 +1,4 @@
+import { drop } from '#lib/cache.ts';
 import { supabase } from '#lib/supabase.ts';
 import type {
 	AppNotification,
@@ -282,25 +283,70 @@ export async function getLoansForUser(
 }
 
 // Storage buckets are private; the Flutter app downloads with an authenticated
-// request, so on web we mint short-lived signed URLs and cache them.
-const signedUrlCache = new Map<string, string>();
+// request, so on web we mint signed URLs. Requests made in the same tick (a
+// list rendering its covers) are signed together in one createSignedUrls call,
+// and each URL is reused until shortly before it expires, which also lets the
+// browser reuse the downloaded image.
+const SIGNED_URL_SECONDS = 60 * 60;
+/** Stop handing out a URL this long before it expires. */
+const SIGNED_URL_MARGIN_MS = 5 * 60_000;
 
-export async function signedStorageUrl(
-	bucket: string,
-	path?: string | null
-): Promise<string | null> {
+const signedUrlCache = new Map<string, { url: string; expires: number }>();
+const pendingSigns = new Map<string, Map<string, ((url: string | null) => void)[]>>();
+
+/** A cached, still valid signed URL, without any request. */
+export function peekSignedUrl(bucket: string, path?: string | null): string | null {
 	if (!path) return null;
-	const key = `${bucket}:${path}`;
-	const cached = signedUrlCache.get(key);
-	if (cached) return cached;
+	const entry = signedUrlCache.get(`${bucket}:${path}`);
+	return entry && entry.expires > Date.now() ? entry.url : null;
+}
 
-	const { data, error } = await supabase.storage
+async function flushSigns(bucket: string): Promise<void> {
+	const waiting = pendingSigns.get(bucket);
+	pendingSigns.delete(bucket);
+	if (!waiting) return;
+	const paths = [...waiting.keys()];
+	const { data } = await supabase.storage
 		.from(bucket)
-		.createSignedUrl(path, 60 * 60);
-	if (error || !data) return null;
+		// Stored paths start with "/"; object names (and the batch API) have none.
+		.createSignedUrls(
+			paths.map((path) => path.replace(/^\/+/, '')),
+			SIGNED_URL_SECONDS
+		)
+		.catch(() => ({ data: null }));
+	const expires = Date.now() + SIGNED_URL_SECONDS * 1000 - SIGNED_URL_MARGIN_MS;
+	paths.forEach((path, i) => {
+		const url = data?.[i]?.signedUrl ?? null;
+		if (url) signedUrlCache.set(`${bucket}:${path}`, { url, expires });
+		for (const resolve of waiting.get(path)!) resolve(url);
+	});
+}
 
-	signedUrlCache.set(key, data.signedUrl);
-	return data.signedUrl;
+export function signedStorageUrl(bucket: string, path?: string | null): Promise<string | null> {
+	if (!path) return Promise.resolve(null);
+	const cached = peekSignedUrl(bucket, path);
+	if (cached) return Promise.resolve(cached);
+
+	return new Promise((resolve) => {
+		let waiting = pendingSigns.get(bucket);
+		if (!waiting) {
+			waiting = new Map();
+			pendingSigns.set(bucket, waiting);
+			// Collect every request made while this render runs, then sign at once.
+			setTimeout(() => flushSigns(bucket), 0);
+		}
+		const resolvers = waiting.get(path) ?? [];
+		resolvers.push(resolve);
+		waiting.set(path, resolvers);
+	});
+}
+
+/** Sign many paths up front (in load functions), so images render right away. */
+export async function presignStorageUrls(
+	bucket: string,
+	paths: (string | null | undefined)[]
+): Promise<void> {
+	await Promise.all(paths.map((path) => signedStorageUrl(bucket, path)));
 }
 
 // ---------------------------------------------------------------------------
@@ -362,7 +408,7 @@ export interface BookForm {
 	public: boolean;
 }
 
-export async function addBook(userId: string, form: BookForm, cover: Blob): Promise<Book> {
+async function addBook_(userId: string, form: BookForm, cover: Blob): Promise<Book> {
 	const imagePath = await uploadImage('book_covers', userId, cover);
 	const { data, error } = await supabase
 		.from('books')
@@ -380,7 +426,7 @@ export async function addBook(userId: string, form: BookForm, cover: Blob): Prom
 	return toBook(data as Record<string, unknown>);
 }
 
-export async function updateBook(
+async function updateBook_(
 	userId: string,
 	book: Book,
 	form: BookForm,
@@ -403,7 +449,7 @@ export async function updateBook(
 	return toBook(data as Record<string, unknown>);
 }
 
-export async function deleteBook(book: Book): Promise<void> {
+async function deleteBook_(book: Book): Promise<void> {
 	const { data, error } = await supabase.from('books').delete().eq('id', book.id).select();
 	if (error) throw error;
 	if (data && data.length > 0) {
@@ -499,7 +545,7 @@ export interface ProfileForm {
 	extended_circle: boolean;
 }
 
-export async function updateProfile(
+async function updateProfile_(
 	profile: Profile,
 	form: ProfileForm,
 	avatar: Blob | null
@@ -526,7 +572,7 @@ export async function updateProfile(
 // ---------------------------------------------------------------------------
 // Loan mutations
 
-export async function requestLoan(userId: string, bookId: string): Promise<Loan> {
+async function requestLoan_(userId: string, bookId: string): Promise<Loan> {
 	const { data, error } = await supabase
 		.from('loans')
 		.insert({ loanee: userId, book: bookId })
@@ -537,7 +583,7 @@ export async function requestLoan(userId: string, bookId: string): Promise<Loan>
 }
 
 /** Withdraws a loan request. */
-export async function deleteLoan(loanId: string): Promise<void> {
+async function deleteLoan_(loanId: string): Promise<void> {
 	const { data, error } = await supabase
 		.from('loans')
 		.delete()
@@ -549,7 +595,7 @@ export async function deleteLoan(loanId: string): Promise<void> {
 }
 
 /** Sets one of the loan's status flags (mirrors LoansBackend.setLoanParameterTrue). */
-export async function setLoanFlag(
+async function setLoanFlag_(
 	loanId: string,
 	flag: 'accepted' | 'rejected' | 'returned'
 ): Promise<void> {
@@ -563,7 +609,7 @@ export async function setLoanFlag(
 	if (!data) throw new Error('Could not update this loan, please try again.');
 }
 
-export async function updateLoanReview(loanId: string, review: string | null): Promise<void> {
+async function updateLoanReview_(loanId: string, review: string | null): Promise<void> {
 	const { data, error } = await supabase
 		.from('loans')
 		.update({ review })
@@ -607,7 +653,7 @@ export async function getFriendshipWith(
 	return data ? toFriendship(data as Record<string, unknown>) : null;
 }
 
-export async function sendFriendRequest(userId: string, targetUserId: string): Promise<Friendship> {
+async function sendFriendRequest_(userId: string, targetUserId: string): Promise<Friendship> {
 	if (targetUserId === userId) throw new Error('Cannot send friend request to yourself.');
 	if (await getFriendshipWith(userId, targetUserId)) throw new Error('Friendship already exists.');
 
@@ -621,7 +667,7 @@ export async function sendFriendRequest(userId: string, targetUserId: string): P
 }
 
 /** Rejecting a request deletes it instead (deleteFriendship), so it can be sent again. */
-export async function acceptFriendRequest(friendshipId: number): Promise<Friendship> {
+async function acceptFriendRequest_(friendshipId: number): Promise<Friendship> {
 	const { data, error } = await supabase
 		.from('friendships')
 		.update({ accepted: true, accepted_at: 'now()' })
@@ -632,7 +678,7 @@ export async function acceptFriendRequest(friendshipId: number): Promise<Friends
 	return toFriendship(data as Record<string, unknown>);
 }
 
-export async function deleteFriendship(friendshipId: number): Promise<void> {
+async function deleteFriendship_(friendshipId: number): Promise<void> {
 	const { error } = await supabase.from('friendships').delete().eq('id', friendshipId);
 	if (error) throw error;
 }
@@ -750,7 +796,7 @@ export async function getUnreadNotificationsCount(userId: string): Promise<numbe
 	return count ?? 0;
 }
 
-export async function setNotificationsRead(userId: string): Promise<void> {
+async function setNotificationsRead_(userId: string): Promise<void> {
 	const { error } = await supabase
 		.from('notifications')
 		.update({ seen: true })
@@ -838,7 +884,7 @@ export async function getMessageById(id: string): Promise<Message | null> {
 	return data ? toMessage(data as Record<string, unknown>) : null;
 }
 
-export async function sendMessage(
+async function sendMessage_(
 	userId: string,
 	receiverId: string,
 	content: string
@@ -852,7 +898,7 @@ export async function sendMessage(
 	return toMessage(data as Record<string, unknown>);
 }
 
-export async function markMessagesRead(userId: string, otherUserId: string): Promise<void> {
+async function markMessagesRead_(userId: string, otherUserId: string): Promise<void> {
 	const { error } = await supabase
 		.from('messages')
 		.update({ is_read: true })
@@ -862,7 +908,7 @@ export async function markMessagesRead(userId: string, otherUserId: string): Pro
 	if (error) throw error;
 }
 
-export async function deleteChatWith(otherUserId: string): Promise<void> {
+async function deleteChatWith_(otherUserId: string): Promise<void> {
 	const { error } = await supabase.rpc('delete_chat_for_user', { chatter_id: otherUserId });
 	if (error) throw error;
 }
@@ -1254,12 +1300,12 @@ export async function isOnWaitlist(userId: string, bookId: string): Promise<bool
 	return (count ?? 0) > 0;
 }
 
-export async function joinWaitlist(userId: string, bookId: string): Promise<void> {
+async function joinWaitlist_(userId: string, bookId: string): Promise<void> {
 	const { error } = await supabase.from('waitlist').insert({ user: userId, book: bookId });
 	if (error) throw error;
 }
 
-export async function leaveWaitlist(userId: string, bookId: string): Promise<void> {
+async function leaveWaitlist_(userId: string, bookId: string): Promise<void> {
 	const { error } = await supabase
 		.from('waitlist')
 		.delete()
@@ -1293,3 +1339,38 @@ export async function deleteAccount(profile: Profile): Promise<void> {
 	const { error: rpcError } = await supabase.rpc('delete_user', { user_id: profile.id });
 	if (rpcError) throw rpcError;
 }
+
+// ---------------------------------------------------------------------------
+// Mutations drop the cached page data they make stale (see #lib/cache.ts), once
+// they finish, so the next visit to those pages loads fresh data.
+
+function invalidates<A extends unknown[], R>(
+	fn: (...args: A) => Promise<R>,
+	...prefixes: string[]
+): (...args: A) => Promise<R> {
+	return async (...args) => {
+		try {
+			return await fn(...args);
+		} finally {
+			drop(...prefixes);
+		}
+	};
+}
+
+export const addBook = invalidates(addBook_, 'books:', 'profile-books:');
+export const updateBook = invalidates(updateBook_, 'books:', 'book:', 'profile-books:', 'network', 'loans:', 'loan:');
+export const deleteBook = invalidates(deleteBook_, 'books:', 'book:', 'profile-books:', 'network', 'loans:', 'loan:');
+export const updateProfile = invalidates(updateProfile_, 'me:', 'users', 'profile:', 'chats', 'chat:', 'friends:');
+export const requestLoan = invalidates(requestLoan_, 'loans:', 'loan:', 'book:');
+export const deleteLoan = invalidates(deleteLoan_, 'loans:', 'loan:', 'book:');
+export const setLoanFlag = invalidates(setLoanFlag_, 'loans:', 'loan:', 'book:', 'books:', 'network', 'profile-books:');
+export const updateLoanReview = invalidates(updateLoanReview_, 'loans:', 'loan:', 'book:', 'profile-reviews:');
+export const sendFriendRequest = invalidates(sendFriendRequest_, 'friends:', 'profile:');
+export const acceptFriendRequest = invalidates(acceptFriendRequest_, 'friends:', 'profile:', 'network', 'notifications');
+export const deleteFriendship = invalidates(deleteFriendship_, 'friends:', 'profile:', 'network', 'notifications');
+export const setNotificationsRead = invalidates(setNotificationsRead_, 'notifications');
+export const sendMessage = invalidates(sendMessage_, 'chats', 'chat:');
+export const markMessagesRead = invalidates(markMessagesRead_, 'chats');
+export const deleteChatWith = invalidates(deleteChatWith_, 'chats', 'chat:');
+export const joinWaitlist = invalidates(joinWaitlist_, 'book:');
+export const leaveWaitlist = invalidates(leaveWaitlist_, 'book:');

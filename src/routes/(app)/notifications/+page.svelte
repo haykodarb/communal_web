@@ -1,9 +1,9 @@
 <script lang="ts">
+	import { onMount, untrack } from 'svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import Loading from '#lib/components/Loading.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import NotificationCard from '#lib/components/NotificationCard.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
 	import {
 		acceptFriendRequest,
 		deleteFriendship,
@@ -16,12 +16,17 @@
 	import { onTableChange } from '#lib/realtime.ts';
 	import { unread } from '#lib/unread.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import { store } from '#lib/cache.ts';
+	import { keys, PAGE_SIZE } from '#lib/data/pages.ts';
+	import type { PageProps } from './$types';
 
-	const PAGE_SIZE = 20;
+	// The first page comes from the load (through the page cache).
+	let { data }: PageProps = $props();
+	const seed = untrack(() => data.notifications);
 
-	let notifications = $state<AppNotification[]>([]);
-	let page = $state(0);
-	let hasMore = $state(true);
+	let notifications = $state<AppNotification[]>(seed.items);
+	let page = $state(seed.pages);
+	let hasMore = $state(seed.hasMore);
 	let loading = $state(false);
 	let error = $state('');
 	let busyId = $state<number | null>(null);
@@ -30,20 +35,41 @@
 	let confirmTitle = $state('');
 	let sentinel = $state<HTMLElement>();
 
-	const userId = $derived(auth.user!.id);
+	const userId = $derived(data.userId);
+
+	// Rows keep their `seen` flag locally so the "New" header still shows.
+	const markRead = (rows: AppNotification[]) => {
+		if (rows.some((n) => !n.seen)) {
+			setNotificationsRead(userId).then(() => unread.refreshNotifications(userId));
+		}
+	};
+	onMount(() => markRead(notifications));
+
+	// A background refresh of the cached list lands here.
+	$effect(() => {
+		const fresh = data.notifications;
+		if (fresh === seed) return;
+		untrack(() => {
+			notifications = fresh.items;
+			page = fresh.pages;
+			hasMore = fresh.hasMore;
+			markRead(fresh.items);
+		});
+	});
 
 	async function loadMore() {
 		if (loading || !hasMore) return;
 		loading = true;
 		try {
-			const next = await getNotifications(userId, { page, pageSize: PAGE_SIZE });
+			const next = await getNotifications(userId, {
+				page,
+				pageSize: PAGE_SIZE.notifications
+			});
 			notifications = [...notifications, ...next];
-			hasMore = next.length === PAGE_SIZE;
+			hasMore = next.length === PAGE_SIZE.notifications;
 			page += 1;
-			// Rows keep their `seen` flag locally so the "New" header still shows.
-			if (next.some((n) => !n.seen)) {
-				setNotificationsRead(userId).then(() => unread.refreshNotifications(userId));
-			}
+			store(keys.notifications(), { items: notifications, pages: page, hasMore });
+			markRead(next);
 		} catch (e) {
 			error = errorMessage(e);
 			hasMore = false;

@@ -1,17 +1,28 @@
 <script lang="ts">
-	import { signedStorageUrl } from '#lib/data/api.ts';
+	import { peekSignedUrl, signedStorageUrl } from '#lib/data/api.ts';
 	import type { Profile } from '#lib/data/models.ts';
 
 	// CommonCircularAvatar: the profile picture, or one of six default emblems
 	// picked from the username, drawn on a primary-colored circle.
 	let { profile, size = 50 }: { profile: Profile; size?: number } = $props();
 
-	let url = $state<string | null>(null);
+	// Shown right away when already signed, otherwise batched with the rest.
+	let fetched = $state<{ path: string; url: string | null } | null>(null);
+	const url = $derived(
+		peekSignedUrl('profile_avatars', profile.avatar_path) ??
+			(fetched && fetched.path === profile.avatar_path ? fetched.url : null)
+	);
 
 	$effect(() => {
 		const path = profile.avatar_path;
-		url = null;
-		if (path) signedStorageUrl('profile_avatars', path).then((u) => (url = u));
+		if (!path || peekSignedUrl('profile_avatars', path)) return;
+		let active = true;
+		signedStorageUrl('profile_avatars', path).then((u) => {
+			if (active) fetched = { path, url: u };
+		});
+		return () => {
+			active = false;
+		};
 	});
 
 	// Same rule as Flutter's _iconAvatar: sum of the first six char codes, mod 6.

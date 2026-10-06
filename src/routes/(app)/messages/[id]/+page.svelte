@@ -1,46 +1,42 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { page } from '$app/state';
 	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import ChatComposer from '#lib/components/ChatComposer.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
-	import { getMessagesWith, getProfile, markMessagesRead, sendMessage } from '#lib/data/api.ts';
+	import { getMessagesWith, markMessagesRead, sendMessage } from '#lib/data/api.ts';
 	import type { Message, Profile } from '#lib/data/models.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { currentProfile } from '#lib/profile.svelte.ts';
 	import { onTableChange } from '#lib/realtime.ts';
 	import { unread } from '#lib/unread.svelte.ts';
-	import { errorMessage } from '#lib/errors.ts';
+	import type { PageProps } from './$types';
 
-	// MessagesSpecificPage: one conversation, newest message at the bottom.
-	let chatter = $state<Profile | null>(null);
+	// MessagesSpecificPage: one conversation, newest message at the bottom. The
+	// newest page comes from the load (through the page cache).
+	let { data }: PageProps = $props();
+	let chatter = $derived<Profile | null>(data.chat.chatter);
 	/** Newest first, as loaded; rendered in reverse with column-reverse. */
-	let messages = $state<Message[]>([]);
-	let loading = $state(true);
+	let messages = $derived<Message[]>(data.chat.messages);
 	let loadingMore = $state(false);
 	let hasMore = $state(true);
-	let pageIndex = 0;
+	let pageIndex = 1;
 	let draft = $state('');
 	let error = $state('');
 	let top = $state<HTMLElement>();
 
 	const otherId = $derived(page.params.id!);
-	const userId = $derived(auth.user!.id);
+	const userId = $derived(data.userId);
 
+	// Opening a chat (or switching to another one) starts from its newest page.
 	$effect(() => {
-		loading = true;
-		pageIndex = 0;
-		Promise.all([getProfile(otherId), getMessagesWith(userId, otherId, 0)])
-			.then(([profile, first]) => {
-				chatter = profile;
-				messages = first;
-				hasMore = first.length === 100;
-				pageIndex = 1;
-				markRead();
-			})
-			.catch((e) => (error = errorMessage(e)))
-			.finally(() => (loading = false));
+		const first = data.chat.messages;
+		untrack(() => {
+			pageIndex = 1;
+			hasMore = first.length === 100;
+			markRead();
+		});
 	});
 
 	const markRead = () => markMessagesRead(userId, otherId).then(() => unread.refreshMessages(userId));
@@ -81,7 +77,7 @@
 	$effect(() => {
 		if (!top) return;
 		const observer = new IntersectionObserver(async (entries) => {
-			if (!entries[0].isIntersecting || loadingMore || !hasMore || loading) return;
+			if (!entries[0].isIntersecting || loadingMore || !hasMore) return;
 			loadingMore = true;
 			const older = await getMessagesWith(userId, otherId, pageIndex);
 			pageIndex += 1;
@@ -147,27 +143,23 @@
 	<PageBar title={chatter?.username ?? ''} onback={() => goto('/messages')} />
 
 	<div class="scroll">
-		{#if loading}
-			<Loading />
-		{:else}
-			<ol class="messages">
-				{#each messages as message, i (message.id)}
-					{@const received = message.sender.id === otherId}
-					<li class="message" class:received>
-						<p class="bubble" class:pending={message.id.startsWith('pending-')}>{message.content}</p>
-						{#if showTime(i)}
-							<span class="meta">{formatTime(message.created_at)}</span>
-						{/if}
-						{#if i === 0 && !received && message.is_read}
-							<span class="meta">{t('Seen')}</span>
-						{/if}
-					</li>
-				{/each}
-				<li bind:this={top} class="top">
-					{#if loadingMore}<Loading size={20} inline />{/if}
+		<ol class="messages">
+			{#each messages as message, i (message.id)}
+				{@const received = message.sender.id === otherId}
+				<li class="message" class:received>
+					<p class="bubble" class:pending={message.id.startsWith('pending-')}>{message.content}</p>
+					{#if showTime(i)}
+						<span class="meta">{formatTime(message.created_at)}</span>
+					{/if}
+					{#if i === 0 && !received && message.is_read}
+						<span class="meta">{t('Seen')}</span>
+					{/if}
 				</li>
-			</ol>
-		{/if}
+			{/each}
+			<li bind:this={top} class="top">
+				{#if loadingMore}<Loading size={20} inline />{/if}
+			</li>
+		</ol>
 	</div>
 
 	{#if error}

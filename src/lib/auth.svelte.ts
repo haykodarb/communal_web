@@ -1,4 +1,5 @@
 import type { Session, User } from '@supabase/supabase-js';
+import { clearCache } from './cache';
 import { supabase } from './supabase';
 
 let session = $state<Session | null>(null);
@@ -84,5 +85,6 @@ export const auth = {
 
 	async signOut(): Promise<void> {
 		await supabase.auth.signOut();
+		clearCache();
 	}
 };

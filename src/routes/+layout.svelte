@@ -13,6 +13,11 @@
 		theme.apply();
 		i18n.set(i18n.locale);
 		initAuth();
+		// Touch screens can't hover, so preload links' data as they scroll into
+		// view instead (the cache makes repeats free).
+		if (matchMedia('(hover: none)').matches) {
+			document.body.dataset.sveltekitPreloadData = 'viewport';
+		}
 	});
 </script>
 

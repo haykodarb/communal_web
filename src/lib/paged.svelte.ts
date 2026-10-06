@@ -1,13 +1,30 @@
 import { errorMessage } from './errors';
 
+/** Everything loaded so far, as kept in the page cache. */
+export interface PagedState<T> {
+	items: T[];
+	/** Pages loaded so far. */
+	pages: number;
+	hasMore: boolean;
+}
+
 // Infinite-scroll list state (a slim CommonListViewController): call
 // loadMore() when the end of the list comes into view, reset() on a new search.
-export function createPaged<T>(load: (page: number) => Promise<T[]>, pageSize: number) {
-	let items = $state<T[]>([]);
+// `seed` starts it from data a load function fetched (or the cache kept), and
+// `onChange` is told about every page loaded so the cache can keep them too.
+export function createPaged<T>(
+	load: (page: number) => Promise<T[]>,
+	pageSize: number,
+	{
+		seed,
+		onChange
+	}: { seed?: PagedState<T>; onChange?: (state: PagedState<T>) => void } = {}
+) {
+	let items = $state<T[]>(seed?.items ?? []);
 	let loading = $state(false);
-	let hasMore = $state(true);
+	let hasMore = $state(seed?.hasMore ?? true);
 	let error = $state('');
-	let page = 0;
+	let page = seed?.pages ?? 0;
 	let generation = 0;
 
 	async function loadMore(): Promise<void> {
@@ -20,6 +37,7 @@ export function createPaged<T>(load: (page: number) => Promise<T[]>, pageSize: n
 			items = [...items, ...next];
 			hasMore = next.length === pageSize;
 			page += 1;
+			onChange?.({ items, pages: page, hasMore });
 		} catch (e) {
 			if (current !== generation) return;
 			error = errorMessage(e);
@@ -35,6 +53,7 @@ export function createPaged<T>(load: (page: number) => Promise<T[]>, pageSize: n
 		},
 		set items(value: T[]) {
 			items = value;
+			onChange?.({ items, pages: page, hasMore });
 		},
 		get loading() {
 			return loading;
@@ -46,6 +65,15 @@ export function createPaged<T>(load: (page: number) => Promise<T[]>, pageSize: n
 			return error;
 		},
 		loadMore,
+		/** Replace the contents with fresher data (a background refresh). */
+		seed(state: PagedState<T>): void {
+			generation += 1;
+			items = state.items;
+			page = state.pages;
+			hasMore = state.hasMore;
+			loading = false;
+			error = '';
+		},
 		reset(): Promise<void> {
 			generation += 1;
 			items = [];
@@ -56,4 +84,19 @@ export function createPaged<T>(load: (page: number) => Promise<T[]>, pageSize: n
 			return loadMore();
 		}
 	};
+}
+
+/**
+ * Loads the first page of a list for a load function, or refreshes all pages
+ * the cache holds in one request (so a background refresh doesn't shrink a
+ * list the user has scrolled through).
+ */
+export async function firstPages<T>(
+	load: (page: number, pageSize: number) => Promise<T[]>,
+	pageSize: number,
+	previous?: PagedState<T>
+): Promise<PagedState<T>> {
+	const pages = Math.max(1, previous?.pages ?? 1);
+	const items = await load(0, pages * pageSize);
+	return { items, pages, hasMore: items.length === pages * pageSize };
 }

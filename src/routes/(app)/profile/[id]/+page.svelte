@@ -1,28 +1,22 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
 	import ProfileView from '#lib/components/ProfileView.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
-	import {
-		deleteFriendship,
-		getFriendshipWith,
-		getMutualFriends,
-		getProfile,
-		sendFriendRequest
-	} from '#lib/data/api.ts';
+	import { deleteFriendship, sendFriendRequest } from '#lib/data/api.ts';
 	import type { Friendship, Profile } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import type { PageProps } from './$types';
 
-	// Another user's profile (ProfileOtherPage), with friendship and message buttons.
-	let profile = $state<Profile | null>(null);
-	let friendship = $state<Friendship | null>(null);
-	let mutual = $state<Profile[]>([]);
-	let loading = $state(true);
+	// Another user's profile (ProfileOtherPage), with friendship and message
+	// buttons. Everything comes from the load (through the page cache).
+	let { data }: PageProps = $props();
+	const profile = $derived<Profile | null>(data.person.profile);
+	let friendship = $derived<Friendship | null>(data.person.friendship);
+	const mutual = $derived<Profile[]>(data.person.mutual);
 	let busy = $state(false);
 	let error = $state('');
 
@@ -30,22 +24,7 @@
 	let confirmTitle = $state('');
 
 	const id = $derived(page.params.id!);
-	const userId = $derived(auth.user!.id);
-
-	$effect(() => {
-		if (id === userId) {
-			goto('/my-profile', { replace: true });
-			return;
-		}
-		loading = true;
-		Promise.all([getProfile(id), getFriendshipWith(userId, id), getMutualFriends(id)])
-			.then(([p, f, m]) => {
-				profile = p;
-				friendship = f;
-				mutual = m;
-			})
-			.finally(() => (loading = false));
-	});
+	const userId = $derived(data.userId);
 
 	async function run(title: string, action: () => Promise<void>) {
 		confirmTitle = title;
@@ -89,11 +68,11 @@
 <div class="page">
 	<PageBar title={t('Profile')} onback={() => history.back()} />
 
-	{#if loading}
-		<Loading />
-	{:else if profile}
+	{#if profile}
+		{#key profile.id}
 		<ProfileView
 			{profile}
+			lists={data.lists}
 			emptyBooks={t('No books.')}
 			emptyReviews={t('No reviews.')}
 			note={viaNote}
@@ -116,6 +95,7 @@
 				{/if}
 			{/snippet}
 		</ProfileView>
+		{/key}
 	{:else}
 		<p class="muted">{t('Profile not found.')}</p>
 	{/if}

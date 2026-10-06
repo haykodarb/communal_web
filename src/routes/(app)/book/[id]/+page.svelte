@@ -1,17 +1,11 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import BookDetail from '#lib/components/BookDetail.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
 	import {
 		deleteLoan,
-		getBookById,
 		getCurrentLoanForBook,
-		getReviewsForBook,
-		isOnWaitlist,
 		joinWaitlist,
 		leaveWaitlist,
 		requestLoan
@@ -20,41 +14,29 @@
 	import { formatShortDate } from '#lib/format.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import type { PageProps } from './$types';
 
 	// Another user's book (BookForeignPage): request, withdraw or view the loan.
-	let book = $state<Book | null>(null);
-	let currentLoan = $state<Loan | null>(null);
-	let reviews = $state<Loan[]>([]);
-	let waitlisted = $state(false);
-	let loading = $state(true);
-	let busy = $state(true);
+	// It comes from the load (through the page cache).
+	let { data }: PageProps = $props();
+	const book = $derived<Book | null>(data.details.book);
+	let currentLoan = $derived<Loan | null>(data.details.currentLoan);
+	const reviews = $derived<Loan[]>(data.details.reviews);
+	let waitlisted = $derived(data.details.waitlisted);
+	let busy = $state(false);
 	let error = $state('');
 
 	let confirmDialog: ConfirmDialog;
 	let confirmTitle = $state('');
 
-	const id = $derived(page.params.id!);
-	const userId = $derived(auth.user!.id);
+	const id = $derived(data.details.book?.id ?? '');
+	const userId = $derived(data.userId);
 
 	async function checkLoanStatus() {
 		busy = true;
 		currentLoan = await getCurrentLoanForBook(userId, id);
 		busy = false;
 	}
-
-	$effect(() => {
-		loading = true;
-		getBookById(id)
-			.then((result) => {
-				// Your own books live under /my-books.
-				if (result?.owner.id === userId) goto(`/my-books/${id}`, { replace: true });
-				book = result;
-			})
-			.finally(() => (loading = false));
-		checkLoanStatus();
-		getReviewsForBook(id).then((loans) => (reviews = loans));
-		isOnWaitlist(userId, id).then((value) => (waitlisted = value));
-	});
 
 	const requestedByMe = $derived(currentLoan?.loanee.id === userId);
 
@@ -145,11 +127,7 @@
 		{/snippet}
 	</BookDetail>
 {:else}
-	{#if loading}
-	<Loading />
-{:else}
 	<p class="muted">{t('Book not found.')}</p>
-{/if}
 {/if}
 
 <ConfirmDialog bind:this={confirmDialog} title={confirmTitle} />

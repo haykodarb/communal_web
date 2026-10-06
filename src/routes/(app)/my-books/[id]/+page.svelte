@@ -1,41 +1,23 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import Loading from '#lib/components/Loading.svelte';
 	import { goto } from '$app/navigation';
 	import BookDetail from '#lib/components/BookDetail.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
-	import {
-		deleteBook,
-		getBookById,
-		getCurrentLoanForBook,
-		getReviewsForBook
-	} from '#lib/data/api.ts';
+	import { deleteBook } from '#lib/data/api.ts';
 	import type { Book, Loan } from '#lib/data/models.ts';
 	import { formatShortDate } from '#lib/format.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import type { PageProps } from './$types';
 
-	// BookOwnedPage.
-	let book = $state<Book | null>(null);
-	let currentLoan = $state<Loan | null>(null);
-	let reviews = $state<Loan[]>([]);
-	let loading = $state(true);
+	// BookOwnedPage. It comes from the load (through the page cache).
+	let { data }: PageProps = $props();
+	const book = $derived<Book | null>(data.details.book);
+	const currentLoan = $derived<Loan | null>(data.details.currentLoan);
+	const reviews = $derived<Loan[]>(data.details.reviews);
 	let deleting = $state(false);
 	let error = $state('');
 	let confirmDialog: ConfirmDialog;
-
-	$effect(() => {
-		const id = page.params.id;
-		if (!id) return;
-		loading = true;
-		getBookById(id)
-			.then((result) => (book = result))
-			.finally(() => (loading = false));
-		getCurrentLoanForBook(auth.user!.id, id).then((loan) => (currentLoan = loan));
-		getReviewsForBook(id).then((loans) => (reviews = loans));
-	});
 
 	async function onDelete() {
 		if (!book || !(await confirmDialog.confirm())) return;
@@ -78,11 +60,7 @@
 		{/snippet}
 	</BookDetail>
 {:else}
-	{#if loading}
-	<Loading />
-{:else}
 	<p class="muted">{t('Book not found.')}</p>
-{/if}
 {/if}
 
 <ConfirmDialog bind:this={confirmDialog} title={t('Delete book?')} />

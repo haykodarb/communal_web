@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
+	import { page } from '$app/state';
 	import Avatar from './Avatar.svelte';
 	import ReviewCard from './ReviewCard.svelte';
 	import Sentinel from './Sentinel.svelte';
@@ -7,7 +8,10 @@
 	import VerticalBookCard from './VerticalBookCard.svelte';
 	import { getBooksForUser, getReviewsForUser } from '#lib/data/api.ts';
 	import type { Book, Loan, Profile } from '#lib/data/models.ts';
-	import { createPaged } from '#lib/paged.svelte.ts';
+	import { store } from '#lib/cache.ts';
+	import { keys, PAGE_SIZE, PROFILE_TABS } from '#lib/data/pages.ts';
+	import { selectTab, tabFrom } from '#lib/tabs.ts';
+	import { createPaged, type PagedState } from '#lib/paged.svelte.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 
 	// Header, bio and Books/Reviews tabs shared by the own and other profile
@@ -17,6 +21,7 @@
 		emptyBooks,
 		emptyReviews,
 		note,
+		lists,
 		actions
 	}: {
 		profile: Profile;
@@ -24,22 +29,45 @@
 		emptyReviews: string;
 		/** Extra line under the name, e.g. how you're connected. */
 		note?: string;
+		/** First pages of both tabs, from the page's load (through the cache). */
+		lists?: { books: PagedState<Book>; reviews: PagedState<Loan> };
 		/** Buttons under the username. */
 		actions: Snippet;
 	} = $props();
 
-	let tab = $state(0);
+	// Books or Reviews, kept in the URL (?tab=reviews).
+	const tab = $derived(PROFILE_TABS.indexOf(tabFrom(page.url, PROFILE_TABS)));
 
-	// Both tabs page in like ProfileCommonController (infinite scroll).
-	const PAGE_SIZE = 30;
+	// Both tabs page in like ProfileCommonController (infinite scroll). Pages
+	// render this inside {#key profile.id}, so one profile's lists never carry
+	// over to the next.
+	const size = PAGE_SIZE.profileLists;
 	const books = createPaged<Book>(
-		(page) => getBooksForUser(profile.id, { page, pageSize: PAGE_SIZE }),
-		PAGE_SIZE
+		(page) => getBooksForUser(profile.id, { page, pageSize: size }),
+		size,
+		{
+			seed: untrack(() => lists?.books),
+			onChange: (state) => store(keys.profileBooks(profile.id), state)
+		}
 	);
 	const reviews = createPaged<Loan>(
-		(page) => getReviewsForUser(profile.id, { page, pageSize: PAGE_SIZE }),
-		PAGE_SIZE
+		(page) => getReviewsForUser(profile.id, { page, pageSize: size }),
+		size,
+		{
+			seed: untrack(() => lists?.reviews),
+			onChange: (state) => store(keys.profileReviews(profile.id), state)
+		}
 	);
+
+	// A background refresh of the cached lists lands here.
+	$effect(() => {
+		const fresh = lists;
+		if (!fresh) return;
+		untrack(() => {
+			books.seed(fresh.books);
+			reviews.seed(fresh.reviews);
+		});
+	});
 
 </script>
 
@@ -65,7 +93,7 @@
 {/if}
 
 <div class="tabs">
-	<TabBar tabs={[t('Books'), t('Reviews')]} index={tab} onchange={(i) => (tab = i)} />
+	<TabBar tabs={[t('Books'), t('Reviews')]} index={tab} onchange={(i) => selectTab(PROFILE_TABS[i], PROFILE_TABS)} />
 </div>
 
 {#if tab === 0}

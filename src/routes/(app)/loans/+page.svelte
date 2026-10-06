@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import FilterRow from '#lib/components/FilterRow.svelte';
 	import Loading from '#lib/components/Loading.svelte';
 	import FilterSheet from '#lib/components/FilterSheet.svelte';
@@ -6,14 +7,17 @@
 	import SearchBar from '#lib/components/SearchBar.svelte';
 	import StickySearch from '#lib/components/StickySearch.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
+	import { store } from '#lib/cache.ts';
 	import { getLoansForUser, type LoansQuery } from '#lib/data/api.ts';
+	import { keys, PAGE_SIZE } from '#lib/data/pages.ts';
 	import type { Loan } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
+	import type { PageProps } from './$types';
 
-	// LoansPage with LoansController's filter sheet and infinite scroll.
-	const PAGE_SIZE = 30;
+	// LoansPage with LoansController's filter sheet and infinite scroll. The first
+	// page comes from the load (through the page cache).
+	let { data }: PageProps = $props();
 
 	/** Status options -> filter flags, as in LoansController.onFilterByStatusChanged. */
 	const STATUS: LoansQuery[] = [
@@ -36,18 +40,36 @@
 	let ownershipIndex = $state(0);
 	let sheet: FilterSheet;
 
+	/** The cache holds the unfiltered list only. */
+	const unfiltered = () =>
+		!search && orderIndex === 0 && statusIndex === 0 && ownershipIndex === 0;
+
 	const loans = createPaged<Loan>(
 		(page) =>
-			getLoansForUser(auth.user!.id, {
+			getLoansForUser(data.userId, {
 				...STATUS[statusIndex],
 				...OWNERSHIP[ownershipIndex],
 				orderByDate: orderIndex === 0,
 				search,
 				page,
-				pageSize: PAGE_SIZE
+				pageSize: PAGE_SIZE.loans
 			}),
-		PAGE_SIZE
+		PAGE_SIZE.loans,
+		{
+			seed: untrack(() => data.loans),
+			onChange: (state) => {
+				if (unfiltered()) store(keys.loans(data.userId), state);
+			}
+		}
 	);
+
+	// A background refresh of the cached list lands here.
+	$effect(() => {
+		const fresh = data.loans;
+		untrack(() => {
+			if (unfiltered()) loans.seed(fresh);
+		});
+	});
 
 	function set(update: () => void) {
 		update();

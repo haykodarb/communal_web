@@ -1,11 +1,16 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import Drawer from '#lib/components/Drawer.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
+	import { drop } from '#lib/cache.ts';
 	import { t } from '#lib/i18n.svelte.ts';
-	import { subscribeToDatabaseChanges, unsubscribeFromDatabase } from '#lib/realtime.ts';
+	import {
+		onTableChange,
+		subscribeToDatabaseChanges,
+		unsubscribeFromDatabase
+	} from '#lib/realtime.ts';
 	import { unread } from '#lib/unread.svelte.ts';
 	import type { LayoutProps } from './$types';
 
@@ -52,9 +57,31 @@
 			unsubscribeFromDatabase();
 		};
 	});
+
+	// Changes made elsewhere (the other person, another device) make cached page
+	// data stale: drop it so the next visit loads fresh data. Friendships and
+	// waitlist changes arrive as notification changes.
+	$effect(() => {
+		if (!userId) return;
+		const offs = [
+			onTableChange('notifications', () =>
+				drop('notifications', 'friends:', 'profile:', 'network', 'book:', 'loans:', 'loan:')
+			),
+			onTableChange('messages', () => drop('chats', 'chat:')),
+			onTableChange('loans', () =>
+				drop('loans:', 'loan:', 'book:', 'books:', 'network', 'profile-books:')
+			)
+		];
+		return () => offs.forEach((off) => off());
+	});
 </script>
 
 <svelte:window bind:innerWidth={width} />
+
+<!-- While a navigation waits for its data (only shown if it takes a moment). -->
+{#if navigating.to}
+	<div class="progress" aria-hidden="true"></div>
+{/if}
 
 {#if auth.ready && auth.session}
 	{#if isMobile}
@@ -101,6 +128,40 @@
 {/if}
 
 <style>
+	.progress {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		height: 3px;
+		z-index: 100;
+		background: linear-gradient(
+			to right,
+			transparent,
+			var(--primary) 40%,
+			var(--primary) 60%,
+			transparent
+		);
+		background-size: 50% 100%;
+		background-repeat: no-repeat;
+		opacity: 0;
+		animation:
+			progress-in 0ms 150ms forwards,
+			progress-slide 1s linear infinite;
+	}
+	@keyframes progress-in {
+		to {
+			opacity: 1;
+		}
+	}
+	@keyframes progress-slide {
+		from {
+			background-position: -100% 0;
+		}
+		to {
+			background-position: 200% 0;
+		}
+	}
 	.desktop-shell {
 		display: flex;
 		justify-content: center;

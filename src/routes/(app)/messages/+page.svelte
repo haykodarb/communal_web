@@ -1,32 +1,32 @@
 <script lang="ts">
 	import Avatar from '#lib/components/Avatar.svelte';
-	import Loading from '#lib/components/Loading.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import Icon from '#lib/components/Icon.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
 	import { deleteChatWith, getChats } from '#lib/data/api.ts';
 	import type { Message, Profile } from '#lib/data/models.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { onTableChange } from '#lib/realtime.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import { store } from '#lib/cache.ts';
+	import { keys } from '#lib/data/pages.ts';
+	import type { PageProps } from './$types';
 
-	// MessagesPage: one row per conversation with its latest message.
-	let chats = $state<Message[]>([]);
-	let loading = $state(true);
+	// MessagesPage: one row per conversation with its latest message. They come
+	// from the load (through the page cache); live changes refetch them here.
+	let { data }: PageProps = $props();
+	let chats = $derived<Message[]>(data.chats);
 	let error = $state('');
 	let confirmDialog: ConfirmDialog;
 
-	const userId = $derived(auth.user!.id);
+	const userId = $derived(data.userId);
 
 	const load = () =>
 		getChats()
-			.then((result) => (chats = result))
-			.catch((e) => (error = errorMessage(e)))
-			.finally(() => (loading = false));
-
-	$effect(() => {
-		load();
-	});
+			.then((result) => {
+				chats = result;
+				store(keys.chats(), result);
+			})
+			.catch((e) => (error = errorMessage(e)));
 
 	// Refresh the list when a message to or from this user changes.
 	let debounce: ReturnType<typeof setTimeout> | undefined;
@@ -68,9 +68,7 @@
 		<p class="error-text">{error}</p>
 	{/if}
 
-	{#if loading}
-		<Loading />
-	{:else if chats.length === 0}
+	{#if chats.length === 0}
 		<div class="empty">
 			<Icon name="message" size={40} />
 			<p>{t('No messages yet.')}</p>

@@ -104,6 +104,21 @@ input {
 	font-family: inherit;
 }
 
+/* A subtle hover on every button: darken on light themes, lighten on dark.
+   (The Button component sets its own transition, so it also lists `filter`.) */
+button:not(:disabled) {
+	transition: filter 120ms ease;
+}
+
+@media (hover: hover) {
+	button:not(:disabled):hover {
+		filter: brightness(0.93);
+	}
+	[data-theme='dark'] button:not(:disabled):hover {
+		filter: brightness(1.15);
+	}
+}
+
 h1,
 h2,
 h3,

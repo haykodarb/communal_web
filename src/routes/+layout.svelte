@@ -35,8 +35,10 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href="/assets/favicon.ico" sizes="any" />
-	<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+	<!-- A dark crow for light browsers, a light crow for dark ones. -->
+	<link rel="icon" href="/assets/favicon.ico?v=2" sizes="any" media="(prefers-color-scheme: light)" />
+	<link rel="icon" href="/assets/favicon-light.ico?v=2" sizes="any" media="(prefers-color-scheme: dark)" />
+	<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=2" />
 	<link rel="manifest" href="/manifest.webmanifest" />
 </svelte:head>
 

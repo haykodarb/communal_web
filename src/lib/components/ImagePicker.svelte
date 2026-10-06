@@ -23,9 +23,9 @@
 		bucket?: string;
 		path?: string | null;
 		round?: boolean;
-		/** Full width; height comes from `height` if set, else from `aspect`. */
+		/** Full width instead of a centered card. */
 		fill?: boolean;
-		/** Overrides the default slot height (350px, or 200px when round). */
+		/** A fixed slot height; the width follows `aspect` around it. */
 		height?: number;
 	} = $props();
 
@@ -58,48 +58,62 @@
 		}
 	}
 
+	function pick() {
+		// Prefer showPicker() (Chrome 99+/Firefox 101+/Safari 16.4+); fall back to
+		// click() for older browsers (or ones that balk at a hidden file input).
+		if (input.showPicker) {
+			try {
+				input.showPicker();
+				return;
+			} catch {
+				/* fall through */
+			}
+		}
+		input.click();
+	}
+
 	const src = $derived(previewUrl ?? existingUrl);
 	// Flutter styles the button as "selected" once a new image is picked.
 	const selected = $derived(image !== null);
+
+	// The slot's box, respecting `aspect` (a fixed height drives the width).
+	const box = $derived.by(() => {
+		if (round) return '';
+		if (height) {
+			const w = Math.round(height * aspect);
+			return fill ? `height:${height}px` : `height:${height}px;width:${w}px`;
+		}
+		return fill
+			? `aspect-ratio:${aspect}`
+			: `aspect-ratio:${aspect};width:100%;max-width:${maxWidth}px`;
+	});
 </script>
 
-<div
-	class="picker"
-	class:round
-	class:fill
-	style:aspect-ratio={fill && height ? undefined : aspect}
-	style:height={height ? `${height}px` : undefined}
->
+<div class="picker" class:round class:fill style={box}>
 	{#if src}
 		<img {src} alt="" />
 	{:else}
 		<span class="empty">{t('Add\nimage')}</span>
 	{/if}
 	{#if !round}{@render pickButton()}{/if}
-	<input bind:this={input} type="file" accept="image/*" hidden {onchange} />
 </div>
 <!-- Flutter puts the button under a round avatar rather than over it. -->
 {#if round}<div class="below">{@render pickButton()}</div>{/if}
-
-{#snippet pickButton()}
-	<button
-		type="button"
-		class="pick"
-		class:selected
-		aria-label={t('Add\nimage')}
-		onclick={() => input.click()}
-	>
-		<Icon name="image" size={24} />
-	</button>
-{/snippet}
+<!-- Not `hidden` (display:none): some browsers refuse to open a picker for it. -->
+<input class="file" type="file" accept="image/*" bind:this={input} onchange={onchange} />
 {#if error}
 	<p class="error-text">{error}</p>
 {/if}
 
+{#snippet pickButton()}
+	<button type="button" class="pick" class:selected aria-label={t('Add\nimage')} onclick={pick}>
+		<Icon name="image" size={24} />
+	</button>
+{/snippet}
+
 <style>
 	.picker {
 		position: relative;
-		height: 350px;
 		max-width: 100%;
 		margin: 0 auto;
 		border-radius: 5px;
@@ -111,9 +125,9 @@
 	}
 	.picker.fill {
 		width: 100%;
-		height: auto;
 	}
 	.picker.round {
+		width: 200px;
 		height: 200px;
 		border-radius: 50%;
 	}
@@ -157,6 +171,14 @@
 		background: var(--surface-container);
 		border-color: var(--primary);
 		color: var(--primary);
+	}
+	.file {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		opacity: 0;
 	}
 	.error-text {
 		margin-top: 6px;

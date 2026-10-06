@@ -135,7 +135,8 @@
 		padding: 0 10px 10px;
 	}
 	.search {
-		padding: 0 10px;
+		/* 5px here + SearchBar's own 5px = the 10px the tab bar and list use. */
+		padding: 0 5px;
 	}
 	.grid {
 		display: grid;

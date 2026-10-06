@@ -53,6 +53,7 @@
 		transition:
 			opacity 150ms ease,
 			background-color 150ms ease,
+			filter 120ms ease,
 			transform 100ms ease;
 	}
 	.btn:active:not(:disabled) {

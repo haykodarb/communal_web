@@ -42,7 +42,7 @@
 		/* Below the mobile app bar on top-level pages (set by the app layout). */
 		top: var(--sticky-top, 0px);
 		z-index: 10;
-		padding-top: 3px;
+		padding: 3px 0;
 		background: var(--surface);
 		transition: transform 200ms ease;
 	}

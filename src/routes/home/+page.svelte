@@ -203,14 +203,6 @@
 			</div>
 		</section>
 
-		<section class="closing">
-			<h2>{t('Give your books a new purpose.')}</h2>
-			{#if auth.session}
-				<a class="pill large filled" href="/app">{t('Open Communal')}</a>
-			{:else}
-				<a class="pill large filled" href="/app/auth/register">{t('Create an account')}</a>
-			{/if}
-		</section>
 	</main>
 
 	<footer>
@@ -615,14 +607,7 @@
 		color: var(--on-surface-variant);
 	}
 
-	/* ---- Closing + footer ----------------------------------------------- */
-	.closing {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 28px;
-		text-align: center;
-	}
+	/* ---- Footer ----------------------------------------------------------- */
 	footer {
 		width: var(--page);
 		margin: clamp(80px, 12vw, 140px) auto 0;

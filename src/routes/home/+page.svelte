@@ -490,23 +490,30 @@
 		flex-direction: column;
 		gap: 40px;
 	}
-	/* Like the loan page's timeline: across the full width, first step at the
-	   left edge, the middle one centered, the last at the right edge. */
+	.how h2 {
+		text-align: center;
+	}
+	/* Like the loan page's timeline: three steps on a line, each one's text
+	   centered under its dot. The dots sit in the middle of three equal
+	   columns, and the list bleeds into the page margin (up to 10% a side, never
+	   past the window) so the line between the outer dots stays about 80% of
+	   the content width while the outer texts get room on both sides. */
 	.timeline {
+		--bleed: min(10%, (100vw - 100%) / 2 - 16px);
 		list-style: none;
-		width: 80%;
-		margin: 0 auto;
+		width: calc(100% + 2 * var(--bleed));
+		margin: 0 0 0 calc(-1 * var(--bleed));
 		padding: 0;
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 32px;
 		position: relative;
 	}
 	.track {
 		position: absolute;
 		top: 11px;
-		left: 13px;
-		right: 13px;
+		/* From the first column's center to the last one's. */
+		left: calc(100% / 6);
+		right: calc(100% / 6);
 		height: 4px;
 		border-radius: 2px;
 		background: var(--on-surface);
@@ -516,15 +523,10 @@
 		position: relative;
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
-	}
-	.timeline li:nth-of-type(2) {
 		align-items: center;
+		gap: 10px;
+		padding: 0 16px;
 		text-align: center;
-	}
-	.timeline li:nth-of-type(3) {
-		align-items: flex-end;
-		text-align: right;
 	}
 	.marker {
 		width: 26px;
@@ -689,13 +691,13 @@
 		}
 		.timeline {
 			width: auto;
+			margin: 0;
+			gap: 32px;
 		}
-		.timeline li,
-		.timeline li:nth-of-type(2),
-		.timeline li:nth-of-type(3) {
+		.timeline li {
 			align-items: flex-start;
 			text-align: left;
-			padding-left: 48px;
+			padding: 0 0 0 48px;
 		}
 		.marker {
 			position: absolute;

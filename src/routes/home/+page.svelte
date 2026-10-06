@@ -1,10 +1,10 @@
 <script lang="ts">
-	import Icon from '#lib/components/Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 
-	// The public landing page (from the communal_web site, rewritten around the
-	// friends-of-friends network). Its one visual statement is the diagram of how
+	// The public landing page, from the communal_web site and in its words.
+	// "Community" is the language; underneath, a community is your friends and
+	// their friends (the diagram explains that). Its one visual statement is the diagram of how
 	// far your library reaches; everything else stays in the app's own style.
 
 	const APK_URL = 'https://github.com/haykodarb/communal_app/releases/';
@@ -28,32 +28,27 @@
 	);
 
 	const steps = [
-		{ name: 'Request', text: 'Found a book you want? Ask the owner to lend it to you.' },
-		{
-			name: 'Accept',
-			text: 'The owner approves, and you message each other to arrange the handover.'
-		},
-		{
-			name: 'Return',
-			text: "Give it back when you're done, and leave a review for the next reader."
-		}
+		{ name: 'Request', text: "Find a book you've been dying to read and ask its owner to loan it out." },
+		{ name: 'Accept', text: 'Once they agree, arrange the handover through messages.' },
+		{ name: 'Return', text: "Bring it back when you're done and share what you thought of it." }
 	];
 
-	const features = [
+	// The original site's three cards, with its own icons.
+	const cards = [
 		{
-			icon: 'camera',
-			title: 'Your shelf, catalogued',
-			text: 'Photograph a cover, add the title and author, and your books become a catalog your friends can browse.'
+			icon: '/assets/book.svg',
+			title: 'Open your shelf',
+			text: 'Showcase your book collection to your peers. Give each book a new purpose by lending it out, building shared stories along the way.'
 		},
 		{
-			icon: 'bell',
-			title: "Know when it's back",
-			text: "If a book is out on loan, join its waitlist and you'll be notified the moment it's returned."
+			icon: '/assets/exchange.svg',
+			title: 'Borrow books',
+			text: "One of your friends has a book on their shelf that you've been dying to read? It's already in your community: ask if you can loan it out for a bit."
 		},
 		{
-			icon: 'message',
-			title: 'Reviews from people you trust',
-			text: 'See what your friends thought of a book before you ask to borrow it.'
+			icon: '/assets/messages.svg',
+			title: 'Exchange ideas',
+			text: "Review the books you've read and discuss them with other community members. Share your insights and perspectives with like-minded people."
 		}
 	];
 </script>
@@ -62,7 +57,7 @@
 	<title>Communal</title>
 	<meta
 		name="description"
-		content="Borrow the books your friends already own. Communal turns your friends' bookshelves, and their friends', into one library."
+		content="Share books with your communities. Upload your physical collection to a decentralized library, shared among the circles you're connected with."
 	/>
 </svelte:head>
 
@@ -93,10 +88,10 @@
 	<main>
 		<section class="hero">
 			<div class="hero-text">
-				<h1>{t('Borrow the books your friends already own.')}</h1>
+				<h1>{t('Share books with your communities.')}</h1>
 				<p class="lead">
 					{t(
-						"Communal turns your friends' bookshelves, and their friends', into one library. Find something to read, ask to borrow it, and hand it back when you're done."
+						"Connect with your peers and upload your physical collection to contribute to a decentralized library, shared among the circles you're connected with."
 					)}
 				</p>
 				<div class="actions">
@@ -115,29 +110,29 @@
 
 		<section class="reach" aria-labelledby="reach-title">
 			<div class="reach-text">
-				<h2 id="reach-title">{t("Your friends' shelves, and theirs")}</h2>
+				<h2 id="reach-title">{t('Your community grows with your friends')}</h2>
 				<p class="lead">
-					{t('Every book you see belongs to someone you know, or to someone they know.')}
+					{t("Your community is made of your friends and the people they know. Every book in it is one or two introductions away.")}
 				</p>
 				<dl class="legend">
 					<div>
 						<dt><span class="dot you"></span>{t('You')}</dt>
-						<dd>{t('Your shelf. You choose which books to share.')}</dd>
+						<dd>{t('Your shelf, open to your community.')}</dd>
 					</div>
 					<div>
 						<dt><span class="dot friend"></span>{t('Friends')}</dt>
-						<dd>{t('Their shared books, one request away.')}</dd>
+						<dd>{t("The people you add, and their collections.")}</dd>
 					</div>
 					<div>
 						<dt><span class="dot fof"></span>{t('Friends of friends')}</dt>
 						<dd>
-							{t('Books from people your friends know. Communal shows who connects you.')}
+							{t("Your friends' friends are part of your community too.")}
 						</dd>
 					</div>
 				</dl>
 				<p class="boundary-note">
 					{t(
-						'It stops there: nobody further out sees your shelf, and you can keep it to direct friends in your settings.'
+						'Your community stops there, so it stays close to you. You can also keep your shelf among direct friends.'
 					)}
 				</p>
 			</div>
@@ -168,7 +163,7 @@
 		</section>
 
 		<section class="how" aria-labelledby="how-title">
-			<h2 id="how-title">{t('How borrowing works')}</h2>
+			<h2 id="how-title">{t('From shelf to shelf')}</h2>
 			<!-- The loan page's own timeline: requested, accepted, returned. -->
 			<ol class="timeline">
 				{#each steps as step (step.name)}
@@ -181,21 +176,20 @@
 			</ol>
 		</section>
 
-		<section class="features" aria-labelledby="features-title">
-			<h2 id="features-title">{t('Made for books on real shelves')}</h2>
+		<section class="features">
 			<div class="cards">
-				{#each features as feature (feature.title)}
+				{#each cards as card (card.title)}
 					<article class="card">
-						<span class="card-icon"><Icon name={feature.icon} size={28} /></span>
-						<h3>{t(feature.title)}</h3>
-						<p>{t(feature.text)}</p>
+						<span class="card-icon"><img src={card.icon} alt="" /></span>
+						<h3>{t(card.title)}</h3>
+						<p>{t(card.text)}</p>
 					</article>
 				{/each}
 			</div>
 		</section>
 
 		<section class="closing">
-			<h2>{t('Start with the books you already own.')}</h2>
+			<h2>{t('Give your books a new purpose.')}</h2>
 			{#if auth.session}
 				<a class="pill large filled" href="/my-books">{t('Open Communal')}</a>
 			{:else}

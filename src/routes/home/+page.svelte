@@ -1,321 +1,646 @@
-<!--
-	The public landing page, imported from the communal_web site (index.html).
-	Copy and layout are unchanged; its colors use the app's theme tokens (the
-	same values in light mode), so it also follows the dark theme.
--->
+<script lang="ts">
+	import Icon from '#lib/components/Icon.svelte';
+	import { auth } from '#lib/auth.svelte.ts';
+	import { i18n, t } from '#lib/i18n.svelte.ts';
+
+	// The public landing page (from the communal_web site, rewritten around the
+	// friends-of-friends network). Its one visual statement is the diagram of how
+	// far your library reaches; everything else stays in the app's own style.
+
+	const APK_URL = 'https://github.com/haykodarb/communal_app/releases/';
+
+	// Diagram geometry (viewBox 400 x 400): you in the middle, five friends on
+	// the first ring, their friends on the second, and the boundary beyond it.
+	const C = 200;
+	const R1 = 92;
+	const R2 = 158;
+	const polar = (r: number, deg: number) => ({
+		x: C + r * Math.cos((deg * Math.PI) / 180),
+		y: C + r * Math.sin((deg * Math.PI) / 180)
+	});
+	const friends = [-90, -18, 54, 126, 198].map((deg) => ({ deg, ...polar(R1, deg) }));
+	// Each friend's own friends, fanned out around them on the outer ring.
+	const outer = friends.flatMap((f, i) =>
+		(i % 2 === 0 ? [-20, 20] : [-24, 0, 24]).map((d) => ({
+			from: f,
+			...polar(R2, f.deg + d)
+		}))
+	);
+
+	const steps = [
+		{ name: 'Request', text: 'Found a book you want? Ask the owner to lend it to you.' },
+		{
+			name: 'Accept',
+			text: 'The owner approves, and you message each other to arrange the handover.'
+		},
+		{
+			name: 'Return',
+			text: "Give it back when you're done, and leave a review for the next reader."
+		}
+	];
+
+	const features = [
+		{
+			icon: 'camera',
+			title: 'Your shelf, catalogued',
+			text: 'Photograph a cover, add the title and author, and your books become a catalog your friends can browse.'
+		},
+		{
+			icon: 'bell',
+			title: "Know when it's back",
+			text: "If a book is out on loan, join its waitlist and you'll be notified the moment it's returned."
+		},
+		{
+			icon: 'message',
+			title: 'Reviews from people you trust',
+			text: 'See what your friends thought of a book before you ask to borrow it.'
+		}
+	];
+</script>
+
 <svelte:head>
 	<title>Communal</title>
+	<meta
+		name="description"
+		content="Borrow the books your friends already own. Communal turns your friends' bookshelves, and their friends', into one library."
+	/>
 </svelte:head>
 
 <div class="landing">
-	<div id="main-container">
-		<div id="header">
-			<div id="logo">
-				<img id="logo-icon" src="/assets/icon-512.png" alt="" />
-				<p id="logo-title">Communal</p>
-			</div>
-		</div>
+	<header class="bar">
+		<a class="brand" href="/home">
+			<img src="/assets/icon-512.png" alt="" width="40" height="40" />
+			<span>Communal</span>
+		</a>
+		<nav class="account">
+			<button
+				class="lang"
+				type="button"
+				aria-label={t('Change language')}
+				onclick={() => i18n.toggle()}
+			>
+				{i18n.locale === 'en' ? 'ES' : 'EN'}
+			</button>
+			{#if auth.session}
+				<a class="pill filled" href="/my-books">{t('Open Communal')}</a>
+			{:else}
+				<a class="pill" href="/auth/login">{t('Log in')}</a>
+				<a class="pill filled" href="/auth/register">{t('Register')}</a>
+			{/if}
+		</nav>
+	</header>
 
-		<div id="description">
-			<div id="description-first-col">
-				<h1 id="description-title">Share books with your communities.</h1>
-				<h4 id="description-subtitle">
-					Connect with your peers and upload your physical collection to contribute to a
-					decentralized library, shared among the circles you're connected with.
-				</h4>
-				<div class="buttons">
-					<a href="/auth" id="go-to-app-button">Web app</a>
-					<a
-						href="https://github.com/haykodarb/communal_app/releases/"
-						target="_blank"
-						rel="noopener noreferrer"
-						id="download-app-button"
-					>
-						Get APK
+	<main>
+		<section class="hero">
+			<div class="hero-text">
+				<h1>{t('Borrow the books your friends already own.')}</h1>
+				<p class="lead">
+					{t(
+						"Communal turns your friends' bookshelves, and their friends', into one library. Find something to read, ask to borrow it, and hand it back when you're done."
+					)}
+				</p>
+				<div class="actions">
+					{#if auth.session}
+						<a class="pill large filled" href="/my-books">{t('Open Communal')}</a>
+					{:else}
+						<a class="pill large filled" href="/auth/register">{t('Create an account')}</a>
+					{/if}
+					<a class="pill large" href={APK_URL} target="_blank" rel="noopener noreferrer">
+						{t('Get the Android app')}
 					</a>
 				</div>
-				<div id="description-developers">
-					<p class="developers-text">
-						Designed by <span class="developers-link">Daiana Veloso</span>
-					</p>
-					<p class="developers-text">
-						Developed by <a
-							class="developers-link"
-							target="_blank"
-							rel="noopener noreferrer"
-							href="https://hayk.ar">Hayk Darbinyan</a
-						>
-					</p>
-				</div>
 			</div>
-			<div id="description-hero">
-				<img src="/assets/crow.svg" alt="" />
-			</div>
-		</div>
+			<img class="crow" src="/assets/crow.svg" alt="" />
+		</section>
 
-		<div id="cards-list">
-			<div class="card-container">
-				<div class="card-row">
-					<div class="card-icon"><img src="/assets/book.svg" alt="" /></div>
-					<div class="card-title">Open your shelf</div>
-				</div>
-				<div class="card-content">
-					Showcase your book collection to your peers. Give each book a new purpose by lending it
-					out, building shared stories along the way.
-				</div>
+		<section class="reach" aria-labelledby="reach-title">
+			<div class="reach-text">
+				<h2 id="reach-title">{t("Your friends' shelves, and theirs")}</h2>
+				<p class="lead">
+					{t('Every book you see belongs to someone you know, or to someone they know.')}
+				</p>
+				<dl class="legend">
+					<div>
+						<dt><span class="dot you"></span>{t('You')}</dt>
+						<dd>{t('Your shelf. You choose which books to share.')}</dd>
+					</div>
+					<div>
+						<dt><span class="dot friend"></span>{t('Friends')}</dt>
+						<dd>{t('Their shared books, one request away.')}</dd>
+					</div>
+					<div>
+						<dt><span class="dot fof"></span>{t('Friends of friends')}</dt>
+						<dd>
+							{t('Books from people your friends know. Communal shows who connects you.')}
+						</dd>
+					</div>
+				</dl>
+				<p class="boundary-note">
+					{t(
+						'It stops there: nobody further out sees your shelf, and you can keep it to direct friends in your settings.'
+					)}
+				</p>
 			</div>
-			<div class="card-container">
-				<div class="card-row">
-					<div class="card-icon"><img src="/assets/exchange.svg" alt="" /></div>
-					<div class="card-title">Borrow books</div>
-				</div>
-				<div class="card-content">
-					One of your friends has a book on their shelf that you've been dying to read? Join a
-					mutual community and ask if you can loan it out for a bit.
-				</div>
+
+			<svg
+				class="network"
+				viewBox="0 0 400 400"
+				role="img"
+				aria-label={t('You, your friends around you, and their friends around them.')}
+			>
+				<circle class="boundary" cx={C} cy={C} r="190" />
+				<circle class="ring" cx={C} cy={C} r={R2} />
+				<circle class="ring" cx={C} cy={C} r={R1} />
+				{#each outer as node, i (i)}
+					<line class="edge" x1={node.from.x} y1={node.from.y} x2={node.x} y2={node.y} />
+				{/each}
+				{#each friends as node, i (i)}
+					<line class="edge" x1={C} y1={C} x2={node.x} y2={node.y} />
+				{/each}
+				{#each outer as node, i (i)}
+					<circle class="node fof" cx={node.x} cy={node.y} r="11" style:--i={i} />
+				{/each}
+				{#each friends as node, i (i)}
+					<circle class="node friend" cx={node.x} cy={node.y} r="17" style:--i={i} />
+				{/each}
+				<circle class="node you" cx={C} cy={C} r="26" />
+			</svg>
+		</section>
+
+		<section class="how" aria-labelledby="how-title">
+			<h2 id="how-title">{t('How borrowing works')}</h2>
+			<!-- The loan page's own timeline: requested, accepted, returned. -->
+			<ol class="timeline">
+				{#each steps as step (step.name)}
+					<li>
+						<span class="marker"></span>
+						<h3>{t(step.name)}</h3>
+						<p>{t(step.text)}</p>
+					</li>
+				{/each}
+			</ol>
+		</section>
+
+		<section class="features" aria-labelledby="features-title">
+			<h2 id="features-title">{t('Made for books on real shelves')}</h2>
+			<div class="cards">
+				{#each features as feature (feature.title)}
+					<article class="card">
+						<span class="card-icon"><Icon name={feature.icon} size={28} /></span>
+						<h3>{t(feature.title)}</h3>
+						<p>{t(feature.text)}</p>
+					</article>
+				{/each}
 			</div>
-			<div class="card-container">
-				<div class="card-row">
-					<div class="card-icon"><img src="/assets/messages.svg" alt="" /></div>
-					<div class="card-title">Exchange ideas</div>
-				</div>
-				<div class="card-content">
-					Review the books you've read and discuss them with other community members. Share your
-					insights and perspectives with like-minded people.
-				</div>
-			</div>
-		</div>
-	</div>
+		</section>
+
+		<section class="closing">
+			<h2>{t('Start with the books you already own.')}</h2>
+			{#if auth.session}
+				<a class="pill large filled" href="/my-books">{t('Open Communal')}</a>
+			{:else}
+				<a class="pill large filled" href="/auth/register">{t('Create an account')}</a>
+			{/if}
+		</section>
+	</main>
+
+	<footer>
+		<p>
+			{t('Designed by')} <span class="credit">Daiana Veloso</span>
+		</p>
+		<p>
+			{t('Developed by')}
+			<a class="credit" href="https://hayk.ar" target="_blank" rel="noopener noreferrer"
+				>Hayk Darbinyan</a
+			>
+		</p>
+		<nav class="footer-links">
+			<a href="/privacy">{t('Privacy policy')}</a>
+			<a href={APK_URL} target="_blank" rel="noopener noreferrer">{t('Get the Android app')}</a>
+		</nav>
+	</footer>
 </div>
 
 <style>
-	/* The original page used the browser's default box model (the app sets
-	   border-box globally), so its 100x30 buttons grow with their padding. */
-	.landing,
-	.landing * {
-		box-sizing: content-box;
-	}
-
-	/* The original page centered #main-container in the body. */
 	.landing {
-		display: flex;
-		align-items: center;
-		justify-content: center;
+		--page: min(72rem, 100% - 2 * clamp(20px, 5vw, 48px));
 		min-height: 100vh;
 		background: var(--surface);
+		color: var(--on-surface);
 	}
 
-	#main-container {
+	/* ---- Header -------------------------------------------------------- */
+	.bar {
+		width: var(--page);
+		margin: 0 auto;
+		padding: 20px 0;
 		display: flex;
-		align-self: stretch;
-		margin: 0;
-		padding: 20px 5% 60px;
-		flex-direction: column;
 		align-items: center;
-		justify-content: flex-start;
-		gap: 60px;
-		max-width: 72rem;
-	}
-
-	#header {
-		display: flex;
-		flex-direction: row;
 		justify-content: space-between;
-		align-items: center;
-		align-self: stretch;
+		gap: 16px;
 	}
-
-	#logo {
+	.brand {
 		display: flex;
-		justify-content: center;
 		align-items: center;
 		gap: 10px;
-	}
-
-	#logo-icon {
-		height: 50px;
-		width: 50px;
-	}
-
-	#logo-title {
-		/* The browser default the original relied on (app.css resets <p>). */
-		margin: 1em 0;
 		color: var(--on-surface);
-		font-size: 20px;
-		font-weight: 600;
-	}
-
-	#description {
-		display: flex;
-		flex-direction: row;
-		gap: 30px;
-		flex-shrink: 0;
-		align-items: flex-start;
-		justify-content: center;
-		align-self: stretch;
-	}
-
-	#description-first-col {
-		display: flex;
-		flex-direction: column;
-		gap: 30px;
-		flex: 1;
-		color: var(--on-surface);
-	}
-
-	#description-title {
-		font-size: 30px;
-		font-weight: 600;
-		margin: 0;
-	}
-
-	#description-subtitle {
-		font-size: 23px;
-		font-weight: 400;
-		margin: 0;
-	}
-
-	#description-hero {
-		flex: 1;
-		display: flex;
-		flex-direction: row;
-		justify-content: end;
-		min-height: 500px;
-	}
-
-	.buttons {
-		display: flex;
-		flex-direction: row;
-		gap: 10px;
-	}
-
-	#description-developers {
-		font-style: italic;
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		justify-content: start;
-	}
-
-	.developers-text {
-		margin: 0;
-		font-weight: 300;
-	}
-
-	.developers-link {
-		text-decoration: underline;
-		color: var(--secondary);
-		font-weight: 600;
-	}
-
-	#go-to-app-button,
-	#download-app-button {
 		text-decoration: none;
-		display: flex;
-		border-radius: 40px;
-		padding: 16px 24px;
-		justify-content: center;
-		align-items: center;
-		gap: 10px;
-		width: 100px;
-		height: 30px;
 		font-size: 20px;
+		font-weight: 600;
+	}
+	.account {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	.lang {
+		border: none;
+		background: none;
+		padding: 8px;
+		color: var(--on-surface-variant);
+		font-size: 14px;
+		font-weight: 600;
 		cursor: pointer;
-		text-align: center;
 	}
 
-	#go-to-app-button {
+	/* Pills: the app's button shapes as links (outlined, or filled for the
+	   main action). */
+	.pill {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		height: 40px;
+		padding: 0 20px;
+		border: 2px solid var(--primary);
+		border-radius: 999px;
+		color: var(--primary);
+		font-size: 15px;
+		font-weight: 600;
+		text-decoration: none;
+		white-space: nowrap;
+	}
+	.pill.filled {
 		background: var(--primary);
 		color: var(--on-primary);
-		font-weight: 500;
+	}
+	.pill.large {
+		height: 56px;
+		padding: 0 28px;
+		font-size: 17px;
+	}
+	.pill:focus-visible,
+	.lang:focus-visible,
+	.brand:focus-visible,
+	footer a:focus-visible {
+		outline: 2px solid var(--secondary);
+		outline-offset: 3px;
 	}
 
-	#download-app-button {
-		color: var(--primary);
-		border: 2px solid var(--primary);
-		background-color: var(--on-primary);
+	main {
+		width: var(--page);
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: clamp(80px, 12vw, 140px);
+	}
+
+	h1 {
+		font-size: clamp(2.25rem, 5.2vw, 3.6rem);
+		font-weight: 700;
+		line-height: 1.08;
+		letter-spacing: -0.02em;
+	}
+	h2 {
+		font-size: clamp(1.75rem, 3.4vw, 2.4rem);
+		font-weight: 700;
+		line-height: 1.15;
+		letter-spacing: -0.01em;
+	}
+	h3 {
+		font-size: 1.15rem;
 		font-weight: 600;
 	}
-
-	#cards-list {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
-		align-content: center;
-		align-items: center;
-		align-self: stretch;
-		gap: 30px;
+	.lead {
+		max-width: 34em;
+		font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+		line-height: 1.6;
+		color: var(--on-surface-variant);
 	}
 
-	.card-container {
-		display: flex;
-		flex: 1;
-		padding: 30px;
-		flex-direction: column;
-		min-width: 200px;
-		max-width: 400px;
+	/* ---- Hero ---------------------------------------------------------- */
+	.hero {
+		display: grid;
+		grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
 		align-items: center;
-		justify-content: start;
-		align-self: stretch;
-		gap: 30px;
+		gap: 40px;
+		padding-top: clamp(24px, 6vw, 72px);
+	}
+	.hero-text {
+		display: flex;
+		flex-direction: column;
+		gap: 24px;
+	}
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 12px;
+		margin-top: 8px;
+	}
+	.crow {
+		width: 100%;
+		max-height: 460px;
+		object-fit: contain;
+	}
+
+	/* ---- Reach (the network diagram) ------------------------------------ */
+	.reach {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		align-items: center;
+		gap: clamp(32px, 6vw, 80px);
+		padding: clamp(28px, 5vw, 56px);
 		border-radius: 40px;
 		background: var(--surface-container);
 	}
-
-	.card-row {
+	.reach-text {
 		display: flex;
-		flex-direction: row;
-		gap: 15px;
-		justify-content: start;
-		align-self: stretch;
-		align-items: center;
+		flex-direction: column;
+		gap: 24px;
 	}
-
-	.card-title {
-		color: var(--on-surface);
-		font-size: 20px;
-		font-weight: 600;
-		letter-spacing: 0.1px;
-	}
-
-	.card-icon {
-		border-radius: 20px;
-		background: color-mix(in srgb, var(--secondary) 50%, transparent);
+	.legend {
+		margin: 0;
 		display: flex;
-		width: 60px;
-		height: 60px;
-		justify-content: center;
+		flex-direction: column;
+		gap: 16px;
+	}
+	.legend dt {
+		display: flex;
 		align-items: center;
 		gap: 10px;
+		font-weight: 600;
+	}
+	.legend dd {
+		margin: 4px 0 0 24px;
+		line-height: 1.5;
+		color: var(--on-surface-variant);
+	}
+	.dot {
+		width: 14px;
+		height: 14px;
+		border-radius: 50%;
+		flex: 0 0 auto;
+	}
+	.dot.you {
+		background: var(--primary);
+	}
+	.dot.friend {
+		background: var(--secondary);
+	}
+	.dot.fof {
+		background: var(--tertiary);
+	}
+	.boundary-note {
+		padding-top: 16px;
+		border-top: 1px dashed var(--outline);
+		line-height: 1.5;
+		color: var(--on-surface-variant);
 	}
 
-	.card-content {
-		color: var(--on-surface);
-		font-size: 16px;
-		font-weight: 400;
-		letter-spacing: 0.08px;
+	.network {
+		width: 100%;
+		max-width: 440px;
+		justify-self: center;
+		overflow: visible;
+	}
+	.ring {
+		fill: none;
+		stroke: var(--outline);
+		stroke-width: 1.5;
+	}
+	.boundary {
+		fill: none;
+		stroke: var(--on-surface-variant);
+		stroke-width: 1.5;
+		stroke-dasharray: 4 7;
+		opacity: 0.6;
+	}
+	.edge {
+		stroke: var(--on-surface-variant);
+		stroke-width: 1.5;
+		opacity: 0.35;
+	}
+	.node {
+		stroke: var(--surface-container);
+		stroke-width: 4;
+	}
+	.node.you {
+		fill: var(--primary);
+	}
+	.node.friend {
+		fill: var(--secondary);
+	}
+	.node.fof {
+		fill: var(--tertiary);
 	}
 
-	@media only screen and (max-width: 900px) {
-		#cards-list {
-			flex-direction: column;
-			justify-content: start;
-			align-items: center;
+	/* The page's one moment of motion: the network grows outwards from you. */
+	@media (prefers-reduced-motion: no-preference) {
+		.node {
+			transform-box: fill-box;
+			transform-origin: center;
+			animation: appear 500ms cubic-bezier(0.34, 1.4, 0.64, 1) both;
 		}
-
-		#description-first-col {
-			align-items: center;
-			text-align: center;
-			max-width: 320px;
+		.node.friend {
+			animation-delay: calc(250ms + var(--i) * 70ms);
 		}
+		.node.fof {
+			animation-delay: calc(700ms + var(--i) * 40ms);
+		}
+		.edge,
+		.ring {
+			animation: fade 600ms ease 200ms both;
+		}
+		.boundary {
+			animation: fade 600ms ease 1300ms both;
+		}
+	}
+	@keyframes appear {
+		from {
+			transform: scale(0);
+		}
+	}
+	@keyframes fade {
+		from {
+			opacity: 0;
+		}
+	}
 
-		#description-hero {
+	/* ---- How borrowing works -------------------------------------------- */
+	.how {
+		display: flex;
+		flex-direction: column;
+		gap: 40px;
+	}
+	.timeline {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 32px;
+		position: relative;
+	}
+	/* The line between the markers, as on the loan page: each step draws it
+	   to the next one, so it ends at the last marker. */
+	.timeline li:not(:last-child)::before {
+		content: '';
+		position: absolute;
+		top: 11px;
+		left: 13px;
+		width: calc(100% + 32px);
+		height: 4px;
+		background: var(--on-surface);
+	}
+	.timeline li {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+	}
+	.marker {
+		width: 26px;
+		height: 26px;
+		border-radius: 50%;
+		background: var(--on-surface);
+		position: relative;
+		z-index: 1;
+		margin-bottom: 8px;
+	}
+	.marker::after {
+		content: '';
+		position: absolute;
+		inset: 8px;
+		border-radius: 50%;
+		background: var(--surface);
+	}
+	.timeline p {
+		max-width: 26em;
+		line-height: 1.55;
+		color: var(--on-surface-variant);
+	}
+
+	/* ---- Features -------------------------------------------------------- */
+	.features {
+		display: flex;
+		flex-direction: column;
+		gap: 40px;
+	}
+	.cards {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 24px;
+	}
+	.card {
+		display: flex;
+		flex-direction: column;
+		gap: 14px;
+		padding: 30px;
+		border-radius: 40px;
+		background: var(--surface-container);
+	}
+	.card-icon {
+		width: 60px;
+		height: 60px;
+		margin-bottom: 8px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 20px;
+		background: color-mix(in srgb, var(--secondary) 50%, transparent);
+		color: var(--surface-container);
+	}
+	.card p {
+		line-height: 1.55;
+		color: var(--on-surface-variant);
+	}
+
+	/* ---- Closing + footer ----------------------------------------------- */
+	.closing {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 28px;
+		text-align: center;
+	}
+	footer {
+		width: var(--page);
+		margin: clamp(80px, 12vw, 140px) auto 0;
+		padding: 32px 0 48px;
+		border-top: 1px solid var(--outline);
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px 32px;
+		font-size: 14px;
+		color: var(--on-surface-variant);
+	}
+	.credit {
+		color: var(--secondary);
+		font-weight: 600;
+	}
+	.footer-links {
+		margin-left: auto;
+		display: flex;
+		gap: 24px;
+	}
+	.footer-links a {
+		color: var(--on-surface-variant);
+	}
+
+	/* ---- Small screens ------------------------------------------------- */
+	@media (max-width: 860px) {
+		.hero,
+		.reach {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.crow {
 			display: none;
 		}
-
-		.card-container {
-			align-self: center;
-			height: 200px;
+		.network {
+			max-width: 340px;
+			grid-row: 1;
+		}
+		.timeline,
+		.cards {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		/* The timeline runs downwards on phones. */
+		.timeline li:not(:last-child)::before {
+			top: 13px;
+			left: 11px;
+			width: 4px;
+			height: calc(100% + 32px);
+		}
+		.timeline li {
+			padding-left: 48px;
+		}
+		.marker {
+			position: absolute;
+			left: 0;
+			top: 0;
+		}
+		.footer-links {
+			margin-left: 0;
+		}
+	}
+	@media (max-width: 480px) {
+		.bar .pill {
+			height: 36px;
+			padding: 0 14px;
+			font-size: 14px;
+		}
+		.brand span {
+			display: none;
 		}
 	}
 </style>

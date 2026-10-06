@@ -40,7 +40,7 @@ export const PAGE_SIZE = {
 };
 
 /** The Friends page's tabs, in order (the first is the bare URL). */
-export const FRIEND_TABS = ['friends', 'received', 'sent'] as const satisfies FriendshipList[];
+export const FRIEND_TABS = ['friends', 'received'] as const satisfies FriendshipList[];
 
 /** Search's tabs. */
 export const SEARCH_TABS = ['books', 'users'] as const;

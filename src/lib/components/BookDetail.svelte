@@ -53,17 +53,20 @@
 	);
 
 	// 0 (expanded) to 1 (collapsed): the header shrinks over one full page of
-	// scrolling.
+	// scrolling; the elevation shadow ramps up much sooner.
 	let progress = $state(0);
+	let shadow = $state(0);
 	const onScroll = () => {
-		progress = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
+		const y = window.scrollY;
+		progress = Math.min(1, Math.max(0, y / window.innerHeight));
+		shadow = Math.min(1, Math.max(0, y / 60));
 	};
 	onMount(onScroll);
 </script>
 
 <svelte:window onscroll={onScroll} />
 
-<div class="detail" style:--p={progress}>
+<div class="detail" style:--p={progress} style:--s={shadow}>
 	<header class="header">
 		<div class="menu"><BackButton /></div>
 
@@ -117,7 +120,10 @@
 	.detail {
 		/* 0 (fully expanded) to 1 (collapsed); set from the page scroll. */
 		--p: 0;
-		/* The cover shrinks to ~60% of its height as the header collapses. */
+		/* Header elevation cue, ramped up much faster than --p. */
+		--s: 0;
+		/* Space above the cover, and the cover's height as the header collapses. */
+		--cover-gap: 5vh;
 		--cover: calc(46dvh * (1 - 0.4 * var(--p)));
 		position: relative;
 		min-height: 100vh;
@@ -136,13 +142,18 @@
 		display: flex;
 		flex-direction: column;
 		gap: calc(20px - 10px * var(--p));
-		padding: 0 20px;
+		padding: var(--cover-gap) 20px 0;
 		background: var(--surface);
+		/* Elevation cue (hairline + soft shadow) that fades in quickly as you
+		   scroll, so the list clearly passes under the header. */
+		box-shadow:
+			0 2px 0 color-mix(in srgb, var(--on-surface) calc(8% * var(--s)), transparent),
+			0 2px 10px color-mix(in srgb, var(--shadow) calc(50% * var(--s)), transparent);
 	}
 	.header::before {
 		content: '';
 		position: absolute;
-		top: calc(var(--cover) / 2);
+		top: calc(var(--cover-gap) + var(--cover) / 2);
 		right: 0;
 		bottom: 0;
 		left: 0;
@@ -174,7 +185,7 @@
 		text-align: center;
 	}
 	h1 {
-		font-size: calc(18px * (1 - 0.4 * var(--p)));
+		font-size: calc(18px * (1 - 0.3 * var(--p)));
 		font-weight: 600;
 		line-height: 1.3;
 		display: -webkit-box;
@@ -184,14 +195,14 @@
 		overflow: hidden;
 	}
 	.author {
-		font-size: calc(16px * (1 - 0.4 * var(--p)));
+		font-size: calc(16px * (1 - 0.3 * var(--p)));
 		color: var(--on-surface-variant);
 	}
 	.large h1 {
-		font-size: calc(24px * (1 - 0.4 * var(--p)));
+		font-size: calc(24px * (1 - 0.3 * var(--p)));
 	}
 	.large .author {
-		font-size: calc(20px * (1 - 0.4 * var(--p)));
+		font-size: calc(20px * (1 - 0.3 * var(--p)));
 	}
 	/* The info pill and reviews sit on the near-white card. */
 	.content {
@@ -201,7 +212,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
-		padding: 20px 20px 20px;
+		padding: 20px 20px 0;
 		background: var(--surface-container);
 	}
 	dd a {
@@ -238,6 +249,8 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
+		/* Separation from the pinned CTA row. */
+		padding-bottom: 20px;
 	}
 	/* A very subtle divider between reviews. */
 	.reviews > :global(article) + :global(article) {
@@ -258,7 +271,8 @@
 		font-size: 13px;
 		color: var(--error);
 	}
-	/* Pinned at the bottom of the viewport. */
+	/* Pinned at the bottom of the viewport. The space above it lives in
+	   .reviews so the buttons hug the edges. */
 	.actions {
 		position: sticky;
 		bottom: 0;
@@ -266,7 +280,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
-		padding: 12px 20px 20px;
+		padding: 5px;
 		background: var(--surface-container);
 	}
 </style>

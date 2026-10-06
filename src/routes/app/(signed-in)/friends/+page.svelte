@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
@@ -18,19 +19,28 @@
 	import { t } from '#lib/i18n.svelte.ts';
 	import { store } from '#lib/cache.ts';
 	import { FRIEND_TABS, keys, PAGE_SIZE } from '#lib/data/pages.ts';
-	import { selectTab } from '#lib/tabs.ts';
+	import { selectTab, tabFrom } from '#lib/tabs.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
 	import type { PageProps } from './$types';
 	import { onTableChange } from '#lib/realtime.ts';
 	import { unread } from '#lib/unread.svelte.ts';
 
-	// Friends / Received / Sent tabs over the friendships table. The tab is in the
-	// URL (?tab=), and the load fetches that tab's list (through the page cache).
+	// Friends / Received tabs over the friendships table. The tab is in the URL
+	// (?tab=), and the load fetches that tab's list (through the page cache).
 	let { data }: PageProps = $props();
 
 	const userId = $derived(data.userId);
 
-	const tab = $derived<number>(FRIEND_TABS.indexOf(data.list));
+	// The selected tab is local state so it switches right away; the URL (and its
+	// load) follows. It re-syncs if the URL changes externally.
+	let tab = $state<number>(FRIEND_TABS.indexOf(tabFrom(page.url, FRIEND_TABS)));
+	$effect(() => {
+		tab = FRIEND_TABS.indexOf(tabFrom(page.url, FRIEND_TABS));
+	});
+	function select(i: number) {
+		tab = i;
+		selectTab(FRIEND_TABS[i], FRIEND_TABS);
+	}
 	let busyId = $state<number | null>(null);
 	let error = $state('');
 	let confirmDialog: ConfirmDialog;
@@ -89,26 +99,20 @@
 	// Rejecting deletes the request so it can be sent again later.
 	const reject = (f: Friendship) =>
 		run(f, t('Reject this request?'), () => deleteFriendship(f.id));
-	const withdraw = (f: Friendship) =>
-		run(f, t('Withdraw friend request?'), () => deleteFriendship(f.id));
 	const remove = (f: Friendship) =>
 		run(f, t('Remove {name} as friend?').replace('{name}', other(f).username), () =>
 			deleteFriendship(f.id)
 		);
 
-	const empty = [
-		'You have no friends yet. Find people in Search.',
-		'No pending requests.',
-		'You have not sent any requests.'
-	];
+	const empty = ['You have no friends yet. Find people in Search.', 'No pending requests.'];
 </script>
 
 <div class="page">
 	<div class="controls">
 		<TabBar
-			tabs={[t('Friends'), t('Received'), t('Sent')]}
+			tabs={[t('Friends'), t('Received')]}
 			index={tab}
-			onchange={(i) => selectTab(FRIEND_TABS[i], FRIEND_TABS)}
+			onchange={select}
 		/>
 	</div>
 
@@ -142,13 +146,6 @@
 								loading={busyId === friendship.id}
 								onclick={() => reject(friendship)}
 							/>
-						{:else}
-							<PillButton
-								icon="x"
-								label={t('Withdraw')}
-								loading={busyId === friendship.id}
-								onclick={() => withdraw(friendship)}
-							/>
 						{/if}
 					{/snippet}
 				</UserRow>
@@ -160,7 +157,7 @@
 		<p class="muted">{t(empty[tab])}</p>
 	{/if}
 
-	{#if current.loading}
+	{#if current.loading || (current.items.length === 0 && current.hasMore)}
 		<Loading fill={current.items.length === 0} />
 	{/if}
 	{#key tab}
@@ -175,9 +172,9 @@
 		min-height: 100vh;
 		padding-bottom: 40px;
 	}
-	/* FriendshipsPage: tab bar and list both inset 10px, 5px apart. */
+	/* FriendshipsPage: tab bar and list both inset 10px, 10px apart. */
 	.controls {
-		padding: 0 10px 5px;
+		padding: 0 10px 10px;
 	}
 	.list {
 		display: flex;

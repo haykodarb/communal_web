@@ -35,8 +35,16 @@
 		actions: Snippet;
 	} = $props();
 
-	// Books or Reviews, kept in the URL (?tab=reviews).
-	const tab = $derived(PROFILE_TABS.indexOf(tabFrom(page.url, PROFILE_TABS)));
+	// Books or Reviews, kept in the URL (?tab=reviews). The selected tab is local
+	// state so it switches right away; the URL (and its load) follows.
+	let tab = $state<number>(PROFILE_TABS.indexOf(tabFrom(page.url, PROFILE_TABS)));
+	$effect(() => {
+		tab = PROFILE_TABS.indexOf(tabFrom(page.url, PROFILE_TABS));
+	});
+	function select(i: number) {
+		tab = i;
+		selectTab(PROFILE_TABS[i], PROFILE_TABS);
+	}
 
 	// Both tabs page in like ProfileCommonController (infinite scroll). Pages
 	// render this inside {#key profile.id}, so one profile's lists never carry
@@ -93,7 +101,7 @@
 {/if}
 
 <div class="tabs">
-	<TabBar tabs={[t('Books'), t('Reviews')]} index={tab} onchange={(i) => selectTab(PROFILE_TABS[i], PROFILE_TABS)} />
+	<TabBar tabs={[t('Books'), t('Reviews')]} index={tab} onchange={select} />
 </div>
 
 {#if tab === 0}

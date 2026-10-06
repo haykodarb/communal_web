@@ -38,6 +38,7 @@
 	<BookDetail
 		{book}
 		{reviews}
+		large
 		info={[
 			{ label: t('Added'), value: formatShortDate(book.created_at) },
 			{ label: t('Visibility'), value: book.public ? t('Public') : t('Private') },

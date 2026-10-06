@@ -19,5 +19,8 @@ export function selectTab<T extends string>(tab: T, tabs: readonly T[]): Promise
 	const url = new URL(page.url.href);
 	if (tab === tabs[0]) url.searchParams.delete('tab');
 	else url.searchParams.set('tab', tab);
-	return goto(url, { replace: true, reset: false });
+	// Shallow: update the address bar right away without re-running the load.
+	// The tab's own list fetches its first page (the page's load still seeds it
+	// on a direct visit).
+	return goto(url, { replace: true, reset: false, shallow: true });
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/state';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
@@ -11,7 +12,7 @@
 	import { store } from '#lib/cache.ts';
 	import { searchNetworkBooks, searchUsers } from '#lib/data/api.ts';
 	import { keys, PAGE_SIZE, SEARCH_TABS } from '#lib/data/pages.ts';
-	import { selectTab } from '#lib/tabs.ts';
+	import { selectTab, tabFrom } from '#lib/tabs.ts';
 	import type { NetworkBook, Profile } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
@@ -23,7 +24,16 @@
 	let { data }: PageProps = $props();
 
 	let query = $state('');
-	const tab = $derived(SEARCH_TABS.indexOf(data.tab));
+	// The selected tab is local state so it switches right away; the URL (and its
+	// load) follows. It re-syncs if the URL changes externally.
+	let tab = $state<number>(SEARCH_TABS.indexOf(tabFrom(page.url, SEARCH_TABS)));
+	$effect(() => {
+		tab = SEARCH_TABS.indexOf(tabFrom(page.url, SEARCH_TABS));
+	});
+	function select(i: number) {
+		tab = i;
+		selectTab(SEARCH_TABS[i], SEARCH_TABS);
+	}
 
 	const books = createPaged<NetworkBook>(
 		(page) => searchNetworkBooks(query, { page, pageSize: PAGE_SIZE.network }),
@@ -72,7 +82,7 @@
 		<TabBar
 			tabs={[t('Books'), t('Users')]}
 			index={tab}
-			onchange={(i) => selectTab(SEARCH_TABS[i], SEARCH_TABS)}
+			onchange={select}
 		/>
 	</div>
 	<StickySearch floating={false}>
@@ -105,7 +115,7 @@
 		<p class="muted">{t('No users found, likely a network issue.')}</p>
 	{/if}
 
-	{#if current.loading}
+	{#if current.loading || (current.items.length === 0 && current.hasMore)}
 		<Loading fill={current.items.length === 0} />
 	{/if}
 	{#key tab}

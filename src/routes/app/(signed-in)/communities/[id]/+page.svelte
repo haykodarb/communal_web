@@ -28,7 +28,12 @@
 
 	const id = $derived(page.params.id!);
 	const tabKeys = tabs.map((t) => t.key) as Tab[];
-	const tab = $derived<Tab>(tabFrom(page.url, tabKeys));
+	// The selected tab is local state so it switches right away; the URL (and its
+	// load) follows. It re-syncs if the URL changes externally.
+	let tab = $state<Tab>(tabFrom(page.url, tabKeys));
+	$effect(() => {
+		tab = tabFrom(page.url, tabKeys);
+	});
 
 	$effect(() => {
 		loading = true;
@@ -37,7 +42,10 @@
 			.finally(() => (loading = false));
 	});
 
-	const select = (key: Tab) => selectTab(key, tabKeys);
+	const select = (key: Tab) => {
+		tab = key;
+		selectTab(key, tabKeys);
+	};
 </script>
 
 <div class="page">

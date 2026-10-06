@@ -34,7 +34,7 @@
 	<p class="empty">{books.error || t('community-books-no-items')}</p>
 {/if}
 {#if books.loading}
-	<Loading />
+	<Loading fill={books.items.length === 0} />
 {/if}
 <Sentinel onvisible={books.loadMore} />
 
@@ -47,7 +47,7 @@
 		/* CommonListView grid: 2 columns, 8px spacing. */
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 8px;
-		padding: 0 20px 10px;
+		padding: 10px 20px;
 	}
 	.empty {
 		padding: 30px 20px;

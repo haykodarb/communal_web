@@ -74,7 +74,7 @@
 	{/if}
 
 	{#if current.loading}
-		<Loading />
+		<Loading fill={current.items.length === 0} />
 	{/if}
 	{#key tab}
 		<Sentinel onvisible={current.loadMore} />
@@ -100,10 +100,10 @@
 		/* CommonListView grid: 2 columns, 8px spacing. */
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 8px;
-		padding: 0 10px 20px;
+		padding: 10px 10px 20px;
 	}
 	.users {
-		padding: 0 10px 20px;
+		padding: 10px 10px 20px;
 		display: flex;
 		flex-direction: column;
 		gap: 8px;

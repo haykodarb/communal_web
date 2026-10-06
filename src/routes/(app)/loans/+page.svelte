@@ -74,7 +74,7 @@
 		</div>
 	{/if}
 	{#if loans.loading}
-		<Loading />
+		<Loading fill={loans.items.length === 0} />
 	{/if}
 	<Sentinel onvisible={loans.loadMore} />
 </div>
@@ -109,7 +109,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
-		padding: 0 5px;
+		padding: 10px 5px 0;
 	}
 	.error {
 		padding: 0 10px;

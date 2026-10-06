@@ -56,13 +56,13 @@
 	<p class="empty">{topics.error || t('community-topics-no-items')}</p>
 {/if}
 {#if topics.loading}
-	<Loading />
+	<Loading fill={topics.items.length === 0} />
 {/if}
 <Sentinel onvisible={topics.loadMore} />
 
 <style>
 	.search {
-		padding: 0 10px;
+		padding: 10px 10px 0;
 	}
 	.list {
 		list-style: none;

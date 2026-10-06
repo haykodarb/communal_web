@@ -34,14 +34,45 @@
 	let {
 		size = 50,
 		color = 'var(--primary)',
-		inline = false
+		inline = false,
+		fill = true
 	}: {
 		/** Flutter's `size`: 50 for page loaders, 30 in buttons, 20 in pills. */
 		size?: number;
 		color?: string;
 		/** Render just the animation, without the centered block around it. */
 		inline?: boolean;
+		/**
+		 * Center it in the space left between here and the bottom of the window,
+		 * like Flutter's SliverFillRemaining (first loads). Otherwise it's a small
+		 * block in the flow, e.g. "loading more" under a list.
+		 */
+		fill?: boolean;
 	} = $props();
+
+	let block = $state<HTMLElement>();
+	let offset = $state(0);
+
+	// The filled loader takes no space in the layout (so a short page doesn't
+	// start scrolling); its animation is placed in the middle of the remaining
+	// height instead.
+	$effect(() => {
+		if (inline || !fill || !block) return;
+		const el = block;
+		// Inside a scrolling panel (chats), the space ends at the panel's bottom.
+		let scroller: HTMLElement | null = el.parentElement;
+		while (scroller && !/(auto|scroll)/.test(getComputedStyle(scroller).overflowY)) {
+			scroller = scroller.parentElement;
+		}
+		const place = () => {
+			const bottom = scroller ? scroller.getBoundingClientRect().bottom : window.innerHeight;
+			const remaining = bottom - el.getBoundingClientRect().top;
+			offset = Math.max(20, remaining / 2 - size / 2);
+		};
+		place();
+		window.addEventListener('resize', place);
+		return () => window.removeEventListener('resize', place);
+	});
 
 	let t = $state(0);
 
@@ -103,6 +134,10 @@
 
 {#if inline}
 	{@render circle()}
+{:else if fill}
+	<div class="fill" bind:this={block}>
+		<div class="spot" style:top="{offset}px">{@render circle()}</div>
+	</div>
 {:else}
 	<div class="block">{@render circle()}</div>
 {/if}
@@ -116,5 +151,14 @@
 		display: flex;
 		justify-content: center;
 		padding: 20px 0;
+	}
+	.fill {
+		position: relative;
+		height: 0;
+	}
+	.spot {
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
 	}
 </style>

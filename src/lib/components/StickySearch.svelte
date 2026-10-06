@@ -3,8 +3,9 @@
 
 	// Flutter's SliverAppBar around a search bar. `floating` (the default) hides
 	// it while scrolling down and brings it back as soon as you scroll up;
-	// otherwise it stays pinned. The 10px under it is CommonListView's padding,
-	// the gap between the search bar and the first item.
+	// otherwise it stays pinned. Like the 55px toolbar there, it has a little
+	// room above the 50px bar; the gap below belongs to the list (CommonListView's
+	// 10px padding), so it scrolls away with the content.
 	// Put it directly inside the element that also holds the list, or `sticky`
 	// stops at its parent's end.
 	let { floating = true, children }: { floating?: boolean; children: Snippet } = $props();
@@ -41,7 +42,7 @@
 		/* Below the mobile app bar on top-level pages (set by the app layout). */
 		top: var(--sticky-top, 0px);
 		z-index: 10;
-		padding-bottom: 10px;
+		padding-top: 3px;
 		background: var(--surface);
 		transition: transform 200ms ease;
 	}

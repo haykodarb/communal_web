@@ -147,7 +147,7 @@
 	{/if}
 
 	{#if loading}
-		<Loading />
+		<Loading fill={notifications.length === 0} />
 	{/if}
 	<div bind:this={sentinel} class="sentinel"></div>
 </div>

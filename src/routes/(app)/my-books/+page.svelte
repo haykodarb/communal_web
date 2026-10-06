@@ -58,7 +58,7 @@
 		</div>
 	{/if}
 	{#if books.loading}
-		<Loading />
+		<Loading fill={books.items.length === 0} />
 	{/if}
 	<Sentinel onvisible={books.loadMore} />
 
@@ -96,7 +96,7 @@
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
-		padding: 0 5px;
+		padding: 10px 5px 0;
 	}
 	.error {
 		padding: 0 10px;

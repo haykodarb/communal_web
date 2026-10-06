@@ -82,7 +82,7 @@
 		{/each}
 	</ul>
 	{#if users.loading}
-		<Loading />
+		<Loading fill={users.items.length === 0} />
 	{/if}
 	<Sentinel onvisible={users.loadMore} />
 </div>

@@ -149,7 +149,7 @@
 	{/if}
 
 	{#if current.loading}
-		<Loading />
+		<Loading fill={current.items.length === 0} />
 	{/if}
 	{#key tab}
 		<Sentinel onvisible={current.loadMore} />

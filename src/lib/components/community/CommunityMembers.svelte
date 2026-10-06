@@ -142,7 +142,7 @@
 	<p class="empty">{members.error || t('community-members-no-items')}</p>
 {/if}
 {#if members.loading}
-	<Loading />
+	<Loading fill={members.items.length === 0} />
 {/if}
 <Sentinel onvisible={members.loadMore} />
 
@@ -164,7 +164,7 @@
 	.list {
 		list-style: none;
 		margin: 0;
-		padding: 0 20px;
+		padding: 10px 20px 0;
 		display: flex;
 		flex-direction: column;
 		gap: 8px;

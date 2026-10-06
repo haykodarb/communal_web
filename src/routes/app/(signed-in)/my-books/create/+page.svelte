@@ -8,7 +8,7 @@
 </script>
 
 <div class="page">
-	<PageBar title={t('Add book')} mobileTitle onback={() => goto('/app/my-books')} />
+	<PageBar title={t('Add book')} mobileTitle />
 	<BookForm
 		submitLabel="Add"
 		onsubmit={async (form, cover) => {

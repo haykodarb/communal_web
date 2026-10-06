@@ -5,8 +5,8 @@
 	import Avatar from '#lib/components/Avatar.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
+	import BackButton from '#lib/components/BackButton.svelte';
 	import CoverImage from '#lib/components/CoverImage.svelte';
-	import Icon from '#lib/components/Icon.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
 	import TextField from '#lib/components/TextField.svelte';
 	import {
@@ -80,9 +80,7 @@
 </script>
 
 <div class="detail">
-	<button class="back" type="button" aria-label={t('Back')} onclick={() => goto('/app/loans')}>
-		<Icon name="chevron-left" size={32} />
-	</button>
+	<div class="menu"><BackButton /></div>
 
 	{#if loan}
 		<p class="who">
@@ -214,13 +212,8 @@
 	.detail {
 		padding: 16px 20px 40px;
 	}
-	.back {
-		background: none;
-		border: none;
-		color: var(--on-surface);
-		cursor: pointer;
-		padding: 0;
-		margin-bottom: 12px;
+	.menu {
+		margin: -8px 0 4px -8px;
 	}
 	.who {
 		display: flex;

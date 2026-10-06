@@ -56,7 +56,7 @@
 	</div>
 {:else}
 	<div class="form-page">
-		<AuthHeader title={t('Create account')} back="/app/auth" />
+		<AuthHeader title={t('Create account')} />
 
 		<form
 			class="form"

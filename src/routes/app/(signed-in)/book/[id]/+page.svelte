@@ -22,7 +22,7 @@
 	let { data }: PageProps = $props();
 	const book = $derived<Book | null>(data.details.book);
 	let currentLoan = $derived<Loan | null>(data.details.currentLoan);
-	const reviews = $derived<Loan[]>(data.details.reviews);
+	const reviews = $derived(data.details.reviews);
 	let waitlisted = $derived(data.details.waitlisted);
 	let busy = $state(false);
 	let error = $state('');
@@ -101,7 +101,6 @@
 		{book}
 		{reviews}
 		large
-		onback={() => history.back()}
 		info={[
 			{ label: t('Owner'), value: book.owner.username, href: `/app/profile/${book.owner.id}` },
 			{ label: t('Added'), value: formatShortDate(book.created_at) },

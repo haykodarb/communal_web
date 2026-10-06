@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
 	import AuthHeader from '#lib/components/AuthHeader.svelte';
 	import Button from '#lib/components/Button.svelte';
 	import TextField from '#lib/components/TextField.svelte';
@@ -32,7 +31,7 @@
 </script>
 
 <div class="form-page">
-	<AuthHeader title={t('Recover password')} back="/app/auth/login" />
+	<AuthHeader title={t('Recover password')} />
 
 	{#if sent}
 		<div class="sent">

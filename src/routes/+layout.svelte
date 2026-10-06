@@ -1,12 +1,26 @@
 <script lang="ts">
 	import '../app.css';
 	import { onMount } from 'svelte';
+	import { afterNavigate } from '$app/navigation';
 	import { initAuth } from '#lib/auth.svelte.ts';
 	import { i18n } from '#lib/i18n.svelte.ts';
+	import { nav } from '#lib/nav.svelte.ts';
 	import { theme } from '#lib/theme.svelte.ts';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
+
+	// Track how deep into the app we've navigated, so back buttons know whether
+	// there's an app page to return to.
+	afterNavigate((navigation) => {
+		if (navigation.type === 'enter') {
+			nav.depth = 0;
+		} else if (navigation.type === 'popstate') {
+			nav.depth = Math.max(0, nav.depth - 1);
+		} else {
+			nav.depth += 1;
+		}
+	});
 
 	onMount(() => {
 		theme.apply();

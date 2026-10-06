@@ -42,7 +42,7 @@
 </script>
 
 <div class="page">
-	<PageBar title={t('Create community')} mobileTitle onback={() => goto('/app/communities')} />
+	<PageBar title={t('Create community')} mobileTitle />
 
 	<form
 		class="form"

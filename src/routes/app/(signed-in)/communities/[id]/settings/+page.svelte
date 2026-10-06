@@ -113,7 +113,7 @@
 </script>
 
 <div class="page">
-	<PageBar title={t('Settings')} onback={() => goto(`/app/communities/${id}`)} />
+	<PageBar title={t('Settings')} />
 
 	{#if loading}
 		<Loading />

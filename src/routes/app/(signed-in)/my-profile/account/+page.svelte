@@ -87,7 +87,7 @@
 </script>
 
 <div class="page">
-	<PageBar title={t('Account settings')} mobileTitle onback={() => goto('/app/my-profile/edit')} />
+	<PageBar title={t('Account settings')} mobileTitle />
 
 	<section>
 		<h2>{t('Email')}</h2>

@@ -488,14 +488,56 @@ export async function getCurrentLoanForBook(
 	);
 }
 
-/** Accepted loans of a book that left a review. */
-export async function getReviewsForBook(bookId: string): Promise<Loan[]> {
+// Dev-only: pretend every book has this many reviews, so the book page's
+// vertical infinite scroll can be exercised without real data. Set to 0 (or
+// build for production) to use the real reviews.
+const SIMULATED_REVIEWS = import.meta.env.DEV ? 23 : 0;
+
+const SAMPLE_REVIEW =
+	'An absorbing read. The argument builds patiently and the last third ties everything ' +
+	'together; I found myself rereading whole chapters. Would happily lend this to anyone ' +
+	'curious about the subject.';
+
+function simulatedReviews(page: number, pageSize: number): Loan[] {
+	const start = page * pageSize;
+	const count = Math.max(0, Math.min(pageSize, SIMULATED_REVIEWS - start));
+	const nobody = toProfile(null);
+	return Array.from({ length: count }, (_, i) => {
+		const n = start + i;
+		return {
+			id: `simulated-${n}`,
+			created_at: '',
+			accepted_at: null,
+			returned_at: null,
+			rejected_at: null,
+			latest_date: new Date(Date.UTC(2026, 0, SIMULATED_REVIEWS - n)).toISOString(),
+			// Vary the length so some reviews clamp to 4 lines and some don't.
+			review: Array.from({ length: 1 + (n % 4) }, () => SAMPLE_REVIEW).join(' '),
+			book: {} as Book,
+			owner: nobody,
+			loanee: toProfile({ id: `simulated-${n}`, username: `reader_${n + 1}` }),
+			accepted: true,
+			rejected: false,
+			returned: true
+		};
+	});
+}
+
+/** Accepted loans of a book that left a review, newest first. */
+export async function getReviewsForBook(
+	bookId: string,
+	{ page = 0, pageSize = 30 }: { page?: number; pageSize?: number } = {}
+): Promise<Loan[]> {
+	if (SIMULATED_REVIEWS > 0) return simulatedReviews(page, pageSize);
 	const { data, error } = await supabase
 		.from('loans')
 		.select(LOAN_SELECT)
 		.eq('book', bookId)
 		.eq('accepted', true)
-		.not('review', 'is', null);
+		.not('review', 'is', null)
+		.order('latest_date', { ascending: false, nullsFirst: false })
+		.order('id', { ascending: false })
+		.range(page * pageSize, page * pageSize + pageSize - 1);
 	if (error) throw error;
 	return (data ?? []).map((row) => toLoan(row as Record<string, unknown>));
 }

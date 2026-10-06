@@ -38,7 +38,7 @@
 </script>
 
 <div class="form-page">
-	<AuthHeader title={t('Sign in')} back="/app/auth" />
+	<AuthHeader title={t('Sign in')} />
 
 	<form
 		class="form"

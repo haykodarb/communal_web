@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Loading from '#lib/components/Loading.svelte';
-	import { goto } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import ChatComposer from '#lib/components/ChatComposer.svelte';
@@ -89,7 +88,7 @@
 </script>
 
 <div class="thread">
-	<PageBar title={topic?.name ?? ''} onback={() => goto(`/app/communities/${communityId}?tab=discuss`)} />
+	<PageBar title={topic?.name ?? ''} />
 
 	<div class="scroll">
 		{#if loading}

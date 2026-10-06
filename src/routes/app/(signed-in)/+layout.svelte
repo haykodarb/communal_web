@@ -5,6 +5,7 @@
 	import Icon from '#lib/components/Icon.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { drop } from '#lib/cache.ts';
+	import { drawer } from '#lib/drawer.svelte.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import {
 		onTableChange,
@@ -17,7 +18,6 @@
 	let { children }: LayoutProps = $props();
 
 	let width = $state(0);
-	let drawerOpen = $state(false);
 
 	const isMobile = $derived(width > 0 && width < 800);
 
@@ -34,8 +34,8 @@
 	const titleKey = $derived(
 		Object.keys(titles).find((path) => page.url.pathname.startsWith(path)) ?? '/app/my-books'
 	);
-	// Like Flutter, only the drawer destinations get the menu app bar on mobile;
-	// pushed pages (books, loans, chats, ...) show their own back bar instead.
+	// Only the drawer destinations get the menu app bar on mobile; pushed pages
+	// (books, loans, chats, ...) show their own bar with a back button.
 	const topLevel = $derived(page.url.pathname in titles);
 
 	$effect(() => {
@@ -92,7 +92,7 @@
 					class="appbar-btn"
 					type="button"
 					aria-label={t('Menu')}
-					onclick={() => (drawerOpen = true)}
+					onclick={() => (drawer.open = true)}
 				>
 					<Icon name="menu" size={22} />
 				</button>
@@ -101,15 +101,15 @@
 			</header>
 			{/if}
 
-			{#if drawerOpen}
+			{#if drawer.open}
 				<button
 					class="scrim"
 					type="button"
 					aria-label={t('Close')}
-					onclick={() => (drawerOpen = false)}
+					onclick={() => (drawer.open = false)}
 				></button>
 				<aside class="drawer-panel">
-					<Drawer onNavigate={() => (drawerOpen = false)} />
+					<Drawer onNavigate={() => (drawer.open = false)} />
 				</aside>
 			{/if}
 

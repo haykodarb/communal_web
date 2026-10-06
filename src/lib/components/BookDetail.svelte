@@ -1,51 +1,72 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import Avatar from './Avatar.svelte';
+	import { onMount, untrack, type Snippet } from 'svelte';
+	import BackButton from './BackButton.svelte';
 	import CoverImage from './CoverImage.svelte';
-	import Icon from './Icon.svelte';
-	import type { Book, Loan, Profile } from '#lib/data/models.ts';
+	import Loading from './Loading.svelte';
+	import ReviewItem from './ReviewItem.svelte';
+	import Sentinel from './Sentinel.svelte';
+	import { store } from '#lib/cache.ts';
+	import { getReviewsForBook } from '#lib/data/api.ts';
+	import type { Book, Loan } from '#lib/data/models.ts';
+	import { keys, PAGE_SIZE } from '#lib/data/pages.ts';
 	import { t } from '#lib/i18n.svelte.ts';
-	import { profileHref } from '#lib/links.ts';
+	import { createPaged, type PagedState } from '#lib/paged.svelte.ts';
 
-	// Shared layout of BookOwnedPage / BookForeignPage: one screen tall, cover on
-	// top of a rounded card, title, a pill of facts, a review carousel and the
-	// action buttons at the bottom.
+	// Shared layout of BookOwnedPage / BookForeignPage. The page scrolls as a
+	// whole: the cover and title stay (sticky) and shrink to a point as you
+	// scroll, the info row scrolls away and the action buttons stay pinned.
 	let {
 		book,
 		reviews,
 		info,
 		large = false,
-		onback,
 		actions
 	}: {
 		book: Book;
-		/** Completed loans with a review. */
-		reviews: Loan[];
+		/** First page of the completed loans with a review (from the page cache). */
+		reviews: PagedState<Loan>;
 		info: { label: string; value: string; href?: string }[];
 		/** BookForeignPage uses a bigger title (24/20 vs 18/16). */
 		large?: boolean;
-		onback: () => void;
 		actions: Snippet;
 	} = $props();
 
-	// The owner's own review comes first, as in Flutter.
-	const cards = $derived<{ author: Profile; text: string }[]>([
-		...(book.review ? [{ author: book.owner, text: book.review }] : []),
-		...reviews.map((loan) => ({ author: loan.loanee, text: loan.review ?? '' }))
-	]);
+	// The rest of the pages load on scroll; every page is kept in the cache.
+	const paged = createPaged<Loan>(
+		(page) => getReviewsForBook(book.id, { page, pageSize: PAGE_SIZE.bookReviews }),
+		PAGE_SIZE.bookReviews,
+		{
+			seed: untrack(() => reviews),
+			onChange: (state) => store(keys.bookReviews(book.id), state)
+		}
+	);
 
-	let index = $state(0);
-	const current = $derived(cards[Math.min(index, cards.length - 1)]);
+	// A background refresh of the cached reviews lands here.
+	$effect(() => {
+		const fresh = reviews;
+		untrack(() => paged.seed(fresh));
+	});
+
+	// The owner's own review has no date and is shown first, as in Flutter.
+	const empty = $derived(
+		!book.review && paged.items.length === 0 && !paged.loading && !paged.hasMore
+	);
+
+	// 0 (expanded) to 1 (collapsed): the header shrinks over one full page of
+	// scrolling.
+	let progress = $state(0);
+	const onScroll = () => {
+		progress = Math.min(1, Math.max(0, window.scrollY / window.innerHeight));
+	};
+	onMount(onScroll);
 </script>
 
-<div class="detail">
-	<div class="card-bg" aria-hidden="true"></div>
+<svelte:window onscroll={onScroll} />
 
-	<button class="back" type="button" aria-label={t('Back')} onclick={onback}>
-		<Icon name="chevron-left" size={28} />
-	</button>
+<div class="detail" style:--p={progress}>
+	<header class="header">
+		<div class="menu"><BackButton /></div>
 
-	<div class="content">
 		<div class="cover-wrap">
 			<CoverImage bucket="book_covers" path={book.image_path} alt={book.title} />
 		</div>
@@ -54,7 +75,9 @@
 			<h1>{book.title}</h1>
 			<p class="author">{book.author}</p>
 		</div>
+	</header>
 
+	<div class="content">
 		<dl class="info">
 			{#each info as item (item.label)}
 				<div>
@@ -67,88 +90,74 @@
 		</dl>
 
 		<section class="reviews" aria-label={t('Reviews')}>
-			{#if cards.length === 0}
+			{#if empty}
 				<p class="no-reviews">{t('No reviews')}</p>
 			{:else}
-				<div class="carousel" class:single={cards.length < 2}>
-					<button
-						class="nav"
-						type="button"
-						aria-label={t('Previous')}
-						disabled={index === 0}
-						onclick={() => (index -= 1)}
-					>
-						<Icon name="chevron-left" size={22} />
-					</button>
-					<article class="review">
-						<a class="reviewer" href={profileHref(current.author)}>
-							<Avatar profile={current.author} size={30} />
-							<span>{current.author.username}</span>
-						</a>
-						<p>{current.text}</p>
-					</article>
-					<button
-						class="nav"
-						type="button"
-						aria-label={t('Next')}
-						disabled={index >= cards.length - 1}
-						onclick={() => (index += 1)}
-					>
-						<Icon name="chevron-right" size={22} />
-					</button>
-				</div>
-				{#if cards.length >= 2}
-					<div class="dots">
-						{#each cards as _, i (i)}
-							<span class="dot" class:active={i === index}></span>
-						{/each}
-					</div>
+				{#if book.review}
+					<ReviewItem author={book.owner} text={book.review} plain />
 				{/if}
+				{#each paged.items as loan (loan.id)}
+					<ReviewItem author={loan.loanee} text={loan.review ?? ''} date={loan.latest_date} />
+				{/each}
+				{#if paged.error}
+					<p class="error-text">{paged.error}</p>
+				{/if}
+				{#if paged.loading}
+					<Loading size={20} inline />
+				{/if}
+				<Sentinel onvisible={paged.loadMore} />
 			{/if}
 		</section>
-
-		<div class="actions">{@render actions()}</div>
 	</div>
+
+	<div class="actions">{@render actions()}</div>
 </div>
 
 <style>
 	.detail {
+		/* 0 (fully expanded) to 1 (collapsed); set from the page scroll. */
+		--p: 0;
+		/* The cover shrinks to ~60% of its height as the header collapses. */
+		--cover: calc(46dvh * (1 - 0.4 * var(--p)));
 		position: relative;
-		height: 100vh;
-		height: 100dvh;
+		min-height: 100vh;
+		min-height: 100dvh;
 		display: flex;
 		flex-direction: column;
+		background: var(--surface);
 	}
-	/* Flutter: the bottom 4/5 of the page is a card with 30px top corners. */
-	.card-bg {
+	/* Sticky collapsing header: cover + title stay, shrinking to a point. The
+	   beige shows behind the cover's top half; a rounded card layer starts at the
+	   cover's midpoint (tracking the shrink) and masks the content sliding under. */
+	.header {
+		position: sticky;
+		top: 0;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		gap: calc(20px - 10px * var(--p));
+		padding: 0 20px;
+		background: var(--surface);
+	}
+	.header::before {
+		content: '';
 		position: absolute;
-		inset: 20% 0 0;
+		top: calc(var(--cover) / 2);
+		right: 0;
+		bottom: 0;
+		left: 0;
+		z-index: -1;
 		border-radius: 30px 30px 0 0;
 		background: var(--surface-container);
 	}
-	.back {
-		position: relative;
-		align-self: flex-start;
-		display: flex;
-		margin: 10px 12px 0;
-		padding: 4px;
-		border: none;
-		background: none;
-		color: var(--on-surface);
-		cursor: pointer;
-	}
-	.content {
-		position: relative;
-		flex: 1;
-		min-height: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 20px;
-		padding: 0 20px 20px;
+	.menu {
+		position: absolute;
+		top: 6px;
+		left: 8px;
+		z-index: 1;
 	}
 	.cover-wrap {
-		flex: 4 1 0;
-		min-height: 0;
+		height: var(--cover);
 		display: flex;
 		justify-content: center;
 	}
@@ -165,7 +174,7 @@
 		text-align: center;
 	}
 	h1 {
-		font-size: 18px;
+		font-size: calc(18px * (1 - 0.4 * var(--p)));
 		font-weight: 600;
 		line-height: 1.3;
 		display: -webkit-box;
@@ -175,14 +184,25 @@
 		overflow: hidden;
 	}
 	.author {
-		font-size: 16px;
+		font-size: calc(16px * (1 - 0.4 * var(--p)));
 		color: var(--on-surface-variant);
 	}
 	.large h1 {
-		font-size: 24px;
+		font-size: calc(24px * (1 - 0.4 * var(--p)));
 	}
 	.large .author {
-		font-size: 20px;
+		font-size: calc(20px * (1 - 0.4 * var(--p)));
+	}
+	/* The info pill and reviews sit on the near-white card. */
+	.content {
+		position: relative;
+		z-index: 1;
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		padding: 20px 20px 20px;
+		background: var(--surface-container);
 	}
 	dd a {
 		color: var(--primary);
@@ -215,78 +235,38 @@
 		white-space: nowrap;
 	}
 	.reviews {
-		flex: 2 1 0;
-		min-height: 0;
 		display: flex;
 		flex-direction: column;
 		gap: 10px;
 	}
+	/* A very subtle divider between reviews. */
+	.reviews > :global(article) + :global(article) {
+		padding-top: 10px;
+		border-top: 1px solid color-mix(in srgb, var(--on-surface) 8%, transparent);
+	}
+	/* A little air above the first review, to separate it from the info pill. */
+	.reviews > :global(article:first-child) {
+		padding-top: 6px;
+	}
 	.no-reviews {
-		margin: auto 0;
+		padding: 30px 0;
 		text-align: center;
 		font-size: 18px;
 		color: var(--on-surface-variant);
 	}
-	.carousel {
-		min-height: 0;
-		display: flex;
-		align-items: center;
-		gap: 4px;
-	}
-	.nav {
-		display: flex;
-		padding: 6px;
-		border: none;
-		background: none;
-		color: var(--on-surface);
-		cursor: pointer;
-	}
-	.nav:disabled {
-		visibility: hidden;
-	}
-	/* Flutter only shows the arrows when there is more than one review. */
-	.single .nav {
-		display: none;
-	}
-	.review {
-		flex: 1;
-		min-width: 0;
-		max-height: 100%;
-		overflow-y: auto;
-		padding: 0 10px;
-	}
-	.reviewer {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		color: var(--primary);
-		font-size: 14px;
-		font-weight: 600;
-		text-decoration: none;
-	}
-	.review p {
-		margin-top: 8px;
+	.error-text {
 		font-size: 13px;
-		line-height: 1.4;
-		white-space: pre-line;
+		color: var(--error);
 	}
-	.dots {
-		display: flex;
-		justify-content: center;
-		gap: 6px;
-	}
-	.dot {
-		width: 10px;
-		height: 10px;
-		border-radius: 50%;
-		background: color-mix(in srgb, var(--primary) 25%, transparent);
-	}
-	.dot.active {
-		background: var(--primary);
-	}
+	/* Pinned at the bottom of the viewport. */
 	.actions {
+		position: sticky;
+		bottom: 0;
+		z-index: 2;
 		display: flex;
 		flex-direction: column;
 		gap: 12px;
+		padding: 12px 20px 20px;
+		background: var(--surface-container);
 	}
 </style>

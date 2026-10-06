@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import Loading from '#lib/components/Loading.svelte';
-	import { goto } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
@@ -54,7 +53,7 @@
 </script>
 
 <div class="page">
-	<PageBar title={t('Invite user')} onback={() => goto(`/app/communities/${id}?tab=members`)} />
+	<PageBar title={t('Invite user')} />
 
 	<SearchBar bind:value={search} onSearch={() => users.reset()} />
 

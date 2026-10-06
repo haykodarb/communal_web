@@ -41,7 +41,7 @@
 </script>
 
 <div class="page">
-	<PageBar title={community?.name ?? ''} onback={() => goto('/app/communities')}>
+	<PageBar title={community?.name ?? ''}>
 		{#snippet actions()}
 			{#if community}
 				<button

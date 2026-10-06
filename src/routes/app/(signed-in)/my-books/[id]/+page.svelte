@@ -15,7 +15,7 @@
 	let { data }: PageProps = $props();
 	const book = $derived<Book | null>(data.details.book);
 	const currentLoan = $derived<Loan | null>(data.details.currentLoan);
-	const reviews = $derived<Loan[]>(data.details.reviews);
+	const reviews = $derived(data.details.reviews);
 	let deleting = $state(false);
 	let error = $state('');
 	let confirmDialog: ConfirmDialog;
@@ -38,7 +38,6 @@
 	<BookDetail
 		{book}
 		{reviews}
-		onback={() => goto('/app/my-books')}
 		info={[
 			{ label: t('Added'), value: formatShortDate(book.created_at) },
 			{ label: t('Visibility'), value: book.public ? t('Public') : t('Private') },

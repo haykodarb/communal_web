@@ -1,28 +1,23 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import Icon from './Icon.svelte';
-	import { t } from '#lib/i18n.svelte.ts';
+	import BackButton from './BackButton.svelte';
 
 	// The app's AppBar (light_theme.dart: centered 18px/600 title, 30px icons):
 	// back button, centered title and optional trailing actions.
 	let {
 		title,
 		mobileTitle = false,
-		onback,
 		actions
 	}: {
 		title: string;
 		/** Only show the title on mobile, like Flutter's `Responsive.isMobile(context) ? Text(...) : null`. */
 		mobileTitle?: boolean;
-		onback: () => void;
 		actions?: Snippet;
 	} = $props();
 </script>
 
 <header class="bar">
-	<button class="icon-btn" type="button" aria-label={t('Back')} onclick={onback}>
-		<Icon name="chevron-left" size={30} />
-	</button>
+	<div class="leading"><BackButton /></div>
 	<h1 class:mobile-only={mobileTitle}>{title}</h1>
 	<div class="actions">{@render actions?.()}</div>
 </header>
@@ -49,14 +44,8 @@
 			visibility: hidden;
 		}
 	}
-	.icon-btn {
+	.leading {
 		justify-self: start;
-		display: flex;
-		padding: 4px;
-		border: none;
-		background: none;
-		color: var(--on-surface);
-		cursor: pointer;
 	}
 	.actions {
 		justify-self: end;

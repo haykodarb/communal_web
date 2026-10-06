@@ -35,7 +35,7 @@
 </script>
 
 <div class="page">
-	<PageBar title={t('Create topic')} onback={() => goto(`/app/communities/${id}?tab=discuss`)} />
+	<PageBar title={t('Create topic')} />
 
 	<form
 		class="form"

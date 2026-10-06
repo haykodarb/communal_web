@@ -35,7 +35,8 @@ export const PAGE_SIZE = {
 	network: 20,
 	friends: 30,
 	notifications: 20,
-	profileLists: 30
+	profileLists: 30,
+	bookReviews: 5
 };
 
 /** The Friends page's tabs, in order (the first is the bare URL). */
@@ -51,6 +52,8 @@ export const PROFILE_TABS = ['books', 'reviews'] as const;
 export const keys = {
 	myBooks: (userId: string) => `books:${userId}`,
 	book: (id: string) => `book:${id}`,
+	/** Shares the `book:` prefix so review changes drop it too. */
+	bookReviews: (id: string) => `book:${id}:reviews`,
 	loans: (userId: string) => `loans:${userId}`,
 	loan: (id: string) => `loan:${id}`,
 	network: () => 'network',
@@ -232,13 +235,16 @@ export const book = (userId: string, id: string, depends: Depends) =>
 			const [found, currentLoan, reviews, waitlisted] = await Promise.all([
 				getBookById(id),
 				getCurrentLoanForBook(userId, id),
-				getReviewsForBook(id),
+				list<Loan>(
+					keys.bookReviews(id),
+					PAGE_SIZE.bookReviews,
+					(page, pageSize) => getReviewsForBook(id, { page, pageSize }),
+					(loans) => avatars(loans.map((l) => l.loanee)),
+					depends
+				),
 				isOnWaitlist(userId, id)
 			]);
-			await Promise.all([
-				covers(found ? [found] : []),
-				avatars(reviews.map((l) => l.loanee))
-			]);
+			if (found) await covers([found]);
 			return { book: found, currentLoan, reviews, waitlisted };
 		},
 		depends

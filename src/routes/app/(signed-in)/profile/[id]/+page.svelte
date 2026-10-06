@@ -67,7 +67,7 @@
 </script>
 
 <div class="page">
-	<PageBar title={t('Profile')} onback={() => history.back()} />
+	<PageBar title={t('Profile')} />
 
 	{#if profile}
 		{#key profile.id}

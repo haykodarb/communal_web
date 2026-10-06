@@ -24,7 +24,7 @@
 </script>
 
 <div class="page">
-	<PageBar title={t('Edit book')} mobileTitle onback={() => goto(`/app/my-books/${id}`)} />
+	<PageBar title={t('Edit book')} mobileTitle />
 
 	{#if loading}
 		<Loading />

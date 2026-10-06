@@ -94,7 +94,7 @@
 </script>
 
 <div class="page">
-	<PageBar title={t('Edit profile')} mobileTitle onback={() => goto('/app/my-profile')} />
+	<PageBar title={t('Edit profile')} mobileTitle />
 
 	{#if profile}
 		<form

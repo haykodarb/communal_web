@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { page } from '$app/state';
 	import Loading from '#lib/components/Loading.svelte';
-	import { goto } from '$app/navigation';
+	import { afterNavigate } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import ChatComposer from '#lib/components/ChatComposer.svelte';
 	import { getMessagesWith, markMessagesRead, sendMessage } from '#lib/data/api.ts';
@@ -14,7 +14,8 @@
 	import type { PageProps } from './$types';
 
 	// MessagesSpecificPage: one conversation, newest message at the bottom. The
-	// newest page comes from the load (through the page cache).
+	// newest page comes from the load (through the page cache). The window
+	// scrolls (not an inner box), with the bar and composer pinned.
 	let { data }: PageProps = $props();
 	let chatter = $derived<Profile | null>(data.chat.chatter);
 	/** Newest first, as loaded; rendered in reverse with column-reverse. */
@@ -25,14 +26,38 @@
 	let draft = $state('');
 	let error = $state('');
 	let top = $state<HTMLElement>();
+	/** Set once the first scroll to the bottom is done, so the top sentinel doesn't load older pages before that. */
+	let settled = $state(false);
 
 	const otherId = $derived(page.params.id!);
 	const userId = $derived(data.userId);
 
-	// Opening a chat (or switching to another one) starts from its newest page.
+	/** How far the window is scrolled up from the bottom of the chat. */
+	const fromBottom = () =>
+		document.documentElement.scrollHeight - window.scrollY - window.innerHeight;
+	const scrollToBottom = () => window.scrollTo(0, document.documentElement.scrollHeight);
+
+	/** After the list changes, follow new messages if the bottom was in view (or always). */
+	async function keepBottom(always = false) {
+		const atBottom = always || fromBottom() < 80;
+		await tick();
+		if (atBottom) scrollToBottom();
+	}
+
+	// Opening a chat (or switching to another one) starts from its newest page,
+	// scrolled to the bottom.
+	let shownChat = '';
 	$effect(() => {
 		const first = data.chat.messages;
 		untrack(() => {
+			if (shownChat !== otherId) {
+				shownChat = otherId;
+				settled = false;
+				tick().then(() => {
+					scrollToBottom();
+					settled = true;
+				});
+			}
 			pageIndex = 1;
 			hasMore = first.length === 100;
 			markRead();
@@ -68,22 +93,29 @@
 					},
 					...messages
 				];
+				keepBottom();
 				markRead();
 			}
 		})
 	);
 
-	// Load older messages when scrolled to the top.
+	// Navigating here scrolls the window to the top; start at the bottom instead.
+	afterNavigate(scrollToBottom);
+
+	// Load older messages when scrolled to the top, keeping the view where it was.
 	$effect(() => {
-		if (!top) return;
+		if (!top || !settled) return;
 		const observer = new IntersectionObserver(async (entries) => {
 			if (!entries[0].isIntersecting || loadingMore || !hasMore) return;
 			loadingMore = true;
 			const older = await getMessagesWith(userId, otherId, pageIndex);
 			pageIndex += 1;
 			hasMore = older.length === 100;
+			const keep = document.documentElement.scrollHeight - window.scrollY;
 			messages = [...messages, ...older];
 			loadingMore = false;
+			await tick();
+			window.scrollTo(0, document.documentElement.scrollHeight - keep);
 		});
 		observer.observe(top);
 		return () => observer.disconnect();
@@ -127,6 +159,7 @@
 			},
 			...messages
 		];
+		keepBottom(true);
 		try {
 			const saved = await sendMessage(userId, otherId, content);
 			messages = messages.map((m) => (m.id === tempId ? saved : m));
@@ -140,51 +173,58 @@
 
 <div class="chat">
 	<!-- Flutter: the chatter's username is the AppBar title. -->
-	<PageBar title={chatter?.username ?? ''} onback={() => goto('/app/messages')} />
+	<div class="bar"><PageBar title={chatter?.username ?? ''} /></div>
 
-	<div class="scroll">
-		<ol class="messages">
-			{#each messages as message, i (message.id)}
-				{@const received = message.sender.id === otherId}
-				<li class="message" class:received>
-					<p class="bubble" class:pending={message.id.startsWith('pending-')}>{message.content}</p>
-					{#if showTime(i)}
-						<span class="meta">{formatTime(message.created_at)}</span>
-					{/if}
-					{#if i === 0 && !received && message.is_read}
-						<span class="meta">{t('Seen')}</span>
-					{/if}
-				</li>
-			{/each}
-			<li bind:this={top} class="top">
-				{#if loadingMore}<Loading size={20} inline />{/if}
+	<ol class="messages">
+		{#each messages as message, i (message.id)}
+			{@const received = message.sender.id === otherId}
+			<li class="message" class:received>
+				<p class="bubble" class:pending={message.id.startsWith('pending-')}>{message.content}</p>
+				{#if showTime(i)}
+					<span class="meta">{formatTime(message.created_at)}</span>
+				{/if}
+				{#if i === 0 && !received && message.is_read}
+					<span class="meta">{t('Seen')}</span>
+				{/if}
 			</li>
-		</ol>
+		{/each}
+		<li bind:this={top} class="top">
+			{#if loadingMore}<Loading size={20} inline />{/if}
+		</li>
+	</ol>
+
+	<div class="bottom">
+		{#if error}
+			<p class="error-text">{error}</p>
+		{/if}
+		<ChatComposer bind:value={draft} onsend={send} />
 	</div>
-
-	{#if error}
-		<p class="error-text">{error}</p>
-	{/if}
-
-	<ChatComposer bind:value={draft} onsend={send} />
 </div>
 
 <style>
 	.chat {
 		display: flex;
 		flex-direction: column;
-		height: 100vh;
-		height: 100dvh;
+		min-height: 100vh;
+		min-height: 100dvh;
 	}
-	.scroll {
-		flex: 1;
-		min-height: 0;
-		overflow-y: auto;
-		display: flex;
-		flex-direction: column-reverse;
+	/* The page scrolls; the bar and composer stay pinned over it. */
+	.bar,
+	.bottom {
+		position: sticky;
+		z-index: 5;
+		background: var(--surface);
 	}
-	/* column-reverse keeps the newest message (first in the list) at the bottom. */
+	.bar {
+		top: 0;
+	}
+	.bottom {
+		bottom: 0;
+	}
+	/* column-reverse keeps the newest message (first in the list) at the bottom,
+	   and short chats sit at the bottom of the screen. */
 	.messages {
+		flex: 1;
 		list-style: none;
 		margin: 0;
 		padding: 16px 20px;

@@ -42,7 +42,7 @@
 </script>
 
 <div class="form-page">
-	<AuthHeader title={t('Reset password')} back="/app/auth/login" />
+	<AuthHeader title={t('Reset password')} />
 
 	{#if !auth.ready}
 		<Loading />

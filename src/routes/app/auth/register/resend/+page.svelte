@@ -32,7 +32,7 @@
 </script>
 
 <div class="form-page">
-	<AuthHeader title={t('Resend confirmation')} back="/app/auth/register" />
+	<AuthHeader title={t('Resend confirmation')} />
 
 	<form
 		class="form"

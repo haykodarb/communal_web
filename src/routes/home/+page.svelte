@@ -494,7 +494,8 @@
 	   left edge, the middle one centered, the last at the right edge. */
 	.timeline {
 		list-style: none;
-		margin: 0;
+		width: 80%;
+		margin: 0 auto;
 		padding: 0;
 		display: grid;
 		grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -685,6 +686,9 @@
 				transition: transform 500ms cubic-bezier(0.65, 0, 0.35, 1);
 				transition-delay: calc(var(--step) * 500ms + 100ms);
 			}
+		}
+		.timeline {
+			width: auto;
 		}
 		.timeline li,
 		.timeline li:nth-of-type(2),

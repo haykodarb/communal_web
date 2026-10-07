@@ -1357,6 +1357,36 @@ async function leaveWaitlist_(userId: string, bookId: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Home
+
+/**
+ * The newest reviews written by your friends. Loans are readable by everyone,
+ * so this narrows to friends explicitly, and `books!inner` lets the books RLS
+ * drop reviews of books you can't see.
+ */
+export async function getFriendReviews(
+	userId: string,
+	{ page = 0, pageSize = 20 }: { page?: number; pageSize?: number } = {}
+): Promise<Loan[]> {
+	const friends = await getFriendships(userId, 'friends', { pageSize: 200 });
+	const ids = friends.map((f) => (f.requester.id === userId ? f.responder.id : f.requester.id));
+	if (ids.length === 0) return [];
+	const { data, error } = await supabase
+		.from('loans')
+		.select(
+			'*, books!inner(*, profiles(*)), loanee_profile:profiles!loanee(*), owner_profile:profiles!owner(*)'
+		)
+		.eq('accepted', true)
+		.not('review', 'is', null)
+		.in('loanee', ids)
+		.order('latest_date', { ascending: false, nullsFirst: false })
+		.order('id', { ascending: false })
+		.range(page * pageSize, page * pageSize + pageSize - 1);
+	if (error) throw error;
+	return (data ?? []).map((row) => toLoan(row as Record<string, unknown>));
+}
+
+// ---------------------------------------------------------------------------
 // Account
 
 /**

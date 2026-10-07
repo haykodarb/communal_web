@@ -6,6 +6,7 @@
 	import Sentinel from './Sentinel.svelte';
 	import TabBar from './TabBar.svelte';
 	import VerticalBookCard from './VerticalBookCard.svelte';
+	import MasonryGrid from './MasonryGrid.svelte';
 	import { getBooksForUser, getReviewsForUser } from '#lib/data/api.ts';
 	import type { Book, Loan, Profile } from '#lib/data/models.ts';
 	import { store } from '#lib/cache.ts';
@@ -109,9 +110,9 @@
 		<p class="empty">{emptyBooks}</p>
 	{:else}
 		<div class="grid">
-			{#each books.items as book (book.id)}
-				<VerticalBookCard {book} />
-			{/each}
+			<MasonryGrid items={books.items} key={(b) => b.id}>
+				{#snippet item(book)}<VerticalBookCard {book} />{/snippet}
+			</MasonryGrid>
 		</div>
 	{/if}
 	<Sentinel onvisible={books.loadMore} />
@@ -176,11 +177,8 @@
 	.tabs {
 		padding: 5px 20px 10px;
 	}
+	/* CommonListView grid: a 2-column masonry (see MasonryGrid). */
 	.grid {
-		display: grid;
-		/* CommonListView grid: 2 columns, 8px spacing. */
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 8px;
 		padding: 10px 20px;
 	}
 	.list {

@@ -72,7 +72,7 @@
 <svelte:window onclick={() => (menuFor = null)} />
 
 {#if community.isCurrentUserAdmin && requestCount > 0}
-	<a class="requests" href={`/app/communities/${community.id}/members/requests`}>
+	<a class="requests" href={`/communities/${community.id}/members/requests`}>
 		{requestCount}
 		{requestCount === 1 ? t('request pending') : t('requests pending')}
 	</a>
@@ -130,7 +130,7 @@
 						class="message"
 						type="button"
 						aria-label={t('Messages')}
-						onclick={() => goto(`/app/messages/${member.id}`)}
+						onclick={() => goto(`/messages/${member.id}`)}
 					>
 						<Icon name="comment-dots" size={20} />
 					</button>

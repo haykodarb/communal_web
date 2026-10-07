@@ -4,6 +4,7 @@
 	import StickySearch from '../StickySearch.svelte';
 	import Sentinel from '../Sentinel.svelte';
 	import VerticalBookCard from '../VerticalBookCard.svelte';
+	import MasonryGrid from '../MasonryGrid.svelte';
 	import { getBooksInCommunity } from '#lib/data/api.ts';
 	import type { Book } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
@@ -26,9 +27,9 @@
 
 {#if books.items.length > 0}
 	<div class="grid">
-		{#each books.items as book (book.id)}
-			<VerticalBookCard {book} />
-		{/each}
+		<MasonryGrid items={books.items} key={(b) => b.id}>
+			{#snippet item(book)}<VerticalBookCard {book} />{/snippet}
+		</MasonryGrid>
 	</div>
 {:else if !books.loading && !books.hasMore}
 	<p class="empty">{books.error || t('community-books-no-items')}</p>
@@ -42,11 +43,8 @@
 	.search {
 		padding: 0 10px;
 	}
+	/* CommonListView grid: a 2-column masonry (see MasonryGrid). */
 	.grid {
-		display: grid;
-		/* CommonListView grid: 2 columns, 8px spacing. */
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		gap: 8px;
 		padding: 10px 20px;
 	}
 	.empty {

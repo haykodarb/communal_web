@@ -73,7 +73,7 @@ const es: Record<string, string> = {
 	Owner: 'Dueño',
 	Loanee: 'Solicitante',
 	'Loan completed': 'Préstamo completado',
-	'Loan accepted': 'Préstamo aceptado',
+	'On loan': 'En préstamo',
 	'Loan rejected': 'Préstamo rechazado',
 	'Awaiting approval': 'Esperando aprobación',
 	Approved: 'Aceptado',
@@ -246,7 +246,7 @@ const es: Record<string, string> = {
 	'This page does not exist.': 'Esta página no existe.',
 	'Try again': 'Reintentar',
 	'Go to the home page': 'Ir a la página de inicio',
-	// Landing page (/home)
+	// Landing page (/)
 	"Log in": "Ingresar",
 	"Open Communal": "Abrir Communal",
 	"Share books with your communities.": "Compartí libros con tus comunidades.",
@@ -276,7 +276,6 @@ const es: Record<string, string> = {
 	"Designed by": "Diseñado por",
 	"Developed by": "Desarrollado por",
 	"Privacy policy": "Política de privacidad",
-	Received: 'Recibidas',
 	Sent: 'Enviadas',
 	Remove: 'Eliminar',
 	Withdraw: 'Retirar',
@@ -284,6 +283,14 @@ const es: Record<string, string> = {
 		'Todavía no tenés amigos. Buscá personas en Buscar.',
 	'You have not sent any requests.': 'No enviaste ninguna solicitud.',
 	'via {name}': 'vía {name}',
+	Home: 'Inicio',
+	'New in your network': 'Nuevo en tu red',
+	'See all': 'Ver todo',
+	'No books from your friends yet. Find people you know in Search.':
+		'Todavía no hay libros de tus amigos. Buscá gente que conozcas en Buscar.',
+	'Recent reviews from friends': 'Reseñas recientes de tus amigos',
+	'Reviews by friends': 'Reseñas de amigos',
+	'Your friends have not reviewed any books yet.': 'Tus amigos todavía no reseñaron ningún libro.',
 	'and {n} more': 'y {n} más',
 	'No books found among your friends and their friends.':
 		'No se encontraron libros entre tus amigos y sus amigos.',

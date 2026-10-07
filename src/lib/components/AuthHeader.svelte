@@ -6,7 +6,7 @@
 </script>
 
 <div class="header">
-	<BackButton size={32} menu={false} to="/app/auth" />
+	<BackButton size={32} menu={false} to="/auth" />
 	<h1>{title}</h1>
 </div>
 

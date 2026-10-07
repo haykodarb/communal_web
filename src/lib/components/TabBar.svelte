@@ -18,7 +18,7 @@
 			type="button"
 			onclick={() => onchange(i)}
 		>
-			{tab}
+			<span class="label">{tab}</span>
 		</button>
 	{/each}
 </div>
@@ -51,5 +51,34 @@
 		font-weight: 600;
 		font-size: 16px;
 		cursor: pointer;
+	}
+	/* No hover or press layer (app.css): it would fight the sliding selection. */
+	.tab:hover,
+	.tab:active {
+		box-shadow: none;
+	}
+	/* Hovering an unselected tab draws an underline under the label from left
+	   to right; selecting it (the class change) draws it back to the left while
+	   the pill slides over. */
+	.label {
+		position: relative;
+	}
+	.label::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: -4px;
+		height: 2px;
+		border-radius: 1px;
+		background: currentColor;
+		transform: scaleX(0);
+		transform-origin: left;
+		transition: transform 200ms var(--ease-standard);
+	}
+	@media (hover: hover) {
+		.tab:not(.active):hover .label::after {
+			transform: scaleX(1);
+		}
 	}
 </style>

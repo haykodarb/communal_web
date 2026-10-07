@@ -2,7 +2,7 @@
 	"name": "Communal",
 	"short_name": "Communal",
 	"description": "Share books with your friends and their friends.",
-	"start_url": "/app",
+	"start_url": "/home",
 	"display": "standalone",
 	"background_color": "#f2e9e1",
 	"theme_color": "#f2e9e1",

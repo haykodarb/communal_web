@@ -7,7 +7,7 @@
 	let { book, note }: { book: Book; note?: string } = $props();
 </script>
 
-<a class="vcard" href={bookHref(book)}>
+<a class="vcard pressable" href={bookHref(book)}>
 	<div class="cover">
 		<CoverImage bucket="book_covers" path={book.image_path} alt={book.title} />
 	</div>

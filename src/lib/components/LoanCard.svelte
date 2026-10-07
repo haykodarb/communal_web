@@ -14,7 +14,7 @@
 		loan.returned
 			? t('Loan completed')
 			: loan.accepted
-				? t('Loan accepted')
+				? t('On loan')
 				: loan.rejected
 					? t('Loan rejected')
 					: t('Awaiting approval')
@@ -42,7 +42,7 @@
 	}
 </script>
 
-<a class="card" href={`/app/loans/${loan.id}`}>
+<a class="card pressable" href={`/loans/${loan.id}`}>
 	<div class="body">
 		<span class="title">{loan.book.title}</span>
 		<span class="author">{loan.book.author}</span>
@@ -61,10 +61,12 @@
 
 <style>
 	.card {
+		--padding: 20px;
+		--radius: 10px;
 		display: flex;
 		align-items: center;
-		padding: 20px;
-		border-radius: 10px;
+		padding: var(--padding);
+		border-radius: var(--radius);
 		background: var(--surface-container);
 		text-decoration: none;
 		color: inherit;
@@ -126,11 +128,13 @@
 		font-size: 12px;
 		color: var(--on-surface-variant);
 	}
+	/* Concentric with the card (its radius minus its padding), 5px at least. */
 	.cover {
-		width: 90px;
-		height: 120px;
-		flex: 0 0 90px;
+		width: 96px;
+		height: 128px;
+		flex: 0 0 96px;
 		margin-left: 10px;
+		border-radius: max(5px, var(--radius) - var(--padding));
 		overflow: hidden;
 	}
 </style>

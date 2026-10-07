@@ -50,14 +50,10 @@
 		font-size: 20px;
 		font-weight: 600;
 		cursor: pointer;
-		transition:
-			opacity 150ms ease,
-			background-color 150ms ease,
-			filter 120ms ease,
-			transform 100ms ease;
+		transition: var(--state-transition);
 	}
 	.btn:active:not(:disabled) {
-		transform: scale(0.99);
+		transform: scale(0.98);
 	}
 	.btn:disabled {
 		opacity: 0.55;

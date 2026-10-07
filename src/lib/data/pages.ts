@@ -6,6 +6,7 @@ import {
 	getChats,
 	getCurrentLoanForBook,
 	getFriendships,
+	getFriendReviews,
 	getFriendshipWith,
 	getLoanById,
 	getLoansForUser,
@@ -36,6 +37,7 @@ export const PAGE_SIZE = {
 	friends: 30,
 	notifications: 20,
 	profileLists: 30,
+	friendReviews: 20,
 	bookReviews: 5
 };
 
@@ -65,7 +67,9 @@ export const keys = {
 	me: (userId: string) => `me:${userId}`,
 	profile: (id: string) => `profile:${id}`,
 	profileBooks: (id: string) => `profile-books:${id}`,
-	profileReviews: (id: string) => `profile-reviews:${id}`
+	profileReviews: (id: string) => `profile-reviews:${id}`,
+	/** Shares the `profile-reviews:` prefix so review changes drop it too. */
+	friendReviews: (userId: string) => `profile-reviews:friends:${userId}`
 };
 
 const covers = (books: Book[]) =>
@@ -260,3 +264,41 @@ export const loan = (id: string, depends: Depends) =>
 		},
 		depends
 	);
+
+/** Reviews written by your friends, newest first (Home and its own page). */
+export const friendReviews = (userId: string, depends: Depends) =>
+	list<Loan>(
+		keys.friendReviews(userId),
+		PAGE_SIZE.friendReviews,
+		(page, pageSize) => getFriendReviews(userId, { page, pageSize }),
+		async (loans) => {
+			await Promise.all([covers(loans.map((l) => l.book)), avatars(loans.map((l) => l.loanee))]);
+		},
+		depends
+	);
+
+/**
+ * The home page, built from separately cached pieces whose keys share the
+ * prefixes that mutations and realtime changes already drop (`loans:`,
+ * `network`, `profile-reviews:`), so each piece refreshes
+ * when what it shows changes.
+ */
+export const home = (userId: string, depends: Depends) =>
+	Promise.all([
+		// Books out right now, in both directions.
+		cached(
+			`${keys.loans(userId)}:active`,
+			async () => {
+				const rows = await getLoansForUser(userId, {
+					allStatus: false,
+					accepted: true,
+					pageSize: 20
+				});
+				await covers(rows.map((l) => l.book));
+				return rows;
+			},
+			depends
+		),
+		networkBooks(depends),
+		friendReviews(userId, depends)
+	]).then(([activeLoans, network, reviews]) => ({ activeLoans, network, reviews }));

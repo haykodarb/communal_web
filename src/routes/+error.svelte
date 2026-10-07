@@ -12,7 +12,7 @@
 		<p class="message">
 			{page.status === 404 ? t('This page does not exist.') : t(page.error?.message ?? '')}
 		</p>
-		<a href="/home">{t('Go to the home page')}</a>
+		<a href="/">{t('Go to the home page')}</a>
 	</div>
 </FillCenter>
 

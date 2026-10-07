@@ -3,8 +3,12 @@
 	// `Icons.*`. Atlas glyphs render from the same fonts (static/fonts/atlas);
 	// Material ones are drawn from their 24px SVG paths (Apache-2.0).
 
-	/** name -> [Atlas font family suffix, code point], from atlas_icons.dart. */
-	const ATLAS: Record<string, [string, number]> = {
+	/**
+	 * name -> [Atlas font family suffix, code point, optional scale], from
+	 * atlas_icons.dart. The scale enlarges a glyph that draws smaller than its
+	 * neighbours (keeping its proportions and its 1em slot).
+	 */
+	const ATLAS: Record<string, [string, number, number?]> = {
 		account: ['basic-ui', 0xe96d], // drawer Profile, avatar fallback
 		user: ['basic-ui', 0xe96d],
 		'account-arrows': ['marketing', 0xe946], // drawer Loans
@@ -12,6 +16,9 @@
 		'users-arrows': ['marketing', 0xe987], // loan notifications
 		'add-messages': ['content-box', 0xe967], // new topic FAB
 		bell: ['thanksgiving', 0xe937],
+		// drawer Home; the house is wide and short (about 26x22.6 at 1em), so it
+		// is scaled up to roughly the height of the other drawer icons.
+		home: ['basic-ui', 0xe997, 1.12],
 		book: ['school', 0xe933], // community Books tab
 		library: ['school', 0xe945], // drawer My Books
 		camera: ['travel', 0xe953],
@@ -64,6 +71,7 @@
 		class="atlas"
 		style:font-family="'Atlas-{atlas[0]}'"
 		style:font-size="{size}px"
+		style:transform={atlas[2] ? `scale(${atlas[2]})` : undefined}
 		aria-hidden="true">{String.fromCodePoint(atlas[1])}</span
 	>
 {:else}

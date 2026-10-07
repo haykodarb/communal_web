@@ -56,6 +56,9 @@
 		background: var(--primary);
 		color: var(--on-primary);
 	}
+	.pill:active:not(:disabled) {
+		transform: scale(0.95);
+	}
 	.pill.icon-only {
 		padding: 0;
 	}

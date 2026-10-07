@@ -104,18 +104,63 @@ input {
 	font-family: inherit;
 }
 
-/* A subtle hover on every button: darken on light themes, lighten on dark.
-   (The Button component sets its own transition, so it also lists `filter`.) */
-button:not(:disabled) {
-	transition: filter 120ms ease;
+/* Interaction states, Material-style. Hovering lays a translucent "state
+   layer" of the element's own text colour over it, pressing deepens it, and
+   keyboard focus gets a ring. The layer is an inset shadow, so it follows the
+   border radius and works the same on filled, tonal, outlined and transparent
+   buttons, in both themes. Link cards opt in with `.pressable` (a lighter
+   layer). Components that set their own `transition` or `box-shadow` repeat
+   these (see Button, Fab). */
+:root {
+	--state-hover: 8%;
+	--state-press: 14%;
+	--ease-standard: cubic-bezier(0.2, 0, 0, 1);
+	--state-transition:
+		box-shadow 150ms var(--ease-standard),
+		transform 150ms var(--ease-standard),
+		background-color 150ms ease,
+		color 150ms ease,
+		opacity 150ms ease;
+}
+
+button,
+.pressable {
+	transition: var(--state-transition);
+	-webkit-tap-highlight-color: transparent;
+}
+
+.pressable {
+	--state-hover: 4%;
+	--state-press: 7%;
 }
 
 @media (hover: hover) {
-	button:not(:disabled):hover {
-		filter: brightness(0.93);
+	button:not(:disabled):hover,
+	.pressable:hover {
+		box-shadow: inset 0 0 0 100vmax
+			color-mix(in srgb, currentColor var(--state-hover), transparent);
 	}
-	[data-theme='dark'] button:not(:disabled):hover {
-		filter: brightness(1.15);
+}
+
+button:not(:disabled):active,
+.pressable:active {
+	box-shadow: inset 0 0 0 100vmax
+		color-mix(in srgb, currentColor var(--state-press), transparent);
+	transition-duration: 60ms;
+}
+
+:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+
+/* Respect the system's "reduce motion" setting: changes happen at once. */
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0ms !important;
+		animation-duration: 0ms !important;
 	}
 }
 

@@ -7,7 +7,7 @@
 	let { book }: { book: Book } = $props();
 </script>
 
-<a class="card" href={bookHref(book)}>
+<a class="card pressable" href={bookHref(book)}>
 	<div class="cover">
 		<CoverImage bucket="book_covers" path={book.image_path} alt={book.title} />
 	</div>

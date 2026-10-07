@@ -42,7 +42,21 @@
 		align-items: center;
 		justify-content: space-between;
 	}
+	/* Instead of the shared state layer (app.css), hovering puts a halo around
+	   the knob (which grows a hair); pressing strengthens it. Keyboard focus
+	   shows the halo too. */
+	.switch:hover,
+	.switch:active {
+		box-shadow: none;
+	}
+	.switch:focus-visible {
+		outline: none;
+	}
 	.knob {
+		--x: 0px;
+		--scale: 1;
+		--halo: 0px;
+		--halo-strength: 15%;
 		position: absolute;
 		top: 10px;
 		left: 10px;
@@ -50,10 +64,28 @@
 		height: 40px;
 		border-radius: 50%;
 		background: var(--primary);
-		transition: transform 200ms ease;
+		transform: translateX(var(--x)) scale(var(--scale));
+		box-shadow: 0 0 0 var(--halo)
+			color-mix(in srgb, var(--primary) var(--halo-strength), transparent);
+		transition:
+			transform 200ms ease,
+			box-shadow 150ms ease;
 	}
 	.knob.right {
-		transform: translateX(40px);
+		--x: 40px;
+	}
+	@media (hover: hover) {
+		.switch:hover .knob {
+			--scale: 1.04;
+			--halo: 6px;
+		}
+	}
+	.switch:focus-visible .knob {
+		--halo: 6px;
+	}
+	.switch:active .knob {
+		--halo: 8px;
+		--halo-strength: 25%;
 	}
 	.opt {
 		position: relative;

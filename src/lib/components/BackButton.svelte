@@ -50,6 +50,7 @@
 		display: flex;
 		padding: 4px;
 		border: none;
+		border-radius: 50%;
 		background: none;
 		color: var(--on-surface);
 		cursor: pointer;

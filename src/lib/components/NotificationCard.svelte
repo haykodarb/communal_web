@@ -69,8 +69,8 @@
 	);
 
 	const href = $derived.by(() => {
-		if (table === 'loans' && notification.loan) return `/app/loans/${notification.loan.id}`;
-		if (table === 'books' && notification.book) return `/app/book/${notification.book.id}`;
+		if (table === 'loans' && notification.loan) return `/loans/${notification.loan.id}`;
+		if (table === 'books' && notification.book) return `/book/${notification.book.id}`;
 		if (table === 'friendships' && event === 'accepted' && notification.sender)
 			return profileHref(notification.sender);
 		return null;

@@ -82,7 +82,7 @@
 	</nav>
 
 	<div class="spacer"></div>
-	<div class="version">{t('Web')}</div>
+	<div class="version">Version: {__APP_VERSION__}</div>
 	<button class="logout" type="button" onclick={logout}>
 		<Icon name="logout" size={26} />
 		<span>{t('Logout')}</span>

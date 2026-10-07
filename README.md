@@ -211,3 +211,20 @@ its cover).
 Note: `notifications` has `loan` and `friendship` columns but no membership
 column, so community-invite notifications carry no membership and can't be
 answered from the notifications list (in either app).
+
+## Deploying
+
+`scripts/install-hooks.sh` makes every commit or merge on `main` run
+`scripts/deploy.sh`, which deploys to communal.ar only when `package.json`'s
+`version` differs from the live release's. So bump the version to ship.
+
+A deploy type-checks (`npm run check`) and builds, then uploads the build to its
+own folder under `/home/communal/releases/` and switches the `web` symlink
+(nginx's root) to it in one step. The last 5 releases are kept.
+
+```sh
+scripts/deploy.sh --force      # deploy even if the version is unchanged
+scripts/rollback.sh --list     # releases, newest first, live one marked
+scripts/rollback.sh            # go back to the previous release
+scripts/rollback.sh <release>  # or to a specific one
+```

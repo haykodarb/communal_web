@@ -8,4 +8,4 @@ git config core.hooksPath .githooks
 chmod +x .githooks/* scripts/*.sh
 
 echo "Installed git hooks (core.hooksPath=.githooks)."
-echo "main commits and merges will now deploy to ${DEPLOY_TARGET:-root@50.116.38.56:/home/communal/web/}."
+echo "main commits and merges will now deploy to ${DEPLOY_HOST:-root@50.116.38.56}:${DEPLOY_DIR:-/home/communal}."

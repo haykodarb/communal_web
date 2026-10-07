@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from './Icon.svelte';
 	import { peekSignedUrl, signedStorageUrl } from '#lib/data/api.ts';
+	import { fadeInWhenLoaded } from '#lib/motion.ts';
 
 	let {
 		bucket,
@@ -33,7 +34,7 @@
 </script>
 
 {#if url}
-	<img class="cover" class:rounded src={url} {alt} loading="lazy" />
+	<img class="cover" class:rounded src={url} {alt} loading="lazy" use:fadeInWhenLoaded />
 {:else}
 	<div class="cover placeholder" class:rounded>
 		{#if !failed}

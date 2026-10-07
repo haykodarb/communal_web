@@ -13,6 +13,8 @@
 		unsubscribeFromDatabase
 	} from '#lib/realtime.ts';
 	import { unread } from '#lib/unread.svelte.ts';
+	import { fade, fly } from '#lib/motion.ts';
+	import { pageTransitions } from '#lib/page-transitions.ts';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -38,6 +40,8 @@
 	// Only the drawer destinations get the menu app bar on mobile; pushed pages
 	// (books, loans, chats, ...) show their own bar with a back button.
 	const topLevel = $derived(page.url.pathname in titles);
+
+	pageTransitions((path) => path in titles);
 
 	$effect(() => {
 		if (auth.ready && !auth.session) {
@@ -106,10 +110,11 @@
 				<button
 					class="scrim"
 					type="button"
+					transition:fade={{ duration: 200 }}
 					aria-label={t('Close')}
 					onclick={() => (drawer.open = false)}
 				></button>
-				<aside class="drawer-panel">
+				<aside class="drawer-panel" transition:fly={{ x: -320, opacity: 1, duration: 250 }}>
 					<Drawer onNavigate={() => (drawer.open = false)} />
 				</aside>
 			{/if}
@@ -182,6 +187,8 @@
 		height: 100vh;
 		position: sticky;
 		top: 0;
+		/* Stays still during page transitions (app.css). */
+		view-transition-name: drawer;
 		border-right: 1px solid
 			color-mix(in srgb, var(--on-surface-variant) 50%, transparent);
 		border-left: 1px solid

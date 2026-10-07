@@ -1,8 +1,7 @@
 <script lang="ts">
-	import Avatar from './Avatar.svelte';
+	import UserLink from './UserLink.svelte';
 	import type { Profile } from '#lib/data/models.ts';
 	import { i18n } from '#lib/i18n.svelte.ts';
-	import { profileHref } from '#lib/links.ts';
 
 	// One review in the book page's list: author, optional date and the text,
 	// collapsed to 4 lines and expanded on click (`plain` is the book owner's own
@@ -29,10 +28,7 @@
 
 <article class="review" class:plain>
 	<div class="head">
-		<a class="reviewer" href={profileHref(author)}>
-			<Avatar profile={author} size={30} />
-			<span>{author.username}</span>
-		</a>
+		<UserLink profile={author} size={30} />
 		{#if dateText}<time class="date">{dateText}</time>{/if}
 	</div>
 	<button
@@ -60,21 +56,8 @@
 		align-items: center;
 		justify-content: space-between;
 		gap: 8px;
-	}
-	.reviewer {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		min-width: 0;
+		/* The reviewer's name (UserLink). */
 		font-size: 14px;
-		font-weight: 600;
-		color: var(--primary);
-		text-decoration: none;
-	}
-	.reviewer span {
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
 	}
 	.date {
 		flex: 0 0 auto;
@@ -88,8 +71,8 @@
 		border: none;
 		background: none;
 		font: inherit;
-		font-size: 13px;
-		line-height: 1.4;
+		font-size: 14px;
+		line-height: 1.5;
 		text-align: left;
 		white-space: pre-line;
 		color: inherit;

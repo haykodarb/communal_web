@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { appear, leave } from '#lib/motion.ts';
 	import { page } from '$app/state';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import Loading from '#lib/components/Loading.svelte';
+	import Skeleton from '#lib/components/Skeleton.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
 	import TabBar from '#lib/components/TabBar.svelte';
@@ -122,33 +124,35 @@
 
 	{#if current.items.length > 0}
 		<div class="list">
-			{#each current.items as friendship (friendship.id)}
-				<UserRow profile={other(friendship)}>
-					{#snippet actions()}
-						{#if tab === 0}
-							<PillButton
-								icon="user-minus"
-								label={t('Remove')}
-								loading={busyId === friendship.id}
-								onclick={() => remove(friendship)}
-							/>
-						{:else if tab === 1}
-							<PillButton
-								icon="check"
-								label={t('Accept')}
-								filled
-								loading={busyId === friendship.id}
-								onclick={() => accept(friendship)}
-							/>
-							<PillButton
-								icon="x"
-								label={t('Reject')}
-								loading={busyId === friendship.id}
-								onclick={() => reject(friendship)}
-							/>
-						{/if}
-					{/snippet}
-				</UserRow>
+			{#each current.items as friendship, i (friendship.id)}
+				<div in:appear={{ index: i % PAGE_SIZE.friends }} out:leave>
+					<UserRow profile={other(friendship)}>
+						{#snippet actions()}
+							{#if tab === 0}
+								<PillButton
+									icon="user-minus"
+									label={t('Remove')}
+									loading={busyId === friendship.id}
+									onclick={() => remove(friendship)}
+								/>
+							{:else if tab === 1}
+								<PillButton
+									icon="check"
+									label={t('Accept')}
+									filled
+									loading={busyId === friendship.id}
+									onclick={() => accept(friendship)}
+								/>
+								<PillButton
+									icon="x"
+									label={t('Reject')}
+									loading={busyId === friendship.id}
+									onclick={() => reject(friendship)}
+								/>
+							{/if}
+						{/snippet}
+					</UserRow>
+				</div>
 			{/each}
 		</div>
 	{:else if current.error}
@@ -158,7 +162,11 @@
 	{/if}
 
 	{#if current.loading || (current.items.length === 0 && current.hasMore)}
-		<Loading fill={current.items.length === 0} />
+		{#if current.items.length === 0}
+			<div class="list"><Skeleton kind="row" count={6} /></div>
+		{:else}
+			<Loading fill={false} />
+		{/if}
 	{/if}
 	{#key tab}
 		<Sentinel onvisible={current.loadMore} />

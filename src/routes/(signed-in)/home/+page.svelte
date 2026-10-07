@@ -2,6 +2,7 @@
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import Loading from '#lib/components/Loading.svelte';
+	import Skeleton from '#lib/components/Skeleton.svelte';
 	import LoanCard from '#lib/components/LoanCard.svelte';
 	import MasonryGrid from '#lib/components/MasonryGrid.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
@@ -45,9 +46,6 @@
 		const fresh = data.network;
 		untrack(() => network.seed(fresh));
 	});
-
-	const note = (book: NetworkBook) =>
-		book.via ? t('via {name}').replace('{name}', book.via.username) : undefined;
 </script>
 
 <div class="page">
@@ -82,7 +80,7 @@
 		<h2>{t('New in your network')}</h2>
 		{#if network.items.length > 0}
 			<MasonryGrid items={network.items} key={(b) => b.id} columns={3}>
-				{#snippet item(book)}<VerticalBookCard {book} note={note(book)} />{/snippet}
+				{#snippet item(book)}<VerticalBookCard {book} />{/snippet}
 			</MasonryGrid>
 		{:else if network.error}
 			<p class="error-text">{network.error}</p>
@@ -93,7 +91,11 @@
 			</div>
 		{/if}
 		{#if network.loading}
-			<Loading fill={network.items.length === 0} />
+			{#if network.items.length === 0}
+				<Skeleton kind="grid" count={6} />
+			{:else}
+				<Loading fill={false} />
+			{/if}
 		{/if}
 		<Sentinel onvisible={network.loadMore} />
 	</section>

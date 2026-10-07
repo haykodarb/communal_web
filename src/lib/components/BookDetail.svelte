@@ -1,3 +1,17 @@
+<script lang="ts" module>
+	import type { Profile } from '#lib/data/models.ts';
+
+	/** One cell of the info pill under the title. */
+	export interface InfoItem {
+		label: string;
+		value: string;
+		/** Shows a person (avatar and name, linking to them) instead of `value`. */
+		person?: Profile;
+		/** Shows the value as a coloured status badge. */
+		tone?: 'available' | 'loaned' | 'requested';
+	}
+</script>
+
 <script lang="ts">
 	import { onMount, untrack, type Snippet } from 'svelte';
 	import BackButton from './BackButton.svelte';
@@ -5,6 +19,7 @@
 	import Loading from './Loading.svelte';
 	import ReviewItem from './ReviewItem.svelte';
 	import Sentinel from './Sentinel.svelte';
+	import UserLink from './UserLink.svelte';
 	import { store } from '#lib/cache.ts';
 	import { getReviewsForBook } from '#lib/data/api.ts';
 	import type { Book, Loan } from '#lib/data/models.ts';
@@ -13,8 +28,10 @@
 	import { createPaged, type PagedState } from '#lib/paged.svelte.ts';
 
 	// Shared layout of BookOwnedPage / BookForeignPage. The page scrolls as a
-	// whole: the cover and title stay (sticky) and shrink to a point as you
-	// scroll, the info row scrolls away and the action buttons stay pinned.
+	// whole: the cover, title and info pill scroll away, and once the title is
+	// out of view a compact bar (back, a thumbnail, title and author) takes over
+	// at the top, so the reviews get most of the screen. The action buttons stay
+	// pinned at the bottom.
 	let {
 		book,
 		reviews,
@@ -25,7 +42,7 @@
 		book: Book;
 		/** First page of the completed loans with a review (from the page cache). */
 		reviews: PagedState<Loan>;
-		info: { label: string; value: string; href?: string }[];
+		info: InfoItem[];
 		/** BookForeignPage uses a bigger title (24/20 vs 18/16). */
 		large?: boolean;
 		actions: Snippet;
@@ -52,21 +69,31 @@
 		!book.review && paged.items.length === 0 && !paged.loading && !paged.hasMore
 	);
 
-	// 0 (expanded) to 1 (collapsed): the header shrinks over one full page of
-	// scrolling; the elevation shadow ramps up much sooner.
-	let progress = $state(0);
-	let shadow = $state(0);
+	/** The compact bar's height; it shows once the title has gone under it. */
+	const BAR_HEIGHT = 56;
+	let titleEl: HTMLElement;
+	let compact = $state(false);
 	const onScroll = () => {
-		const y = window.scrollY;
-		progress = Math.min(1, Math.max(0, y / window.innerHeight));
-		shadow = Math.min(1, Math.max(0, y / 60));
+		if (titleEl) compact = titleEl.getBoundingClientRect().bottom < BAR_HEIGHT;
 	};
 	onMount(onScroll);
 </script>
 
 <svelte:window onscroll={onScroll} />
 
-<div class="detail" style:--p={progress} style:--s={shadow}>
+<div class="detail" style:--bar={`${BAR_HEIGHT}px`}>
+	<!-- Takes no space; overlays the top of the page once the title is gone. -->
+	<div class="bar" class:shown={compact} aria-hidden={!compact} inert={!compact}>
+		<BackButton />
+		<span class="thumb">
+			<CoverImage bucket="book_covers" path={book.image_path} alt="" />
+		</span>
+		<span class="bar-text">
+			<span class="bar-title">{book.title}</span>
+			<span class="bar-author">{book.author}</span>
+		</span>
+	</div>
+
 	<header class="header">
 		<div class="menu"><BackButton /></div>
 
@@ -74,7 +101,7 @@
 			<CoverImage bucket="book_covers" path={book.image_path} alt={book.title} />
 		</div>
 
-		<div class="title" class:large>
+		<div class="title" class:large bind:this={titleEl}>
 			<h1>{book.title}</h1>
 			<p class="author">{book.author}</p>
 		</div>
@@ -86,13 +113,20 @@
 				<div>
 					<dt>{item.label}</dt>
 					<dd>
-						{#if item.href}<a href={item.href}>{item.value}</a>{:else}{item.value}{/if}
+						{#if item.tone}
+							<span class="badge {item.tone}"><span class="dot"></span>{item.value}</span>
+						{:else if item.person}
+							<UserLink profile={item.person} />
+						{:else}
+							{item.value}
+						{/if}
 					</dd>
 				</div>
 			{/each}
 		</dl>
 
-		<section class="reviews" aria-label={t('Reviews')}>
+		<h2 class="reviews-heading" id="reviews-heading">{t('Reviews')}</h2>
+		<section class="reviews" aria-labelledby="reviews-heading">
 			{#if empty}
 				<p class="no-reviews">{t('No reviews')}</p>
 			{:else}
@@ -118,13 +152,9 @@
 
 <style>
 	.detail {
-		/* 0 (fully expanded) to 1 (collapsed); set from the page scroll. */
-		--p: 0;
-		/* Header elevation cue, ramped up much faster than --p. */
-		--s: 0;
-		/* Space above the cover, and the cover's height as the header collapses. */
+		/* Space above the cover, and the cover's height. */
 		--cover-gap: 5vh;
-		--cover: calc(46dvh * (1 - 0.4 * var(--p)));
+		--cover: 46dvh;
 		position: relative;
 		min-height: 100vh;
 		min-height: 100dvh;
@@ -132,23 +162,71 @@
 		flex-direction: column;
 		background: var(--surface);
 	}
-	/* Sticky collapsing header: cover + title stay, shrinking to a point. The
-	   beige shows behind the cover's top half; a rounded card layer starts at the
-	   cover's midpoint (tracking the shrink) and masks the content sliding under. */
-	.header {
+	/* The compact bar: sticky at the top but taking no room (the negative
+	   margin), hidden until the title scrolls under it, then fading and sliding
+	   in with a hairline and soft shadow so the reviews pass under it. */
+	.bar {
 		position: sticky;
 		top: 0;
+		z-index: 3;
+		height: var(--bar);
+		margin-bottom: calc(-1 * var(--bar));
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 0 16px 0 8px;
+		background: var(--surface-container);
+		box-shadow:
+			0 1px 0 color-mix(in srgb, var(--on-surface) 8%, transparent),
+			0 2px 10px color-mix(in srgb, var(--shadow) 50%, transparent);
+		opacity: 0;
+		transform: translateY(-8px);
+		pointer-events: none;
+		transition:
+			opacity 180ms var(--ease-standard),
+			transform 180ms var(--ease-standard);
+	}
+	.bar.shown {
+		opacity: 1;
+		transform: none;
+		pointer-events: auto;
+	}
+	.thumb {
+		flex: 0 0 30px;
+		height: 40px;
+		border-radius: 4px;
+		overflow: hidden;
+	}
+	.bar-text {
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+	}
+	.bar-title,
+	.bar-author {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.bar-title {
+		font-size: 14px;
+		font-weight: 600;
+		line-height: 1.3;
+	}
+	.bar-author {
+		font-size: 12px;
+		color: var(--on-surface-variant);
+	}
+	/* The cover and title scroll away with the page. The beige shows behind the
+	   cover's top half; the near-white card starts at its midpoint. */
+	.header {
+		position: relative;
 		z-index: 2;
 		display: flex;
 		flex-direction: column;
-		gap: calc(20px - 10px * var(--p));
+		gap: 20px;
 		padding: var(--cover-gap) 20px 0;
 		background: var(--surface);
-		/* Elevation cue (hairline + soft shadow) that fades in quickly as you
-		   scroll, so the list clearly passes under the header. */
-		box-shadow:
-			0 2px 0 color-mix(in srgb, var(--on-surface) calc(8% * var(--s)), transparent),
-			0 2px 10px color-mix(in srgb, var(--shadow) calc(50% * var(--s)), transparent);
 	}
 	.header::before {
 		content: '';
@@ -185,7 +263,7 @@
 		text-align: center;
 	}
 	h1 {
-		font-size: calc(18px * (1 - 0.3 * var(--p)));
+		font-size: 18px;
 		font-weight: 600;
 		line-height: 1.3;
 		display: -webkit-box;
@@ -195,14 +273,14 @@
 		overflow: hidden;
 	}
 	.author {
-		font-size: calc(16px * (1 - 0.3 * var(--p)));
+		font-size: 16px;
 		color: var(--on-surface-variant);
 	}
 	.large h1 {
-		font-size: calc(24px * (1 - 0.3 * var(--p)));
+		font-size: 24px;
 	}
 	.large .author {
-		font-size: calc(20px * (1 - 0.3 * var(--p)));
+		font-size: 20px;
 	}
 	/* The info pill and reviews sit on the near-white card. */
 	.content {
@@ -215,46 +293,93 @@
 		padding: 20px 20px 0;
 		background: var(--surface-container);
 	}
-	dd a {
-		color: var(--primary);
-		text-decoration: none;
-	}
-	/* Flutter: 65px pill, radius 40, three centered columns. */
+	/* Three centred cells in a faintly outlined pill (no fill), separated by
+	   faint dividers. */
 	.info {
 		flex: 0 0 65px;
 		margin: 0;
-		padding: 0 20px;
-		border-radius: 40px;
-		background: var(--surface);
+		padding: 0 12px;
+		border: 1px solid color-mix(in srgb, var(--on-surface) 14%, transparent);
+		border-radius: 10px;
 		display: flex;
 		align-items: center;
 	}
-	.info div {
+	.info > div {
+		position: relative;
 		flex: 1;
 		min-width: 0;
 		text-align: center;
 	}
+	/* Faint dividers between the cells. */
+	.info > div + div::before {
+		content: '';
+		position: absolute;
+		top: 18%;
+		bottom: 18%;
+		left: 0;
+		width: 1px;
+		background: color-mix(in srgb, var(--on-surface) 12%, transparent);
+	}
+	/* Small caps-style labels, so the values read first. */
 	dt {
-		font-size: 12px;
-		color: var(--on-surface-variant);
+		margin-bottom: 4px;
+		font-size: 11px;
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: color-mix(in srgb, var(--on-surface-variant) 85%, transparent);
 	}
 	dd {
 		margin: 0;
-		font-size: 16px;
+		padding: 0 6px;
+		font-size: 15px;
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
+	/* Status: a dot and the word on a tinted chip (BookCard's colours). */
+	.badge {
+		--tone: #7dae6b;
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 24px;
+		padding: 0 10px;
+		border-radius: 12px;
+		vertical-align: middle;
+		font-size: 13px;
+		font-weight: 500;
+		background: color-mix(in srgb, var(--tone) 22%, transparent);
+	}
+	.badge.loaned {
+		--tone: var(--tertiary);
+	}
+	.badge.requested {
+		--tone: var(--primary);
+	}
+	.dot {
+		width: 7px;
+		height: 7px;
+		flex: 0 0 7px;
+		border-radius: 50%;
+		background: var(--tone);
+	}
+	/* Separates the reviews from the book's facts above. */
+	.reviews-heading {
+		margin-top: 14px;
+		font-size: 16px;
+		font-weight: 600;
+	}
 	.reviews {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 14px;
 		/* Separation from the pinned CTA row. */
 		padding-bottom: 20px;
 	}
 	/* A very subtle divider between reviews. */
 	.reviews > :global(article) + :global(article) {
-		padding-top: 10px;
+		padding-top: 14px;
 		border-top: 1px solid color-mix(in srgb, var(--on-surface) 8%, transparent);
 	}
 	/* A little air above the first review, to separate it from the info pill. */

@@ -2,6 +2,7 @@
 	import { tick, untrack } from 'svelte';
 	import { page } from '$app/state';
 	import Loading from '#lib/components/Loading.svelte';
+	import { fly } from '#lib/motion.ts';
 	import { afterNavigate } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import ChatComposer from '#lib/components/ChatComposer.svelte';
@@ -178,7 +179,14 @@
 	<ol class="messages">
 		{#each messages as message, i (message.id)}
 			{@const received = message.sender.id === otherId}
-			<li class="message" class:received>
+			{@const fresh = i === 0 && (received || message.id.startsWith('pending-'))}
+			<!-- A new message (theirs arriving, or yours while it sends) slides in from
+			     its side; older pages and the saved copy of yours don't move. -->
+			<li
+				class="message"
+				class:received
+				in:fly={{ x: received ? -24 : 24, duration: fresh ? 220 : 0 }}
+			>
 				<p class="bubble" class:pending={message.id.startsWith('pending-')}>{message.content}</p>
 				{#if showTime(i)}
 					<span class="meta">{formatTime(message.created_at)}</span>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { leave } from '#lib/motion.ts';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
@@ -80,7 +81,7 @@
 		<ul class="list">
 			{#each chats as chat (chat.id)}
 				{@const other = chatter(chat)}
-				<li class="row">
+				<li class="row" out:leave>
 					<a class="chat pressable" href={`/messages/${other.id}`}>
 						<Avatar profile={other} size={50} />
 						<div class="body">

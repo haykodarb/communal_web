@@ -6,3 +6,12 @@ export function formatShortDate(date: string): string {
 		year: '2-digit'
 	}).format(new Date(date));
 }
+
+/** "Jan 27, 2026" / "27 ene 2026": a date that reads naturally in the UI language. */
+export function formatMediumDate(date: string, locale: 'en' | 'es'): string {
+	return new Intl.DateTimeFormat(locale === 'es' ? 'es-ES' : 'en-US', {
+		day: 'numeric',
+		month: 'short',
+		year: 'numeric'
+	}).format(new Date(date));
+}

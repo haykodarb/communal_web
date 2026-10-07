@@ -7,6 +7,8 @@
 	import { t } from '#lib/i18n.svelte.ts';
 	import { currentProfile } from '#lib/profile.svelte.ts';
 	import { unread } from '#lib/unread.svelte.ts';
+	import { backOut } from 'svelte/easing';
+	import { scale } from '#lib/motion.ts';
 
 	let { onNavigate }: { onNavigate?: () => void } = $props();
 
@@ -68,7 +70,12 @@
 				<Icon name={item.icon} size={26} />
 				<span>{t(item.key)}</span>
 				{#if (badges[item.href]?.() ?? 0) > 0}
-					<span class="badge">{badges[item.href]()}</span>
+					<!-- Pops whenever the count changes. -->
+					{#key badges[item.href]()}
+						<span class="badge" in:scale|global={{ start: 0.4, duration: 260, easing: backOut }}>
+							{badges[item.href]()}
+						</span>
+					{/key}
 				{/if}
 			</button>
 		{/each}

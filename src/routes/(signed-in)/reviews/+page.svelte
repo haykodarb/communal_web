@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { appear } from '#lib/motion.ts';
 	import { untrack } from 'svelte';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import Loading from '#lib/components/Loading.svelte';
+	import Skeleton from '#lib/components/Skeleton.svelte';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import ReviewCard from '#lib/components/ReviewCard.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
@@ -38,8 +40,10 @@
 
 	{#if reviews.items.length > 0}
 		<div class="list">
-			{#each reviews.items as loan (loan.id)}
-				<ReviewCard {loan} showReviewer />
+			{#each reviews.items as loan, i (loan.id)}
+				<div in:appear={{ index: i % PAGE_SIZE.friendReviews }}>
+					<ReviewCard {loan} showReviewer />
+				</div>
 			{/each}
 		</div>
 	{:else if reviews.error}
@@ -51,7 +55,11 @@
 	{/if}
 
 	{#if reviews.loading}
-		<Loading fill={reviews.items.length === 0} />
+		{#if reviews.items.length === 0}
+			<div class="list"><Skeleton kind="loan" count={4} /></div>
+		{:else}
+			<Loading fill={false} />
+		{/if}
 	{/if}
 	<Sentinel onvisible={reviews.loadMore} />
 </div>

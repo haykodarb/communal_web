@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { afterExitAnimation } from '#lib/motion.ts';
 
 	// CommonFilterBottomsheet: a modal sheet sliding up from the bottom of the
 	// content column. Open with bind:this + open(); closes on backdrop click/Esc.
@@ -17,12 +18,21 @@
 		// showModal() focuses the first chip; Flutter's sheet opens unfocused.
 		(document.activeElement as HTMLElement | null)?.blur();
 	}
+
+	// Slides back down, then closes.
+	function close() {
+		afterExitAnimation(dialog, 'closing', () => dialog.close());
+	}
 </script>
 
 <dialog
 	bind:this={dialog}
 	onclick={(event) => {
-		if (event.target === dialog) dialog.close();
+		if (event.target === dialog) close();
+	}}
+	oncancel={(event) => {
+		event.preventDefault();
+		close();
 	}}
 >
 	<div class="sheet">{@render children()}</div>
@@ -40,6 +50,39 @@
 	}
 	dialog::backdrop {
 		background: rgba(0, 0, 0, 0.4);
+	}
+	/* Slides up from the bottom while the backdrop fades in; reversed on close. */
+	dialog[open] {
+		animation: sheet-in 260ms var(--ease-standard);
+	}
+	dialog[open]::backdrop {
+		animation: backdrop-in 200ms ease;
+	}
+	dialog:global(.closing) {
+		animation: sheet-out 200ms ease-in forwards;
+	}
+	dialog:global(.closing)::backdrop {
+		animation: backdrop-out 200ms ease-in forwards;
+	}
+	@keyframes sheet-in {
+		from {
+			transform: translateY(100%);
+		}
+	}
+	@keyframes sheet-out {
+		to {
+			transform: translateY(100%);
+		}
+	}
+	@keyframes backdrop-in {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes backdrop-out {
+		to {
+			opacity: 0;
+		}
 	}
 	.sheet {
 		display: flex;

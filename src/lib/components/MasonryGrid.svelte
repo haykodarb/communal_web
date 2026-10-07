@@ -1,5 +1,15 @@
+<script lang="ts" module>
+	// Remembered across visits (and shared by every grid): the last container
+	// width, and each item's measured height per column width. Coming back to a
+	// list, the grid lays out at once at full height, so the scroll position and
+	// the cover's return transition find items where they were, and nothing pops.
+	const heightCache: Record<string, number> = $state({});
+	let lastWidth = 0;
+</script>
+
 <script lang="ts" generics="T">
-	import type { Snippet } from 'svelte';
+	import { untrack, type Snippet } from 'svelte';
+	import { appear } from '#lib/motion.ts';
 
 	// Flutter's SliverMasonryGrid.count (CommonGridView: 2 columns, 8px
 	// spacing): each item goes, in order, into whichever column is shorter so
@@ -26,22 +36,64 @@
 		item: Snippet<[T]>;
 	} = $props();
 
-	let width = $state(0);
-	let heights = $state<Record<string, number>>({});
+	let width = $state(lastWidth);
+	// The width arrives from bind:clientWidth only after a resize observation, a
+	// moment after mount; read it right away so the first layout already has the
+	// right number of columns (e.g. when returning to a long list, where a
+	// 2-column first pass would put items far from where they were).
+	function measureNow(node: HTMLElement) {
+		width = node.clientWidth;
+	}
+	$effect(() => {
+		if (width > 0) lastWidth = width;
+	});
 
 	const count = $derived(
 		Math.max(2, Math.min(columns, Math.floor((width + gap) / (minColumnWidth + gap)) || 2))
 	);
+	// Heights are only valid for the column width they were measured at.
+	const columnWidth = $derived(Math.round((width - (count - 1) * gap) / count));
+	const heightKey = (k: string) => `${columnWidth}:${k}`;
+
+	// Measure the cells directly, right after the DOM updates: whenever the
+	// column width or the items change, and when a cell resizes later (fonts,
+	// text wrapping). Reading the sizes synchronously means the grid is fully
+	// laid out before anything (scroll restoration, a page transition) looks.
+	let grid: HTMLElement;
+	function measureCells() {
+		if (!grid || columnWidth <= 0) return;
+		for (const cell of grid.children as HTMLCollectionOf<HTMLElement>) {
+			const hk = heightKey(cell.dataset.key!);
+			const height = cell.offsetHeight;
+			if (heightCache[hk] !== height) heightCache[hk] = height;
+		}
+	}
+	$effect(() => {
+		void columnWidth;
+		void items;
+		void items.length;
+		untrack(measureCells);
+		if (!grid) return;
+		const observer = new ResizeObserver(() => untrack(measureCells));
+		for (const cell of grid.children) observer.observe(cell);
+		return () => observer.disconnect();
+	});
+
+	/** Columns this close in height count as equally short (about one title line). */
+	const TIE_PX = 24;
 
 	const layout = $derived.by(() => {
 		const bottoms = Array<number>(count).fill(0);
 		const placed = new Map<string, { column: number; top: number }>();
 		for (const it of items) {
 			const k = key(it);
-			const height = heights[k];
+			const height = heightCache[heightKey(k)];
 			if (height === undefined) continue;
-			// The shortest column; ties go to the leftmost, as in Flutter.
-			const column = bottoms.indexOf(Math.min(...bottoms));
+			// The leftmost of the (nearly) shortest columns: within TIE_PX of the
+			// shortest counts as a tie, so cards fill left to right and the left
+			// column ends up longest, then the next.
+			const shortest = Math.min(...bottoms);
+			const column = bottoms.findIndex((b) => b - shortest <= TIE_PX);
 			placed.set(k, { column, top: bottoms[column] });
 			bottoms[column] += height + gap;
 		}
@@ -55,16 +107,19 @@
 	style:--gap="{gap}px"
 	style:--count={count}
 	bind:clientWidth={width}
+	use:measureNow
+	bind:this={grid}
 >
-	{#each items as it (key(it))}
+	{#each items as it, i (key(it))}
 		{@const k = key(it)}
 		{@const spot = layout.placed.get(k)}
 		<div
 			class="cell"
 			class:pending={!spot}
+			in:appear={{ index: i % 20 }}
 			style:--column={spot?.column ?? 0}
 			style:top="{spot?.top ?? 0}px"
-			bind:clientHeight={heights[k]}
+			data-key={k}
 		>
 			{@render item(it)}
 		</div>

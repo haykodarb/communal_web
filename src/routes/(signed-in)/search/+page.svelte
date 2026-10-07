@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { appear } from '#lib/motion.ts';
 	import { page } from '$app/state';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
 	import Loading from '#lib/components/Loading.svelte';
+	import Skeleton from '#lib/components/Skeleton.svelte';
 	import StickySearch from '#lib/components/StickySearch.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
 	import TabBar from '#lib/components/TabBar.svelte';
@@ -73,9 +75,6 @@
 	});
 
 	const current = $derived(tab === 0 ? books : users);
-
-	const note = (book: NetworkBook) =>
-		book.via ? t('via {name}').replace('{name}', book.via.username) : undefined;
 </script>
 
 <div class="page">
@@ -88,15 +87,15 @@
 	</div>
 	<StickySearch floating={false}>
 		<div class="search">
-			<SearchBar bind:value={query} onSearch={() => current.reset()} />
+			<SearchBar bind:value={query} onSearch={() => current.reset(true)} />
 		</div>
 	</StickySearch>
 
 	{#if tab === 0}
 		{#if books.items.length > 0}
-			<div class="grid">
+			<div class="grid results" class:stale={books.refreshing}>
 				<MasonryGrid items={books.items} key={(b) => b.id} columns={3}>
-					{#snippet item(book)}<VerticalBookCard {book} note={note(book)} />{/snippet}
+					{#snippet item(book)}<VerticalBookCard {book} />{/snippet}
 				</MasonryGrid>
 			</div>
 		{:else if books.error}
@@ -105,9 +104,9 @@
 			<p class="muted">{t('No books found among your friends and their friends.')}</p>
 		{/if}
 	{:else if users.items.length > 0}
-		<div class="users">
-			{#each users.items as user (user.id)}
-				<UserRow profile={user} />
+		<div class="users results" class:stale={users.refreshing}>
+			{#each users.items as user, i (user.id)}
+				<div in:appear={{ index: i % PAGE_SIZE.network }}><UserRow profile={user} /></div>
 			{/each}
 		</div>
 	{:else if users.error}
@@ -117,7 +116,13 @@
 	{/if}
 
 	{#if current.loading || (current.items.length === 0 && current.hasMore)}
-		<Loading fill={current.items.length === 0} />
+		{#if current.items.length > 0}
+			{#if !current.refreshing}<Loading fill={false} />{/if}
+		{:else if tab === 0}
+			<div class="grid"><Skeleton kind="grid" count={6} /></div>
+		{:else}
+			<div class="users"><Skeleton kind="row" count={6} /></div>
+		{/if}
 	{/if}
 	{#key tab}
 		<Sentinel onvisible={current.loadMore} />
@@ -148,6 +153,14 @@
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
+	}
+	/* A new query: the old results dim until the new ones replace them (which
+	   then appear like any new page, see MasonryGrid / motion.ts). */
+	.results {
+		transition: opacity 150ms ease;
+	}
+	.results.stale {
+		opacity: 0.4;
 	}
 	.muted {
 		padding: 20px;

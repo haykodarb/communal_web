@@ -1,5 +1,6 @@
 <script lang="ts">
 	import FillCenter from '#lib/components/FillCenter.svelte';
+	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import Avatar from '#lib/components/Avatar.svelte';
@@ -77,6 +78,13 @@
 		reviewDraft = loan?.review ?? '';
 		editingReview = true;
 	}
+
+	// The timeline line starts empty and fills to the loan's step once the page
+	// is on screen (its width transition does the animating).
+	let timelineShown = $state(false);
+	onMount(() => {
+		requestAnimationFrame(() => requestAnimationFrame(() => (timelineShown = true)));
+	});
 </script>
 
 <div class="detail">
@@ -122,7 +130,10 @@
 				{ label: t('Accepted'), date: loan.accepted_at, active: loan.accepted },
 				{ label: t('Returned'), date: loan.returned_at, active: loan.returned }
 			]}
-			<ol class="timeline" style:--progress={loan.returned ? 1 : loan.accepted ? 0.5 : 0}>
+			<ol
+				class="timeline"
+				style:--progress={timelineShown ? (loan.returned ? 1 : loan.accepted ? 0.5 : 0) : 0}
+			>
 				{#each steps as step (step.label)}
 					<li class:active={step.active}>
 						<span class="date">{step.active ? formatShortDate(step.date ?? loan.created_at) : ''}</span>

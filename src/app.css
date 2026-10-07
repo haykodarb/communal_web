@@ -154,6 +154,71 @@ button:not(:disabled):active,
 	outline-offset: 2px;
 }
 
+/* Page transitions (#lib/page-transitions.ts). The window-sized view
+   (root) slides and fades, so scroll position never turns into a big vertical
+   move; the desktop drawer (named `drawer` by the app layout) stays still.
+   <html data-nav> says which way: forward slides the new page in from the
+   right, back from the left, fade crossfades. */
+::view-transition-group(drawer),
+::view-transition-old(drawer),
+::view-transition-new(drawer) {
+	animation: none;
+}
+::view-transition-old(root),
+::view-transition-new(root) {
+	animation-duration: 220ms;
+	animation-timing-function: var(--ease-standard);
+}
+::view-transition-old(root) {
+	animation-name: vt-fade-out;
+}
+::view-transition-new(root) {
+	animation-name: vt-fade-in;
+}
+html[data-nav='forward']::view-transition-old(root) {
+	animation-name: vt-fade-out, vt-out-left;
+}
+html[data-nav='forward']::view-transition-new(root) {
+	animation-name: vt-fade-in, vt-in-right;
+}
+html[data-nav='back']::view-transition-old(root) {
+	animation-name: vt-fade-out, vt-out-right;
+}
+html[data-nav='back']::view-transition-new(root) {
+	animation-name: vt-fade-in, vt-in-left;
+}
+
+@keyframes vt-fade-in {
+	from {
+		opacity: 0;
+	}
+}
+@keyframes vt-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+@keyframes vt-in-right {
+	from {
+		transform: translateX(32px);
+	}
+}
+@keyframes vt-out-left {
+	to {
+		transform: translateX(-16px);
+	}
+}
+@keyframes vt-in-left {
+	from {
+		transform: translateX(-32px);
+	}
+}
+@keyframes vt-out-right {
+	to {
+		transform: translateX(16px);
+	}
+}
+
 /* Respect the system's "reduce motion" setting: changes happen at once. */
 @media (prefers-reduced-motion: reduce) {
 	*,

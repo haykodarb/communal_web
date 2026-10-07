@@ -6,8 +6,8 @@
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import { deleteBook } from '#lib/data/api.ts';
 	import type { Book, Loan } from '#lib/data/models.ts';
-	import { formatShortDate } from '#lib/format.ts';
-	import { t } from '#lib/i18n.svelte.ts';
+	import { formatMediumDate } from '#lib/format.ts';
+	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
 	import type { PageProps } from './$types';
 
@@ -40,9 +40,13 @@
 		{reviews}
 		large
 		info={[
-			{ label: t('Added'), value: formatShortDate(book.created_at) },
-			{ label: t('Visibility'), value: book.public ? t('Public') : t('Private') },
-			{ label: t('Status'), value: book.loaned ? t('Loaned') : t('Available') }
+			{
+				label: t('Status'),
+				value: book.loaned ? t('Loaned') : t('Available'),
+				tone: book.loaned ? 'loaned' : 'available'
+			},
+			{ label: t('Added'), value: formatMediumDate(book.created_at, i18n.locale) },
+			{ label: t('Visibility'), value: book.public ? t('Public') : t('Private') }
 		]}
 	>
 		{#snippet actions()}

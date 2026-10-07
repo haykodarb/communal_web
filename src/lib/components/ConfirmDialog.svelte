@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from './Button.svelte';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { afterExitAnimation } from '#lib/motion.ts';
 
 	// Mirrors CommonConfirmationDialog. Open with `bind:this` + `confirm()`,
 	// which resolves to true when the user picks the confirm button.
@@ -18,14 +19,22 @@
 		return new Promise((r) => (resolve = r));
 	}
 
+	// Answers right away (the caller can start its work) while the dialog plays
+	// its exit animation, then actually closes.
 	function close(result: boolean) {
-		dialog.close();
 		resolve?.(result);
 		resolve = null;
+		afterExitAnimation(dialog, 'closing', () => dialog.close());
 	}
 </script>
 
-<dialog bind:this={dialog} oncancel={() => close(false)}>
+<dialog
+	bind:this={dialog}
+	oncancel={(event) => {
+		event.preventDefault();
+		close(false);
+	}}
+>
 	<p class="title">{title}</p>
 	<div class="actions">
 		<Button onclick={() => close(true)}>{t(confirmText)}</Button>
@@ -45,6 +54,41 @@
 	}
 	dialog::backdrop {
 		background: rgba(0, 0, 0, 0.4);
+	}
+	/* Scales up a little while the backdrop fades in; reversed on close. */
+	dialog[open] {
+		animation: dialog-in 180ms var(--ease-standard);
+	}
+	dialog[open]::backdrop {
+		animation: backdrop-in 180ms ease;
+	}
+	dialog:global(.closing) {
+		animation: dialog-out 140ms ease-in forwards;
+	}
+	dialog:global(.closing)::backdrop {
+		animation: backdrop-out 140ms ease-in forwards;
+	}
+	@keyframes dialog-in {
+		from {
+			opacity: 0;
+			transform: scale(0.95);
+		}
+	}
+	@keyframes dialog-out {
+		to {
+			opacity: 0;
+			transform: scale(0.95);
+		}
+	}
+	@keyframes backdrop-in {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes backdrop-out {
+		to {
+			opacity: 0;
+		}
 	}
 	.title {
 		margin: 20px 0 40px;

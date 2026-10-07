@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { appear } from '#lib/motion.ts';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import FilterRow from '#lib/components/FilterRow.svelte';
 	import Loading from '#lib/components/Loading.svelte';
+	import Skeleton from '#lib/components/Skeleton.svelte';
 	import FilterSheet from '#lib/components/FilterSheet.svelte';
 	import LoanCard from '#lib/components/LoanCard.svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
@@ -85,8 +87,8 @@
 
 	{#if loans.items.length > 0}
 		<div class="list">
-			{#each loans.items as loan (loan.id)}
-				<LoanCard {loan} />
+			{#each loans.items as loan, i (loan.id)}
+				<div in:appear={{ index: i % PAGE_SIZE.loans }}><LoanCard {loan} /></div>
 			{/each}
 		</div>
 	{:else if loans.error}
@@ -97,7 +99,11 @@
 		</div>
 	{/if}
 	{#if loans.loading}
-		<Loading fill={loans.items.length === 0} />
+		{#if loans.items.length === 0}
+			<div class="list"><Skeleton kind="loan" count={4} /></div>
+		{:else}
+			<Loading fill={false} />
+		{/if}
 	{/if}
 	<Sentinel onvisible={loans.loadMore} />
 </div>

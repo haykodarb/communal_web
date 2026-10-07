@@ -3,8 +3,7 @@
 	import { bookHref } from '#lib/links.ts';
 	import CoverImage from './CoverImage.svelte';
 
-	// `note` is an optional third line, e.g. "via <friend>".
-	let { book, note }: { book: Book; note?: string } = $props();
+	let { book }: { book: Book } = $props();
 </script>
 
 <a class="vcard pressable" href={bookHref(book)}>
@@ -13,7 +12,6 @@
 	</div>
 	<span class="title">{book.title}</span>
 	<span class="author">{book.author}</span>
-	{#if note}<span class="note">{note}</span>{/if}
 </a>
 
 <style>
@@ -46,8 +44,7 @@
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}
-	.author,
-	.note {
+	.author {
 		font-size: 10px;
 		font-weight: 500;
 		line-height: 1.2;
@@ -57,8 +54,5 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
-	}
-	.note {
-		color: var(--tertiary);
 	}
 </style>

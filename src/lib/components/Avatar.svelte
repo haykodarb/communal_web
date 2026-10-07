@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { peekSignedUrl, signedStorageUrl } from '#lib/data/api.ts';
 	import type { Profile } from '#lib/data/models.ts';
+	import { fadeInWhenLoaded } from '#lib/motion.ts';
 
 	// CommonCircularAvatar: the profile picture, or one of six default emblems
 	// picked from the username, drawn on a primary-colored circle.
@@ -35,7 +36,7 @@
 
 <span class="avatar" style:width="{size}px" style:height="{size}px">
 	{#if url}
-		<img src={url} alt="" />
+		<img src={url} alt="" use:fadeInWhenLoaded />
 	{:else if profile.id}
 		<span class="emblem" style:--emblem="url({emblem})"></span>
 	{/if}

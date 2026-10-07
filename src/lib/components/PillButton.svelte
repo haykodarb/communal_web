@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Icon from './Icon.svelte';
 	import Loading from './Loading.svelte';
+	import { fade } from '#lib/motion.ts';
 
 	// The small rounded buttons in the profile header (edit, friendship, message).
 	let {
@@ -27,11 +28,14 @@
 	disabled={loading}
 	{onclick}
 >
+	<!-- The label and the spinner fade into each other. -->
 	{#if loading}
-		<Loading size={20} color="currentColor" inline />
+		<span class="state" in:fade><Loading size={20} color="currentColor" inline /></span>
 	{:else}
-		<Icon name={icon} size={16} />
-		{#if label}<span>{label}</span>{/if}
+		<span class="state" in:fade>
+			<Icon name={icon} size={16} />
+			{#if label}<span>{label}</span>{/if}
+		</span>
 	{/if}
 </button>
 
@@ -51,6 +55,11 @@
 		font-size: 12px;
 		font-weight: 500;
 		cursor: pointer;
+	}
+	.state {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
 	}
 	.pill.filled {
 		background: var(--primary);

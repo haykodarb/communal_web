@@ -24,6 +24,9 @@ export function createPaged<T>(
 	let loading = $state(false);
 	let hasMore = $state(seed?.hasMore ?? true);
 	let error = $state('');
+	// reset(true): the current items stay (dimmed by the page) until the new first
+	// page replaces them.
+	let replacing = $state(false);
 	let page = seed?.pages ?? 0;
 	let generation = 0;
 
@@ -34,13 +37,16 @@ export function createPaged<T>(
 		try {
 			const next = await load(page);
 			if (current !== generation) return; // a reset() happened meanwhile
-			items = [...items, ...next];
+			items = replacing ? next : [...items, ...next];
+			replacing = false;
 			hasMore = next.length === pageSize;
 			page += 1;
 			onChange?.({ items, pages: page, hasMore });
 		} catch (e) {
 			if (current !== generation) return;
 			error = errorMessage(e);
+			if (replacing) items = [];
+			replacing = false;
 			hasMore = false;
 		} finally {
 			if (current === generation) loading = false;
@@ -64,19 +70,29 @@ export function createPaged<T>(
 		get error() {
 			return error;
 		},
+		/** A reset(true) waiting for its first page, while the old items still show. */
+		get refreshing() {
+			return replacing;
+		},
 		loadMore,
 		/** Replace the contents with fresher data (a background refresh). */
 		seed(state: PagedState<T>): void {
 			generation += 1;
+			replacing = false;
 			items = state.items;
 			page = state.pages;
 			hasMore = state.hasMore;
 			loading = false;
 			error = '';
 		},
-		reset(): Promise<void> {
+		/**
+		 * Start over from the first page (a new search). With `keep`, the current
+		 * items stay until the new ones arrive, instead of the list emptying.
+		 */
+		reset(keep = false): Promise<void> {
 			generation += 1;
-			items = [];
+			replacing = keep && items.length > 0;
+			if (!replacing) items = [];
 			page = 0;
 			hasMore = true;
 			loading = false;

@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { appear } from '#lib/motion.ts';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import Loading from '#lib/components/Loading.svelte';
+	import Skeleton from '#lib/components/Skeleton.svelte';
 	import BookCard from '#lib/components/BookCard.svelte';
 	import Fab from '#lib/components/Fab.svelte';
 	import FilterRow from '#lib/components/FilterRow.svelte';
@@ -67,8 +69,8 @@
 
 	{#if books.items.length > 0}
 		<div class="list">
-			{#each books.items as book (book.id)}
-				<BookCard {book} />
+			{#each books.items as book, i (book.id)}
+				<div in:appear={{ index: i % PAGE_SIZE.books }}><BookCard {book} /></div>
 			{/each}
 		</div>
 	{:else if books.error}
@@ -80,7 +82,11 @@
 		</div>
 	{/if}
 	{#if books.loading}
-		<Loading fill={books.items.length === 0} />
+		{#if books.items.length === 0}
+			<div class="list"><Skeleton kind="book" count={3} /></div>
+		{:else}
+			<Loading fill={false} />
+		{/if}
 	{/if}
 	<Sentinel onvisible={books.loadMore} />
 

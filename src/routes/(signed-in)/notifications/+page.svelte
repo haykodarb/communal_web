@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { appear, leave } from '#lib/motion.ts';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { onMount, untrack } from 'svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import Loading from '#lib/components/Loading.svelte';
+	import Skeleton from '#lib/components/Skeleton.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import NotificationCard from '#lib/components/NotificationCard.svelte';
 	import {
@@ -166,17 +168,23 @@
 				{#if header}
 					<span class="header">{header}</span>
 				{/if}
-				<NotificationCard
-					{notification}
-					loading={busyId === notification.id}
-					onrespond={(accept) => respond(notification, accept)}
-				/>
+				<div in:appear={{ index: i % 20 }} out:leave>
+					<NotificationCard
+						{notification}
+						loading={busyId === notification.id}
+						onrespond={(accept) => respond(notification, accept)}
+					/>
+				</div>
 			{/each}
 		</div>
 	{/if}
 
 	{#if loading}
-		<Loading fill={notifications.length === 0} />
+		{#if notifications.length === 0}
+			<div class="list"><Skeleton kind="row" count={6} /></div>
+		{:else}
+			<Loading fill={false} />
+		{/if}
 	{/if}
 	<div bind:this={sentinel} class="sentinel"></div>
 </div>

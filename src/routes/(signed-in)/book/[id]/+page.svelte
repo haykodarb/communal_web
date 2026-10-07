@@ -12,8 +12,8 @@
 		requestLoan
 	} from '#lib/data/api.ts';
 	import type { Book, Loan } from '#lib/data/models.ts';
-	import { formatShortDate } from '#lib/format.ts';
-	import { t } from '#lib/i18n.svelte.ts';
+	import { formatMediumDate } from '#lib/format.ts';
+	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
 	import type { PageProps } from './$types';
 
@@ -102,9 +102,15 @@
 		{reviews}
 		large
 		info={[
-			{ label: t('Owner'), value: book.owner.username, href: `/profile/${book.owner.id}` },
-			{ label: t('Added'), value: formatShortDate(book.created_at) },
-			{ label: t('Status'), value: busy ? '' : statusText }
+			busy
+				? { label: t('Status'), value: '' }
+				: {
+						label: t('Status'),
+						value: statusText,
+						tone: book.loaned ? 'loaned' : requestedByMe ? 'requested' : 'available'
+					},
+			{ label: t('Added'), value: formatMediumDate(book.created_at, i18n.locale) },
+			{ label: t('Owner'), value: book.owner.username, person: book.owner }
 		]}
 	>
 		{#snippet actions()}

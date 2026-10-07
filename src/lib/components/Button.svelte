@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import Loading from './Loading.svelte';
+	import { fade } from '#lib/motion.ts';
 
 	type Variant = 'filled' | 'outlined' | 'tonal' | 'text';
 
@@ -30,10 +31,11 @@
 	disabled={disabled || loading}
 	onclick={onclick}
 >
+	<!-- The label and the spinner fade into each other. -->
 	{#if loading}
-		<Loading size={30} color="currentColor" inline />
+		<span class="state" in:fade><Loading size={30} color="currentColor" inline /></span>
 	{:else}
-		{@render children()}
+		<span class="state" in:fade>{@render children()}</span>
 	{/if}
 </button>
 
@@ -58,6 +60,12 @@
 	.btn:disabled {
 		opacity: 0.55;
 		cursor: default;
+	}
+	.state {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
 	}
 	.expand {
 		width: 100%;

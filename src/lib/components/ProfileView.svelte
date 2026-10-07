@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { appear } from '#lib/motion.ts';
 	import { untrack, type Snippet } from 'svelte';
 	import { page } from '$app/state';
 	import Avatar from './Avatar.svelte';
@@ -120,8 +121,8 @@
 	<p class="empty">{emptyReviews}</p>
 {:else}
 	<div class="list">
-		{#each reviews.items as loan (loan.id)}
-			<ReviewCard {loan} />
+		{#each reviews.items as loan, i (loan.id)}
+			<div in:appear={{ index: i % 30 }}><ReviewCard {loan} /></div>
 		{/each}
 	</div>
 	<Sentinel onvisible={reviews.loadMore} />

@@ -1,6 +1,7 @@
 <script lang="ts" module>
 	// The Flutter app uses Atlas icons (atlas_icons package) plus a few Material
-	// `Icons.*`. Atlas glyphs render from the same fonts (static/fonts/atlas);
+	// `Icons.*`. Atlas glyphs render from the same fonts (fonts/atlas, cut down
+	// to the glyphs in ATLAS by `npm run fonts`, so rerun it after adding one);
 	// Material ones are drawn from their 24px SVG paths (Apache-2.0).
 
 	/**

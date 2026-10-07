@@ -37,8 +37,8 @@
 		width: var(--size);
 		height: var(--size);
 		background: linear-gradient(135deg, var(--primary), var(--tertiary));
-		-webkit-mask: url('/crow.svg') center / contain no-repeat;
-		mask: url('/crow.svg') center / contain no-repeat;
+		-webkit-mask: url('../assets/crow.png') center / contain no-repeat;
+		mask: url('../assets/crow.png') center / contain no-repeat;
 	}
 	.wordmark {
 		font-size: 40px;

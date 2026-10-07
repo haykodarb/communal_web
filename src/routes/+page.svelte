@@ -119,7 +119,7 @@
 					</a>
 				</div>
 			</div>
-			<img class="crow" src="/assets/crow.svg" alt="" />
+			<span class="crow" aria-hidden="true"></span>
 		</section>
 
 		<section class="reach" aria-labelledby="reach-title">
@@ -347,10 +347,15 @@
 		gap: 12px;
 		margin-top: 8px;
 	}
+	/* The same crow mask as Logo, filled with the theme's gradient. */
 	.crow {
+		display: block;
 		width: 100%;
+		aspect-ratio: 713 / 1024;
 		max-height: 460px;
-		object-fit: contain;
+		background: linear-gradient(90deg, var(--primary) 25%, var(--tertiary));
+		-webkit-mask: url('../lib/assets/crow.png') center / contain no-repeat;
+		mask: url('../lib/assets/crow.png') center / contain no-repeat;
 	}
 
 	/* ---- Reach (the network diagram) ------------------------------------ */

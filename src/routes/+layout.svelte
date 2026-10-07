@@ -23,6 +23,7 @@
 	});
 
 	onMount(() => {
+		document.getElementById('boot')?.remove();
 		theme.apply();
 		i18n.set(i18n.locale);
 		initAuth();

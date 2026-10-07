@@ -22,8 +22,45 @@
 			}
 		</script>
 		%sveltekit.head%
+		<style>
+			/* Shown while the app's JavaScript loads; the root layout removes it. It
+			   fades in late so fast loads go straight to the app. */
+			#boot {
+				position: fixed;
+				inset: 0;
+				display: grid;
+				place-items: center;
+				pointer-events: none;
+				opacity: 0;
+				animation: boot-in 200ms 300ms forwards;
+			}
+			#boot svg {
+				animation: boot-spin 1.2s linear infinite;
+			}
+			@keyframes boot-in {
+				to {
+					opacity: 1;
+				}
+			}
+			@keyframes boot-spin {
+				to {
+					transform: rotate(360deg);
+				}
+			}
+			@media (prefers-reduced-motion: reduce) {
+				#boot svg {
+					animation: none;
+				}
+			}
+		</style>
 	</head>
 	<body data-sveltekit-preload-data="hover">
+		<!-- The three arcs of Loading.svelte, at rest. -->
+		<div id="boot" aria-hidden="true">
+			<svg width="50" height="50" viewBox="0 0 50 50" fill="none" stroke="var(--primary)" stroke-width="4" stroke-linecap="round">
+				<path d="M5.08 13.5A23 23 0 0 1 41.26 8.74M25 48A23 23 0 0 1 2.78 19.05M44.92 13.5A23 23 0 0 1 30.95 47.22" />
+			</svg>
+		</div>
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

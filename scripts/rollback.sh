@@ -17,14 +17,14 @@ cd "$deploy_dir"
 live="$(basename "$(readlink web)")"
 
 if [ "$target" = "--list" ]; then
-	ls -1 releases | sort -r | while read -r r; do
+	ls -1 releases | sort -V -r | while read -r r; do
 		[ "$r" = "$live" ] && echo "* $r (live)" || echo "  $r"
 	done
 	exit 0
 fi
 
 if [ -z "$target" ]; then
-	target="$(ls -1 releases | sort -r | grep -A1 -Fx "$live" | sed -n 2p)"
+	target="$(ls -1 releases | sort -V -r | grep -A1 -Fx "$live" | sed -n 2p)"
 	[ -n "$target" ] || { echo "No release older than $live." >&2; exit 1; }
 fi
 

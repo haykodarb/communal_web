@@ -26,18 +26,23 @@ ssh_opts=(-o ConnectTimeout=15)
 rev="$(git rev-parse --short HEAD)"
 [ -z "$(git status --porcelain)" ] || rev="$rev-dirty"
 version="$(node -p 'require("./package.json").version')"
-# The version goes last in the release name; deploys compare it with the live one.
-release="$(date -u +%Y%m%d-%H%M%S)-$rev-v$version"
 
+# Releases are named v<version>, so the live version is read off the symlink.
+# A forced redeploy of the live version adds the time (semver build metadata),
+# since uploading into the live folder would defeat the atomic switch.
 live_release="$(ssh "${ssh_opts[@]}" "$deploy_host" "readlink '$deploy_dir/web' || true")"
 live_release="$(basename "$live_release")"
 live_version=""
-case "$live_release" in *-v*) live_version="${live_release#*-v}" ;; esac
+case "$live_release" in v[0-9]*) live_version="${live_release#v}" live_version="${live_version%%+*}" ;; esac
 
-if [ "$version" = "$live_version" ] && ! $force; then
-	echo "==> Version $version is already live; not deploying."
-	echo "    Bump \"version\" in package.json, or run scripts/deploy.sh --force."
-	exit 0
+release="v$version"
+if [ "$version" = "$live_version" ]; then
+	if ! $force; then
+		echo "==> Version $version is already live; not deploying."
+		echo "    Bump \"version\" in package.json, or run scripts/deploy.sh --force."
+		exit 0
+	fi
+	release="v$version+$(date -u +%Y%m%d-%H%M%S)"
 fi
 
 echo "==> Checking $repo_root ($rev, version ${live_version:-unknown} -> $version)"
@@ -52,7 +57,8 @@ npm run build
 echo "==> Uploading release $release to $deploy_host"
 ssh "${ssh_opts[@]}" "$deploy_host" "mkdir -p '$deploy_dir/releases'"
 # Files unchanged since the live release are hard-linked instead of copied.
-rsync -a -e "ssh ${ssh_opts[*]}" --link-dest="$deploy_dir/web/" \
+# --delete matters when this version was deployed before and rolled back.
+rsync -a --delete -e "ssh ${ssh_opts[*]}" --link-dest="$deploy_dir/web/" \
 	./build/ "$deploy_host:$deploy_dir/releases/$release/"
 
 echo "==> Switching $deploy_dir/web to $release"
@@ -63,7 +69,7 @@ cd "$deploy_dir"
 
 # One-time migration: the web root used to be a plain directory.
 if [ -d web ] && [ ! -L web ]; then
-	legacy="$(date -u +%Y%m%d-%H%M%S)-legacy"
+	legacy="v0-legacy"
 	mv web "releases/$legacy"
 	echo "    moved the old web directory to releases/$legacy"
 fi
@@ -73,9 +79,9 @@ mv -T web.next web
 
 # Prune old releases, never the live one.
 live="$(readlink web)"
-ls -1 releases | sort -r | tail -n +"$((keep + 1))" | while read -r old; do
+ls -1 releases | sort -V -r | tail -n +"$((keep + 1))" | while read -r old; do
 	[ "releases/$old" = "$live" ] || rm -rf "releases/$old"
 done
 REMOTE
 
-echo "==> Deployed $rev to $site_url"
+echo "==> Deployed $release ($rev) to $site_url"

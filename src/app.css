@@ -39,6 +39,8 @@
 	--surface: #f2e9e1;
 	--surface-container: #fffaf3;
 	--primary: #d7827e;
+	/* Text and outlines in the primary colour on light backgrounds (contrast). */
+	--primary-strong: #b5605b;
 	--on-primary: #fffaf3;
 	--secondary: #286983;
 	--on-secondary: #fffaf3;
@@ -48,7 +50,7 @@
 	--on-surface: #575279;
 	--on-surface-variant: #797593;
 	--shadow: #cecacd;
-	--error: #eb6f92;
+	--error: #c8463f;
 	--outline: color-mix(in srgb, var(--on-surface) 14%, transparent);
 }
 
@@ -56,6 +58,7 @@
 	--surface: #1a1825;
 	--surface-container: #201d2f;
 	--primary: #ebbcba;
+	--primary-strong: var(--primary);
 	--on-primary: #191724;
 	--secondary: #9ccfd8;
 	--on-secondary: #191724;
@@ -65,7 +68,7 @@
 	--on-surface: #e0def4;
 	--on-surface-variant: #908caa;
 	--shadow: #524f67;
-	--error: #eb6f92;
+	--error: #ef6e6b;
 	--outline: color-mix(in srgb, var(--on-surface) 18%, transparent);
 }
 
@@ -106,17 +109,18 @@ input {
 
 /* Interaction states, Material-style. Hovering lays a translucent "state
    layer" of the element's own text colour over it, pressing deepens it, and
-   keyboard focus gets a ring. The layer is an inset shadow, so it follows the
-   border radius and works the same on filled, tonal, outlined and transparent
-   buttons, in both themes. Link cards opt in with `.pressable` (a lighter
-   layer). Components that set their own `transition` or `box-shadow` repeat
-   these (see Button, Fab). */
+   keyboard focus gets a ring. The layer is an ::after filled with currentColor
+   behind the content (z-index -1 in an isolated element), following the border
+   radius; only its opacity animates. (Animating a colour mixed from
+   currentColor doesn't work in Chrome: every in-between frame comes out
+   transparent, so hover -> press flashed the resting state.) Link cards opt
+   in with `.pressable` (a lighter layer). Components can hide the layer with
+   `::after { display: none }` (tabs, the switch). */
 :root {
-	--state-hover: 8%;
-	--state-press: 14%;
+	--state-hover: 0.08;
+	--state-press: 0.14;
 	--ease-standard: cubic-bezier(0.2, 0, 0, 1);
 	--state-transition:
-		box-shadow 150ms var(--ease-standard),
 		transform 150ms var(--ease-standard),
 		background-color 150ms ease,
 		color 150ms ease,
@@ -125,27 +129,40 @@ input {
 
 button,
 .pressable {
+	position: relative;
+	isolation: isolate;
 	transition: var(--state-transition);
 	-webkit-tap-highlight-color: transparent;
 }
 
+button::after,
+.pressable::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	border-radius: inherit;
+	background: currentColor;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 150ms var(--ease-standard);
+}
+
 .pressable {
-	--state-hover: 4%;
-	--state-press: 7%;
+	--state-hover: 0.04;
+	--state-press: 0.07;
 }
 
 @media (hover: hover) {
-	button:not(:disabled):hover,
-	.pressable:hover {
-		box-shadow: inset 0 0 0 100vmax
-			color-mix(in srgb, currentColor var(--state-hover), transparent);
+	button:not(:disabled):hover::after,
+	.pressable:hover::after {
+		opacity: var(--state-hover);
 	}
 }
 
-button:not(:disabled):active,
-.pressable:active {
-	box-shadow: inset 0 0 0 100vmax
-		color-mix(in srgb, currentColor var(--state-press), transparent);
+button:not(:disabled):active::after,
+.pressable:active::after {
+	opacity: var(--state-press);
 	transition-duration: 60ms;
 }
 
@@ -154,15 +171,29 @@ button:not(:disabled):active,
 	outline-offset: 2px;
 }
 
+/* During a page transition the browser stops reporting the pointer, so the
+   "after" snapshot would lack a hover the "before" one has. Hiding the layer
+   for the duration keeps them in agreement; it fades back in afterwards. */
+html[data-nav] button::after,
+html[data-nav] .pressable::after {
+	opacity: 0 !important;
+	transition: none !important;
+}
+
 /* Page transitions (#lib/page-transitions.ts). The window-sized view
    (root) slides and fades, so scroll position never turns into a big vertical
    move; the desktop drawer (named `drawer` by the app layout) stays still.
    <html data-nav> says which way: forward slides the new page in from the
    right, back from the left, fade crossfades. */
+/* Only the new drawer is drawn, plainly: with both images at full strength,
+   Chrome blends them additively (plus-lighter), which flashes its colours. */
 ::view-transition-group(drawer),
-::view-transition-old(drawer),
 ::view-transition-new(drawer) {
 	animation: none;
+	mix-blend-mode: normal;
+}
+::view-transition-old(drawer) {
+	display: none;
 }
 ::view-transition-old(root),
 ::view-transition-new(root) {

@@ -111,7 +111,7 @@
 		<p class="empty">{emptyBooks}</p>
 	{:else}
 		<div class="grid">
-			<MasonryGrid items={books.items} key={(b) => b.id}>
+			<MasonryGrid items={books.items} key={(b) => b.id} columns={3}>
 				{#snippet item(book)}<VerticalBookCard {book} />{/snippet}
 			</MasonryGrid>
 		</div>

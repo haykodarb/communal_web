@@ -100,6 +100,7 @@
 	<BookDetail
 		{book}
 		{reviews}
+		reviewCount={data.details.reviewCount}
 		large
 		info={[
 			busy

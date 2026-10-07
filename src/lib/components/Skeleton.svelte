@@ -58,9 +58,11 @@
 		flex-direction: column;
 		gap: inherit;
 	}
+	/* Like MasonryGrid with 3 columns: as many as fit at 140px or more, but
+	   never more than 3 (each at least a third of the width). */
 	.skeleton.grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(max(140px, (100% - 16px) / 3), 1fr));
 		gap: 8px;
 	}
 	.card {

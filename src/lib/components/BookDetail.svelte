@@ -1,5 +1,6 @@
 <script lang="ts" module>
 	import type { Profile } from '#lib/data/models.ts';
+	import type { StatusTone } from './StatusBadge.svelte';
 
 	/** One cell of the info pill under the title. */
 	export interface InfoItem {
@@ -8,7 +9,7 @@
 		/** Shows a person (avatar and name, linking to them) instead of `value`. */
 		person?: Profile;
 		/** Shows the value as a coloured status badge. */
-		tone?: 'available' | 'loaned' | 'requested';
+		tone?: StatusTone;
 	}
 </script>
 
@@ -19,12 +20,14 @@
 	import Loading from './Loading.svelte';
 	import ReviewItem from './ReviewItem.svelte';
 	import Sentinel from './Sentinel.svelte';
+	import StatusBadge from './StatusBadge.svelte';
 	import UserLink from './UserLink.svelte';
 	import { store } from '#lib/cache.ts';
 	import { getReviewsForBook } from '#lib/data/api.ts';
 	import type { Book, Loan } from '#lib/data/models.ts';
 	import { keys, PAGE_SIZE } from '#lib/data/pages.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { afterExitAnimation } from '#lib/motion.ts';
 	import { createPaged, type PagedState } from '#lib/paged.svelte.ts';
 
 	// Shared layout of BookOwnedPage / BookForeignPage. The page scrolls as a
@@ -35,6 +38,7 @@
 	let {
 		book,
 		reviews,
+		reviewCount = 0,
 		info,
 		large = false,
 		actions
@@ -42,6 +46,8 @@
 		book: Book;
 		/** First page of the completed loans with a review (from the page cache). */
 		reviews: PagedState<Loan>;
+		/** How many readers reviewed it (the owner's own review is added on top). */
+		reviewCount?: number;
 		info: InfoItem[];
 		/** BookForeignPage uses a bigger title (24/20 vs 18/16). */
 		large?: boolean;
@@ -68,6 +74,15 @@
 	const empty = $derived(
 		!book.review && paged.items.length === 0 && !paged.loading && !paged.hasMore
 	);
+
+	// The heading's count: readers' reviews plus the owner's own, if any.
+	const totalReviews = $derived(reviewCount + (book.review ? 1 : 0));
+
+	// Tapping the cover shows it large over a dimmed page (Flutter's
+	// expandOnTap); a click anywhere or Escape closes it.
+	let lightbox: HTMLDialogElement;
+	const openCover = () => lightbox.showModal();
+	const closeCover = () => afterExitAnimation(lightbox, 'closing', () => lightbox.close());
 
 	/** The compact bar's height; it shows once the title has gone under it. */
 	const BAR_HEIGHT = 56;
@@ -97,9 +112,9 @@
 	<header class="header">
 		<div class="menu"><BackButton /></div>
 
-		<div class="cover-wrap">
+		<button class="cover-wrap" type="button" aria-label={t('View cover')} onclick={openCover}>
 			<CoverImage bucket="book_covers" path={book.image_path} alt={book.title} />
-		</div>
+		</button>
 
 		<div class="title" class:large bind:this={titleEl}>
 			<h1>{book.title}</h1>
@@ -114,7 +129,7 @@
 					<dt>{item.label}</dt>
 					<dd>
 						{#if item.tone}
-							<span class="badge {item.tone}"><span class="dot"></span>{item.value}</span>
+							<StatusBadge tone={item.tone} label={item.value} />
 						{:else if item.person}
 							<UserLink profile={item.person} />
 						{:else}
@@ -125,13 +140,14 @@
 			{/each}
 		</dl>
 
-		<h2 class="reviews-heading" id="reviews-heading">{t('Reviews')}</h2>
-		<section class="reviews" aria-labelledby="reviews-heading">
-			{#if empty}
-				<p class="no-reviews">{t('No reviews')}</p>
-			{:else}
+		<!-- With no reviews at all, the section is left out entirely. -->
+		{#if !empty}
+			<h2 class="reviews-heading" id="reviews-heading">
+				{t('Reviews')}{#if totalReviews > 0}<span class="count">· {totalReviews}</span>{/if}
+			</h2>
+			<section class="reviews" aria-labelledby="reviews-heading">
 				{#if book.review}
-					<ReviewItem author={book.owner} text={book.review} plain />
+					<ReviewItem author={book.owner} text={book.review} tag={t("Owner's note")} />
 				{/if}
 				{#each paged.items as loan (loan.id)}
 					<ReviewItem author={loan.loanee} text={loan.review ?? ''} date={loan.latest_date} />
@@ -143,12 +159,25 @@
 					<Loading size={20} inline />
 				{/if}
 				<Sentinel onvisible={paged.loadMore} />
-			{/if}
-		</section>
+			</section>
+		{/if}
 	</div>
 
 	<div class="actions">{@render actions()}</div>
 </div>
+
+<dialog
+	class="lightbox"
+	bind:this={lightbox}
+	aria-label={book.title}
+	onclick={closeCover}
+	oncancel={(event) => {
+		event.preventDefault();
+		closeCover();
+	}}
+>
+	<CoverImage bucket="book_covers" path={book.image_path} alt={book.title} />
+</dialog>
 
 <style>
 	.detail {
@@ -245,10 +274,75 @@
 		left: 8px;
 		z-index: 1;
 	}
+	/* The cover is a button that opens the lightbox. */
 	.cover-wrap {
+		align-self: center;
 		height: var(--cover);
 		display: flex;
 		justify-content: center;
+		padding: 0;
+		border: none;
+		border-radius: 5px;
+		background: none;
+		cursor: zoom-in;
+	}
+	.cover-wrap::after {
+		display: none;
+	}
+	.lightbox {
+		max-width: none;
+		max-height: none;
+		margin: auto;
+		padding: 0;
+		border: none;
+		border-radius: 8px;
+		overflow: hidden;
+		background: none;
+		cursor: zoom-out;
+	}
+	.lightbox :global(.cover) {
+		display: block;
+		height: min(90vh, calc(90vw * 4 / 3));
+		width: auto;
+		aspect-ratio: 3 / 4;
+		object-fit: cover;
+	}
+	.lightbox::backdrop {
+		background: rgba(0, 0, 0, 0.75);
+	}
+	.lightbox[open] {
+		animation: lightbox-in 200ms var(--ease-standard);
+	}
+	.lightbox[open]::backdrop {
+		animation: backdrop-in 200ms ease;
+	}
+	.lightbox:global(.closing) {
+		animation: lightbox-out 160ms ease-in forwards;
+	}
+	.lightbox:global(.closing)::backdrop {
+		animation: backdrop-out 160ms ease-in forwards;
+	}
+	@keyframes lightbox-in {
+		from {
+			opacity: 0;
+			transform: scale(0.92);
+		}
+	}
+	@keyframes lightbox-out {
+		to {
+			opacity: 0;
+			transform: scale(0.92);
+		}
+	}
+	@keyframes backdrop-in {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes backdrop-out {
+		to {
+			opacity: 0;
+		}
 	}
 	.cover-wrap :global(.cover) {
 		width: auto;
@@ -299,7 +393,7 @@
 		flex: 0 0 65px;
 		margin: 0;
 		padding: 0 12px;
-		border: 1px solid color-mix(in srgb, var(--on-surface) 14%, transparent);
+		/* border: 1px solid color-mix(in srgb, var(--on-surface) 14%, transparent); */
 		border-radius: 10px;
 		display: flex;
 		align-items: center;
@@ -337,38 +431,16 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
-	/* Status: a dot and the word on a tinted chip (BookCard's colours). */
-	.badge {
-		--tone: #7dae6b;
-		display: inline-flex;
-		align-items: center;
-		gap: 6px;
-		height: 24px;
-		padding: 0 10px;
-		border-radius: 12px;
-		vertical-align: middle;
-		font-size: 13px;
-		font-weight: 500;
-		background: color-mix(in srgb, var(--tone) 22%, transparent);
-	}
-	.badge.loaned {
-		--tone: var(--tertiary);
-	}
-	.badge.requested {
-		--tone: var(--primary);
-	}
-	.dot {
-		width: 7px;
-		height: 7px;
-		flex: 0 0 7px;
-		border-radius: 50%;
-		background: var(--tone);
-	}
 	/* Separates the reviews from the book's facts above. */
 	.reviews-heading {
 		margin-top: 14px;
 		font-size: 16px;
 		font-weight: 600;
+	}
+	.reviews-heading .count {
+		margin-left: 6px;
+		font-weight: 400;
+		color: var(--on-surface-variant);
 	}
 	.reviews {
 		display: flex;
@@ -385,12 +457,6 @@
 	/* A little air above the first review, to separate it from the info pill. */
 	.reviews > :global(article:first-child) {
 		padding-top: 6px;
-	}
-	.no-reviews {
-		padding: 30px 0;
-		text-align: center;
-		font-size: 18px;
-		color: var(--on-surface-variant);
 	}
 	.error-text {
 		font-size: 13px;

@@ -45,20 +45,21 @@
 		cursor: pointer;
 		box-shadow: 0 4px 12px color-mix(in srgb, var(--shadow) 60%, transparent);
 	}
-	/* Its drop shadow plus the shared state layer (app.css), which its own
-	   box-shadow would otherwise replace; it lifts a little on hover. */
+	/* The shared state layer (app.css) tints it; its drop shadow deepens and it
+	   lifts a little on hover, and settles on press. */
+	.fab {
+		transition:
+			var(--state-transition),
+			box-shadow 150ms var(--ease-standard);
+	}
 	@media (hover: hover) {
 		.fab:hover {
 			transform: translateY(-1px);
-			box-shadow:
-				0 6px 16px color-mix(in srgb, var(--shadow) 70%, transparent),
-				inset 0 0 0 100vmax color-mix(in srgb, currentColor var(--state-hover), transparent);
+			box-shadow: 0 6px 16px color-mix(in srgb, var(--shadow) 70%, transparent);
 		}
 	}
 	.fab:active {
 		transform: scale(0.95);
-		box-shadow:
-			0 2px 8px color-mix(in srgb, var(--shadow) 60%, transparent),
-			inset 0 0 0 100vmax color-mix(in srgb, currentColor var(--state-press), transparent);
+		box-shadow: 0 2px 8px color-mix(in srgb, var(--shadow) 60%, transparent);
 	}
 </style>

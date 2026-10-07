@@ -45,9 +45,8 @@
 	/* Instead of the shared state layer (app.css), hovering puts a halo around
 	   the knob (which grows a hair); pressing strengthens it. Keyboard focus
 	   shows the halo too. */
-	.switch:hover,
-	.switch:active {
-		box-shadow: none;
+	.switch::after {
+		display: none;
 	}
 	.switch:focus-visible {
 		outline: none;

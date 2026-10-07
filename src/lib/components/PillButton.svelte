@@ -48,10 +48,11 @@
 		height: 35px;
 		min-width: 35px;
 		padding: 0 12px;
-		border: 1.5px solid var(--primary);
+		/* The deeper primary keeps the outline and text legible on beige. */
+		border: 1.5px solid var(--primary-strong);
 		border-radius: 999px;
 		background: none;
-		color: var(--primary);
+		color: var(--primary-strong);
 		font-size: 12px;
 		font-weight: 500;
 		cursor: pointer;
@@ -62,6 +63,7 @@
 		gap: 4px;
 	}
 	.pill.filled {
+		border-color: var(--primary);
 		background: var(--primary);
 		color: var(--on-primary);
 	}

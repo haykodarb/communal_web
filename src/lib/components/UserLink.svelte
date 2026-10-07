@@ -6,12 +6,17 @@
 	// A person inline: their avatar and username, linking to their profile (your
 	// own goes to My Profile). Hovering draws an underline under the name from
 	// left to right; it shrinks back from right to left when the pointer leaves.
-	// The font size comes from where it's used.
-	let { profile, size = 20 }: { profile: Profile; size?: number } = $props();
+	// The font size comes from where it's used. `avatar={false}` leaves the
+	// picture out, for layouts that place it themselves.
+	let {
+		profile,
+		size = 20,
+		avatar = true
+	}: { profile: Profile; size?: number; avatar?: boolean } = $props();
 </script>
 
 <a class="user-link" href={profileHref(profile)}>
-	<Avatar {profile} {size} />
+	{#if avatar}<Avatar {profile} {size} />{/if}
 	<span class="name">{profile.username}</span>
 </a>
 

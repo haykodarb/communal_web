@@ -3,13 +3,15 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
-	import Avatar from '#lib/components/Avatar.svelte';
 	import Button from '#lib/components/Button.svelte';
+	import Avatar from '#lib/components/Avatar.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import BackButton from '#lib/components/BackButton.svelte';
 	import CoverImage from '#lib/components/CoverImage.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
+	import ReviewItem from '#lib/components/ReviewItem.svelte';
 	import TextField from '#lib/components/TextField.svelte';
+	import UserLink from '#lib/components/UserLink.svelte';
 	import {
 		deleteLoan,
 		getLoanById,
@@ -17,9 +19,10 @@
 		updateLoanReview
 	} from '#lib/data/api.ts';
 	import type { Loan } from '#lib/data/models.ts';
-	import { formatShortDate } from '#lib/format.ts';
-	import { t } from '#lib/i18n.svelte.ts';
+	import { formatMediumDate } from '#lib/format.ts';
+	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import { profileHref } from '#lib/links.ts';
 	import type { PageProps } from './$types';
 
 	// The loan comes from the load (through the page cache).
@@ -91,70 +94,102 @@
 	<div class="menu"><BackButton /></div>
 
 	{#if loan}
-		<p class="who">
-			{#if isOwned}
-				<a href={`/profile/${loan.loanee.id}`}><Avatar profile={loan.loanee} size={50} /></a>
-				<a href={`/profile/${loan.loanee.id}`}>{loan.loanee.username}</a>
-				{t('requested this book')}
-			{:else}
-				{t('You requested this book from')}
-				<a href={`/profile/${loan.owner.id}`}>{loan.owner.username}</a>
-			{/if}
+		<!-- The other person, like a contact: avatar, name, and their role. -->
+		{@const person = isOwned ? loan.loanee : loan.owner}
+		{@const role = isOwned
+			? loan.returned
+				? 'Borrowed this book'
+				: loan.accepted
+					? 'Is borrowing this book'
+					: loan.rejected
+						? 'Asked to borrow this book'
+						: 'Wants to borrow this book'
+			: loan.returned
+				? 'Owner · you borrowed this book'
+				: loan.accepted
+					? "Owner · you're borrowing this book"
+					: 'Owner · you asked to borrow this book'}
+		<!-- A rejected request reads like an accepted one, except the middle step
+		     says Rejected, in red with a red ring. -->
+		{@const steps = [
+			{ label: t('Requested'), date: loan.created_at, active: true },
+			loan.rejected
+				? { label: t('Rejected'), date: loan.rejected_at, active: true, rejected: true }
+				: { label: t('Accepted'), date: loan.accepted_at, active: loan.accepted },
+			{ label: t('Returned'), date: loan.returned_at, active: loan.returned }
+		]}
+		<div class="who">
+			<a class="who-avatar" href={profileHref(person)} tabindex="-1" aria-hidden="true">
+				<Avatar profile={person} size={44} />
+			</a>
+			<div class="who-text">
+				<span class="who-name"><UserLink profile={person} avatar={false} /></span>
+				<span class="who-role">
+					{t(role)}
+				</span>
+			</div>
 			<!-- Message the other person to arrange the handover. -->
 			<span class="message">
 				<PillButton
 					icon="comment-dots-bold"
 					label={t('Message')}
-					onclick={() => goto(`/messages/${isOwned ? loan!.loanee.id : loan!.owner.id}`)}
+					onclick={() => goto(`/messages/${person.id}`)}
 				/>
 			</span>
-		</p>
+		</div>
 
-		<!-- Flutter _bookCard: title/author left, small cover right. -->
-		<a class="book" href={isOwned ? `/my-books/${loan.book.id}` : `/book/${loan.book.id}`}>
-			<div class="info">
-				<h1>{loan.book.title}</h1>
-				<p class="author">{loan.book.author}</p>
-			</div>
-			<div class="cover">
-				<CoverImage bucket="book_covers" path={loan.book.image_path} alt={loan.book.title} />
-			</div>
-		</a>
+		<!-- One card for the loan's story: the book, the timeline and, once there
+		     is one, the review. The actions stay below it. -->
+		<div class="loan-card">
+			<a class="book pressable" href={isOwned ? `/my-books/${loan.book.id}` : `/book/${loan.book.id}`}>
+				<div class="info">
+					<h1>{loan.book.title}</h1>
+					<p class="author">{loan.book.author}</p>
+				</div>
+				<div class="cover">
+					<CoverImage bucket="book_covers" path={loan.book.image_path} alt={loan.book.title} />
+				</div>
+			</a>
 
-		<h2>{t('Request status')}</h2>
-		{#if loan.rejected}
-			<p class="muted">{t('Loan rejected')}</p>
-		{:else}
-			{@const steps = [
-				{ label: t('Requested'), date: loan.created_at, active: true },
-				{ label: t('Accepted'), date: loan.accepted_at, active: loan.accepted },
-				{ label: t('Returned'), date: loan.returned_at, active: loan.returned }
-			]}
+			<hr class="divider" />
+
 			<ol
 				class="timeline"
-				style:--progress={timelineShown ? (loan.returned ? 1 : loan.accepted ? 0.5 : 0) : 0}
+				style:--progress={timelineShown
+					? loan.returned
+						? 1
+						: loan.accepted || loan.rejected
+							? 0.5
+							: 0
+					: 0}
 			>
 				{#each steps as step (step.label)}
-					<li class:active={step.active}>
-						<span class="date">{step.active ? formatShortDate(step.date ?? loan.created_at) : ''}</span>
+					<li class:active={step.active} class:rejected={'rejected' in step}>
+						<span class="date">
+							{step.active ? formatMediumDate(step.date ?? loan.created_at, i18n.locale) : ''}
+						</span>
 						<span class="dot"></span>
 						<span class="label">{step.label}</span>
 					</li>
 				{/each}
 			</ol>
-		{/if}
+
+			{#if loan.review && (loan.accepted || loan.returned) && !editingReview}
+				<hr class="divider" />
+				<ReviewItem
+					author={loan.loanee}
+					text={loan.review}
+					tag={isOwned ? t('Review') : t('Your review')}
+					showAuthor={false}
+				/>
+			{/if}
+		</div>
 
 		<div class="actions">
 			{#if loan.rejected}
 				<!-- Nothing left to do on a rejected loan. -->
 			{:else if isOwned}
 				{#if loan.accepted || loan.returned}
-					{#if loan.review}
-						<div class="review">
-							<span class="review-title">{t('Review by')} {loan.loanee.username}</span>
-							<p>{loan.review}</p>
-						</div>
-					{/if}
 					{#if !loan.returned}
 						<Button
 							loading={busy}
@@ -190,10 +225,6 @@
 						</Button>
 					</div>
 				{:else if loan.review}
-					<div class="review">
-						<span class="review-title">{t('Your review')}</span>
-						<p>{loan.review}</p>
-					</div>
 					<Button variant="tonal" onclick={startEditing}>{t('Edit review')}</Button>
 				{:else}
 					<Button onclick={startEditing}>{t('Add review')}</Button>
@@ -229,29 +260,51 @@
 	.who {
 		display: flex;
 		align-items: center;
-		gap: 5px;
-		padding: 8px;
-		font-size: 14px;
+		gap: 12px;
+		padding: 8px 4px;
+	}
+	.who-avatar {
+		display: flex;
+		flex: 0 0 auto;
+	}
+	.who-text {
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+	}
+	.who-name {
+		font-size: 15px;
+	}
+	.who-role {
+		font-size: 12px;
+		color: var(--on-surface-variant);
 	}
 	.message {
 		margin-left: auto;
 	}
-	.who a {
-		display: flex;
-		color: var(--secondary);
-		font-weight: 600;
-		text-decoration: none;
-	}
-	.book {
+	.loan-card {
 		margin-top: 8px;
+		padding: 12px 20px 20px;
+		border-radius: 12px;
+		background: var(--surface-container);
+	}
+	/* The book row links to the book; its hover tint reaches a little past the
+	   text (negative margin) so it doesn't hug it. */
+	.book {
 		display: flex;
 		align-items: center;
 		gap: 15px;
-		padding: 20px;
-		border-radius: 12px;
-		background: var(--surface-container);
+		margin: 0 -10px;
+		padding: 8px 10px;
+		border-radius: 8px;
 		color: inherit;
 		text-decoration: none;
+	}
+	.divider {
+		margin: 14px 0;
+		border: none;
+		border-top: 1px solid color-mix(in srgb, var(--on-surface) 8%, transparent);
 	}
 	.cover {
 		flex: 0 0 auto;
@@ -268,11 +321,6 @@
 		font-size: 14px;
 		font-weight: 600;
 		line-height: 1.2;
-	}
-	h2 {
-		margin: 28px 0 10px;
-		font-size: 16px;
-		font-weight: 700;
 	}
 	.author {
 		margin-top: 10px;
@@ -322,6 +370,14 @@
 	.timeline li.active {
 		color: var(--on-surface);
 	}
+	/* The Rejected step: the same ring and label, in red. */
+	.timeline li.rejected .dot,
+	.timeline li.rejected .label {
+		color: var(--error);
+	}
+	.timeline li.rejected .dot {
+		background: var(--error);
+	}
 	.date {
 		min-height: 14px;
 		font-size: 10px;
@@ -340,7 +396,8 @@
 		position: absolute;
 		inset: 5px;
 		border-radius: 50%;
-		background: var(--surface);
+		/* The card's colour, so the dot reads as a ring. */
+		background: var(--surface-container);
 	}
 	.label {
 		font-size: 12px;
@@ -356,20 +413,6 @@
 	.row {
 		display: flex;
 		gap: 20px;
-	}
-	.review {
-		padding: 16px;
-		border-radius: 10px;
-		background: var(--surface-container);
-	}
-	.review-title {
-		font-size: 13px;
-		font-weight: 700;
-	}
-	.review p {
-		margin-top: 8px;
-		font-size: 15px;
-		line-height: 1.5;
 	}
 	.error-text {
 		text-align: center;

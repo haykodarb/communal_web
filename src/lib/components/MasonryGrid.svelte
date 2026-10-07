@@ -63,7 +63,10 @@
 	function measureCells() {
 		if (!grid || columnWidth <= 0) return;
 		for (const cell of grid.children as HTMLCollectionOf<HTMLElement>) {
-			const hk = heightKey(cell.dataset.key!);
+			// Keyed by the width the cell actually has: while the column count is
+			// switching, the DOM can still be at the old width, and storing that
+			// height under the new width would leave gaps in the layout.
+			const hk = `${cell.offsetWidth}:${cell.dataset.key!}`;
 			const height = cell.offsetHeight;
 			if (heightCache[hk] !== height) heightCache[hk] = height;
 		}
@@ -79,23 +82,24 @@
 		return () => observer.disconnect();
 	});
 
-	/** Columns this close in height count as equally short (about one title line). */
-	const TIE_PX = 24;
-
 	const layout = $derived.by(() => {
 		const bottoms = Array<number>(count).fill(0);
 		const placed = new Map<string, { column: number; top: number }>();
+		let total = 0;
 		for (const it of items) {
 			const k = key(it);
 			const height = heightCache[heightKey(k)];
 			if (height === undefined) continue;
-			// The leftmost of the (nearly) shortest columns: within TIE_PX of the
-			// shortest counts as a tie, so cards fill left to right and the left
-			// column ends up longest, then the next.
+			// The leftmost column no more than half a card (on average) taller than
+			// the shortest. Cards then fill left to right, row by row, so the
+			// left column gets any extra one and ends longest, then the next; a
+			// column only catches up out of turn once it's clearly behind.
+			const tie = placed.size ? total / placed.size / 2 : 0;
 			const shortest = Math.min(...bottoms);
-			const column = bottoms.findIndex((b) => b - shortest <= TIE_PX);
+			const column = bottoms.findIndex((b) => b - shortest <= tie);
 			placed.set(k, { column, top: bottoms[column] });
 			bottoms[column] += height + gap;
+			total += height;
 		}
 		return { placed, height: Math.max(0, ...bottoms.map((b) => b - gap)) };
 	});

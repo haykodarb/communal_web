@@ -35,6 +35,9 @@ PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 ```
 
+Optional, development only: `VITE_SIMULATED_REVIEWS=23` gives every book that
+many fake reviews, to try the book page's review list without real data.
+
 ## Scripts
 
 ```sh
@@ -59,6 +62,11 @@ src/
     realtime.ts              # one postgres_changes channel, listeners per table
     unread.svelte.ts         # drawer badges: unread notifications/messages
     paged.svelte.ts          # infinite-scroll list state (createPaged)
+    cache.ts                 # stale-while-revalidate page data cache
+    url-state.ts             # list filters (search, filter sheet) kept in the URL
+    motion.ts                # transitions that respect reduced motion
+    page-transitions.ts      # View Transitions between pages (slide/fade)
+    format.ts                # dates
     links.ts                 # bookHref/profileHref (own vs other user's pages)
     validate.ts              # Flutter-style length validator
     theme.svelte.ts          # light/dark theme (persisted)
@@ -67,6 +75,8 @@ src/
       models.ts              # TS mirrors of the Flutter models
       api.ts                 # Supabase queries/mutations, image upload, signed URLs
     components/              # Button, TextField, Drawer, cards, dialogs, Fab, ...
+                             # MasonryGrid, Skeleton, UserLink, StatusBadge,
+                             # ReviewItem/ReviewCard, ...
       community/             # Books / Discuss / Members tabs
   routes/
     +page.svelte, +page.ts   # /: landing page; signed-in users go to /home
@@ -120,8 +130,9 @@ Every screen was compared side by side with the Flutter web build.
 - **App bars**: `PageBar` is Flutter's AppBar (centered 18px title). On mobile
   only drawer destinations get the menu bar; pushed pages show their own
   back bar, as in Flutter.
-- **Lists** use `CommonListView` spacing (10px padding, 5px gaps, 2-column
-  book grids) and load more on scroll (`createPaged` + `Sentinel`).
+- **Lists** use `CommonListView` spacing (10px padding, 5px gaps) and load
+  more on scroll (`createPaged` + `Sentinel`). Book grids are a masonry
+  (`MasonryGrid`, Flutter's `SliverMasonryGrid`).
 
 Bugs found in the Flutter app while comparing (not fixed there):
 
@@ -133,6 +144,39 @@ Bugs found in the Flutter app while comparing (not fixed there):
 - The notifications query works, but `getNotificationById` embeds
   `memberships`, which `notifications` has no relationship to, so it fails.
 - Search results can show a stale cover (list items reuse their image).
+
+## Not in Flutter yet
+
+The web app has moved ahead of the Flutter app in these areas (to port):
+
+- **Home** (`/home`, now the default page): on loan (2 loan cards), recent
+  reviews from friends (2 review cards) and new in your network (infinite
+  masonry grid). **Reviews by friends** (`/reviews`): every review your
+  friends wrote.
+- **Grids**: up to 3 columns when there's room (Home, Search, profiles), 2 on
+  narrow screens; cards fill row by row so the left column ends longest. No
+  "via ..." note on book cards.
+- **Book page**: cover and title scroll away and a compact bar (back,
+  thumbnail, title, author) takes over; the cover opens in a lightbox. Info
+  row: an outlined pill with uppercase labels, Status (coloured badge) ·
+  Added ("Nov 16, 2025") · Owner (avatar + name) or Visibility on your own
+  books. "Reviews · N" heading, hidden when there are none; the owner's review
+  is tagged "Owner's note"; only cut-off reviews (4 lines) expand; review text
+  is selectable and 14px.
+- **Loan page**: the other person as a contact row (avatar, name, a role line
+  that follows the loan's state, Message); one card holding the book, the
+  timeline and the review (tagged "Review" / "Your review"); timeline dates as
+  "Jan 27, 2026"; a rejected loan shows Requested → Rejected (red ring and
+  label) → Returned.
+- **Cards**: `LoanCard` and `ReviewCard` share a box (96x128 cover, date
+  top-right, review text pinned to the bottom).
+- **Theme**: `--error` is a real red; `--primary-strong` (a deeper pink)
+  for outlined pill buttons, for contrast on the beige background.
+- **Links to people**: `UserLink` (avatar + name, underline that grows on
+  hover).
+- **Web only** (no Flutter equivalent planned): page transitions and the other
+  animations, hover/press state layers, list filters in the URL, the search
+  bar's clear button.
 
 ## SvelteKit 3 conventions
 

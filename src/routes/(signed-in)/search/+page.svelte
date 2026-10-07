@@ -12,13 +12,14 @@
 	import UserRow from '#lib/components/UserRow.svelte';
 	import VerticalBookCard from '#lib/components/VerticalBookCard.svelte';
 	import MasonryGrid from '#lib/components/MasonryGrid.svelte';
-	import { store } from '#lib/cache.ts';
+	import { peek, store } from '#lib/cache.ts';
 	import { searchNetworkBooks, searchUsers } from '#lib/data/api.ts';
 	import { keys, PAGE_SIZE, SEARCH_TABS } from '#lib/data/pages.ts';
 	import { selectTab, tabFrom } from '#lib/tabs.ts';
 	import type { NetworkBook, Profile } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
+	import { textFrom, writeFilters } from '#lib/url-state.ts';
 	import type { PageProps } from './$types';
 
 	// SearchPage: Books (friends and friends of friends) and Users tabs sharing
@@ -26,10 +27,16 @@
 	// first page (through the page cache).
 	let { data }: PageProps = $props();
 
-	let query = $state('');
+	// The search text is in the URL too (?q=), so coming back keeps it; each
+	// query's results are cached under their own key (sharing the list's prefix),
+	// so they show at once instead of a skeleton.
+	let query = $state(textFrom(untrack(() => data.query), 'q'));
+	const cacheKey = (base: string) => (query.trim() ? `${base}:${query.trim()}` : base);
 	// The selected tab is local state so it switches right away; the URL (and its
 	// load) follows. It re-syncs if the URL changes externally.
-	let tab = $state<number>(SEARCH_TABS.indexOf(tabFrom(page.url, SEARCH_TABS)));
+	// Starts from the load's tab: coming back, page.url can still be the previous
+	// page's for a moment.
+	let tab = $state<number>(SEARCH_TABS.indexOf(untrack(() => data.tab)));
 	$effect(() => {
 		tab = SEARCH_TABS.indexOf(tabFrom(page.url, SEARCH_TABS));
 	});
@@ -42,36 +49,49 @@
 		(page) => searchNetworkBooks(query, { page, pageSize: PAGE_SIZE.network }),
 		PAGE_SIZE.network,
 		{
-			seed: untrack(() => data.books),
-			onChange: (state) => {
-				if (!query) store(keys.network(), state);
-			}
+			seed: untrack(() => (query.trim() ? peek(cacheKey(keys.network())) : data.books)),
+			onChange: (state) => store(cacheKey(keys.network()), state)
 		}
 	);
 	const users = createPaged<Profile>(
 		(page) => searchUsers(data.userId, query, { page, pageSize: PAGE_SIZE.network }),
 		PAGE_SIZE.network,
 		{
-			seed: untrack(() => data.users),
-			onChange: (state) => {
-				if (!query) store(keys.users(), state);
-			}
+			seed: untrack(() => (query.trim() ? peek(cacheKey(keys.users())) : data.users)),
+			onChange: (state) => store(cacheKey(keys.users()), state)
 		}
 	);
 
-	// A tab switch, or a background refresh of the cached list, lands here. With
-	// a query typed, the tab's list is searched instead.
+	// A background refresh of the cached list lands here. With a query typed,
+	// the tab's list is searched instead. The load also re-runs when the query is
+	// written into the URL; that brings back the same list, which is ignored (or
+	// every keystroke would search twice).
+	let seenBooks = untrack(() => data.books);
+	let seenUsers = untrack(() => data.users);
 	$effect(() => {
 		const { books: freshBooks, users: freshUsers } = data;
 		untrack(() => {
-			if (freshBooks) {
-				if (query) books.reset();
+			if (freshBooks && freshBooks !== seenBooks) {
+				seenBooks = freshBooks;
+				if (query.trim()) books.reset(true);
 				else books.seed(freshBooks);
-			} else if (freshUsers) {
-				if (query) users.reset();
+			} else if (freshUsers && freshUsers !== seenUsers) {
+				seenUsers = freshUsers;
+				if (query.trim()) users.reset(true);
 				else users.seed(freshUsers);
 			}
 		});
+	});
+
+	// Opened with a query in the URL and nothing cached for it: search.
+	untrack(() => {
+		const list = tab === 0 ? books : users;
+		const base = tab === 0 ? keys.network() : keys.users();
+		if (query.trim() && !peek(cacheKey(base))) list.reset();
+	});
+
+	$effect(() => {
+		writeFilters({ q: query.trim() || null });
 	});
 
 	const current = $derived(tab === 0 ? books : users);

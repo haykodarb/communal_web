@@ -53,9 +53,8 @@
 		cursor: pointer;
 	}
 	/* No hover or press layer (app.css): it would fight the sliding selection. */
-	.tab:hover,
-	.tab:active {
-		box-shadow: none;
+	.tab::after {
+		display: none;
 	}
 	/* Hovering an unselected tab draws an underline under the label from left
 	   to right; selecting it (the class change) draws it back to the left while

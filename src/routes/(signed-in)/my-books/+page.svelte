@@ -12,12 +12,13 @@
 	import SearchBar from '#lib/components/SearchBar.svelte';
 	import StickySearch from '#lib/components/StickySearch.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
-	import { store } from '#lib/cache.ts';
+	import { peek, store } from '#lib/cache.ts';
 	import { getBooksForUser, type BooksQuery } from '#lib/data/api.ts';
 	import { keys, PAGE_SIZE } from '#lib/data/pages.ts';
 	import type { Book } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
+	import { optionFrom, optionParam, textFrom, writeFilters } from '#lib/url-state.ts';
 	import type { PageProps } from './$types';
 
 	// BookListPage: the user's books, searchable, with BookListController's
@@ -27,13 +28,23 @@
 	const ORDERS: NonNullable<BooksQuery['orderBy']>[] = ['created_at', 'title', 'author'];
 	const FILTERS: (boolean | undefined)[] = [undefined, false, true]; // all / available / loaned
 
-	let search = $state('');
-	let orderIndex = $state(0);
-	let filterIndex = $state(0);
+	// The search and the sheet's choices live in the URL (?q=, ?sort=, ?show=),
+	// so coming back to the list keeps them.
+	const SORT = ['date', 'title', 'author'];
+	const SHOW = ['all', 'available', 'loaned'];
+
+	let search = $state(textFrom(untrack(() => data.query), 'q'));
+	let orderIndex = $state(optionFrom(untrack(() => data.query), 'sort', SORT));
+	let filterIndex = $state(optionFrom(untrack(() => data.query), 'show', SHOW));
 	let sheet: FilterSheet;
 
-	/** The cache holds the unfiltered list only. */
 	const unfiltered = () => !search && orderIndex === 0 && filterIndex === 0;
+
+	// Each filter combination is cached under its own key (sharing the list's
+	// prefix, so mutations drop them too), so coming back to a filtered list
+	// shows it at once, every page included, instead of a skeleton.
+	const cacheKey = () =>
+		unfiltered() ? keys.myBooks(data.userId) : `${keys.myBooks(data.userId)}:${JSON.stringify([search.trim(), orderIndex, filterIndex])}`;
 
 	const books = createPaged<Book>(
 		(page) =>
@@ -46,12 +57,23 @@
 			}),
 		PAGE_SIZE.books,
 		{
-			seed: untrack(() => data.books),
+			seed: untrack(() => (unfiltered() ? data.books : peek(cacheKey()))),
 			onChange: (state) => {
-				if (unfiltered()) store(keys.myBooks(data.userId), state);
+				store(cacheKey(), state);
 			}
 		}
 	);
+
+	// Opened with filters from the URL and nothing cached for them: load.
+	if (!untrack(unfiltered) && !untrack(() => peek(cacheKey()))) books.reset();
+
+	$effect(() => {
+		writeFilters({
+			q: search.trim() || null,
+			sort: optionParam(SORT, orderIndex),
+			show: optionParam(SHOW, filterIndex)
+		});
+	});
 
 	// A background refresh of the cached list lands here.
 	$effect(() => {

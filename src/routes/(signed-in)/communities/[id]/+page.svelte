@@ -161,9 +161,8 @@
 			background-color 200ms ease;
 	}
 	/* No hover or press layer (app.css): it would fight the growing selection. */
-	.tab:hover,
-	.tab:active {
-		box-shadow: none;
+	.tab::after {
+		display: none;
 	}
 	.tab.selected {
 		flex-grow: 3;

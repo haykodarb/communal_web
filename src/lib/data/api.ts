@@ -488,10 +488,13 @@ export async function getCurrentLoanForBook(
 	);
 }
 
-// Dev-only: pretend every book has this many reviews, so the book page's
-// vertical infinite scroll can be exercised without real data. Set to 0 (or
-// build for production) to use the real reviews.
-const SIMULATED_REVIEWS = import.meta.env.DEV ? 23 : 0;
+// Dev-only, opt-in: VITE_SIMULATED_REVIEWS=23 in .env pretends every book has
+// that many reviews, so the book page's infinite scroll can be exercised
+// without real data. Unset (the default) or in production builds, the real
+// reviews are used.
+const SIMULATED_REVIEWS = import.meta.env.DEV
+	? Number(import.meta.env.VITE_SIMULATED_REVIEWS ?? 0) || 0
+	: 0;
 
 const SAMPLE_REVIEW =
 	'An absorbing read. The argument builds patiently and the last third ties everything ' +
@@ -521,6 +524,19 @@ function simulatedReviews(page: number, pageSize: number): Loan[] {
 			returned: true
 		};
 	});
+}
+
+/** How many readers reviewed a book (accepted loans with a review). */
+export async function getReviewCountForBook(bookId: string): Promise<number> {
+	if (SIMULATED_REVIEWS > 0) return SIMULATED_REVIEWS;
+	const { count, error } = await supabase
+		.from('loans')
+		.select('id', { count: 'exact', head: true })
+		.eq('book', bookId)
+		.eq('accepted', true)
+		.not('review', 'is', null);
+	if (error) throw error;
+	return count ?? 0;
 }
 
 /** Accepted loans of a book that left a review, newest first. */

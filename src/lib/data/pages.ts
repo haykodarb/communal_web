@@ -14,6 +14,7 @@ import {
 	getMutualFriends,
 	getNotifications,
 	getProfile,
+	getReviewCountForBook,
 	getReviewsForBook,
 	getReviewsForUser,
 	isOnWaitlist,
@@ -236,7 +237,7 @@ export const book = (userId: string, id: string, depends: Depends) =>
 	cached(
 		keys.book(id),
 		async () => {
-			const [found, currentLoan, reviews, waitlisted] = await Promise.all([
+			const [found, currentLoan, reviews, waitlisted, reviewCount] = await Promise.all([
 				getBookById(id),
 				getCurrentLoanForBook(userId, id),
 				list<Loan>(
@@ -246,10 +247,11 @@ export const book = (userId: string, id: string, depends: Depends) =>
 					(loans) => avatars(loans.map((l) => l.loanee)),
 					depends
 				),
-				isOnWaitlist(userId, id)
+				isOnWaitlist(userId, id),
+				getReviewCountForBook(id)
 			]);
 			if (found) await covers([found]);
-			return { book: found, currentLoan, reviews, waitlisted };
+			return { book: found, currentLoan, reviews, waitlisted, reviewCount };
 		},
 		depends
 	);

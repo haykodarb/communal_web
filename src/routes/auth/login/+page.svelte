@@ -37,6 +37,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{t('Sign in')} · Communal</title>
+</svelte:head>
+
 <div class="form-page">
 	<AuthHeader title={t('Sign in')} />
 

@@ -6,6 +6,7 @@
 	import { i18n } from '#lib/i18n.svelte.ts';
 	import { nav } from '#lib/nav.svelte.ts';
 	import { theme } from '#lib/theme.svelte.ts';
+	import Toasts from '#lib/components/Toasts.svelte';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
@@ -44,3 +45,4 @@
 </svelte:head>
 
 {@render children()}
+<Toasts />

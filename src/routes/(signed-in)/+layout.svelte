@@ -13,26 +13,43 @@
 		unsubscribeFromDatabase
 	} from '#lib/realtime.ts';
 	import { unread } from '#lib/unread.svelte.ts';
-	import { fade, fly } from '#lib/motion.ts';
+	import { afterExitAnimation } from '#lib/motion.ts';
 	import { pageTransitions } from '#lib/page-transitions.ts';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
 
 	let width = $state(0);
+	let drawerDialog: HTMLDialogElement = $state()!;
 
 	const isMobile = $derived(width > 0 && width < 800);
+
+	// Mirrors drawer.open onto the native <dialog>: showModal() gets the
+	// backdrop, inert page and focus trap for free, and close() (below) plays
+	// the slide-out before actually closing so .closing can transition out.
+	$effect(() => {
+		if (!isMobile || !drawerDialog) return;
+		if (drawer.open) {
+			if (!drawerDialog.open) drawerDialog.showModal();
+		} else if (drawerDialog.open) {
+			closeDrawer();
+		}
+	});
+
+	function closeDrawer() {
+		afterExitAnimation(drawerDialog, 'closing', () => drawerDialog.close());
+	}
 
 	const titles: Record<string, string> = {
 		'/home': 'Home',
 		'/my-books': 'My Books',
 		'/communities': 'Communities',
-		'/loans': 'Loans',
 		'/messages': 'Messages',
 		'/friends': 'Friends',
 		'/notifications': 'Notifications',
 		'/my-profile': 'My Profile',
-		'/search': 'Search'
+		'/search': 'Search',
+		'/settings': 'Settings'
 	};
 	const titleKey = $derived(
 		Object.keys(titles).find((path) => page.url.pathname.startsWith(path)) ?? '/home'
@@ -81,6 +98,12 @@
 	});
 </script>
 
+<svelte:head>
+	{#if topLevel}
+		<title>{t(titles[titleKey])} · Communal</title>
+	{/if}
+</svelte:head>
+
 <svelte:window bind:innerWidth={width} />
 
 <!-- While a navigation waits for its data (only shown if it takes a moment). -->
@@ -106,18 +129,21 @@
 			</header>
 			{/if}
 
-			{#if drawer.open}
-				<button
-					class="scrim"
-					type="button"
-					transition:fade={{ duration: 200 }}
-					aria-label={t('Close')}
-					onclick={() => (drawer.open = false)}
-				></button>
-				<aside class="drawer-panel" transition:fly={{ x: -320, opacity: 1, duration: 250 }}>
-					<Drawer onNavigate={() => (drawer.open = false)} />
-				</aside>
-			{/if}
+			<dialog
+				bind:this={drawerDialog}
+				class="drawer-dialog"
+				aria-label={t('Menu')}
+				onclick={(event) => {
+					if (event.target === drawerDialog) drawer.open = false;
+				}}
+				oncancel={(event) => {
+					event.preventDefault();
+					drawer.open = false;
+				}}
+				onclose={() => (drawer.open = false)}
+			>
+				<Drawer onNavigate={() => (drawer.open = false)} />
+			</dialog>
 
 			<main class="content" style:--sticky-top={topLevel ? '56px' : '0px'}>
 				{@render children()}
@@ -252,22 +278,59 @@
 	.appbar-spacer {
 		width: 40px;
 	}
-	.scrim {
+	/* Modal on mobile: showModal() puts it in the top layer (above everything,
+	   z-index is irrelevant), makes the page behind inert, and traps focus. */
+	.drawer-dialog {
 		position: fixed;
-		inset: 0;
-		border: none;
-		background: rgba(0, 0, 0, 0.4);
-		z-index: 30;
-		cursor: pointer;
-	}
-	.drawer-panel {
-		position: fixed;
-		top: 0;
-		left: 0;
-		bottom: 0;
+		inset: 0 auto 0 0;
+		margin: 0;
 		width: 300px;
-		z-index: 31;
+		max-width: 100vw;
+		/* Full height: the UA's modal max-height would stop it short of the bottom. */
+		height: 100%;
+		max-height: none;
+		padding: 0;
+		border: none;
 		box-shadow: 0 0 24px rgba(0, 0, 0, 0.4);
+		background: transparent;
+		color: inherit;
+	}
+	.drawer-dialog::backdrop {
+		background: rgba(0, 0, 0, 0.4);
+	}
+	/* Slides in from the left while the backdrop fades in; reversed on close
+	   (app.css turns both off under prefers-reduced-motion). */
+	.drawer-dialog[open] {
+		animation: drawer-in 250ms var(--ease-standard);
+	}
+	.drawer-dialog[open]::backdrop {
+		animation: backdrop-in 200ms ease;
+	}
+	.drawer-dialog:global(.closing) {
+		animation: drawer-out 200ms ease-in forwards;
+	}
+	.drawer-dialog:global(.closing)::backdrop {
+		animation: backdrop-out 200ms ease-in forwards;
+	}
+	@keyframes drawer-in {
+		from {
+			transform: translateX(-100%);
+		}
+	}
+	@keyframes drawer-out {
+		to {
+			transform: translateX(-100%);
+		}
+	}
+	@keyframes backdrop-in {
+		from {
+			opacity: 0;
+		}
+	}
+	@keyframes backdrop-out {
+		to {
+			opacity: 0;
+		}
 	}
 	.content {
 		flex: 1;

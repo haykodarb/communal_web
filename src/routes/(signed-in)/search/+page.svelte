@@ -3,6 +3,8 @@
 	import { page } from '$app/state';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import ErrorState from '#lib/components/ErrorState.svelte';
 	import SearchBar from '#lib/components/SearchBar.svelte';
 	import Loading from '#lib/components/Loading.svelte';
 	import Skeleton from '#lib/components/Skeleton.svelte';
@@ -95,6 +97,19 @@
 	});
 
 	const current = $derived(tab === 0 ? books : users);
+
+	// A zero-result search echoes the query back, instead of the generic
+	// "nothing here" wording the list shows with no query typed at all.
+	const booksEmptyMessage = $derived(
+		query.trim()
+			? t('No books match "{query}"').replace('{query}', query.trim())
+			: t('No books found among your friends and their friends.')
+	);
+	const usersEmptyMessage = $derived(
+		query.trim()
+			? t('No users match "{query}"').replace('{query}', query.trim())
+			: t('No users found.')
+	);
 </script>
 
 <div class="page">
@@ -119,9 +134,9 @@
 				</MasonryGrid>
 			</div>
 		{:else if books.error}
-			<FillCenter><p class="error">{books.error}</p></FillCenter>
+			<FillCenter><ErrorState message={books.error} onretry={() => books.reset()} /></FillCenter>
 		{:else if !books.loading && !books.hasMore}
-			<p class="muted">{t('No books found among your friends and their friends.')}</p>
+			<EmptyState icon="search" title={booksEmptyMessage} />
 		{/if}
 	{:else if users.items.length > 0}
 		<div class="users results" class:stale={users.refreshing}>
@@ -130,9 +145,9 @@
 			{/each}
 		</div>
 	{:else if users.error}
-		<FillCenter><p class="error">{users.error}</p></FillCenter>
+		<FillCenter><ErrorState message={users.error} onretry={() => users.reset()} /></FillCenter>
 	{:else if !users.loading && !users.hasMore}
-		<p class="muted">{t('No users found, likely a network issue.')}</p>
+		<EmptyState icon="search" title={usersEmptyMessage} />
 	{/if}
 
 	{#if current.loading || (current.items.length === 0 && current.hasMore)}
@@ -181,14 +196,6 @@
 	}
 	.results.stale {
 		opacity: 0.4;
-	}
-	.muted {
-		padding: 20px;
-		text-align: center;
-		color: var(--on-surface-variant);
-	}
-	.error {
-		color: var(--error);
 	}
 	/* Flutter adds a 20px spacer above the search bar on desktop. */
 	@media (min-width: 800px) {

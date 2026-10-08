@@ -170,7 +170,13 @@
 			error = t('Could not send message, likely network error.');
 		}
 	}
+
+	const pageTitle = $derived(`${chatter?.username ?? t('Messages')} · Communal`);
 </script>
+
+<svelte:head>
+	<title>{pageTitle}</title>
+</svelte:head>
 
 <div class="chat">
 	<!-- Flutter: the chatter's username is the AppBar title. -->

@@ -2,7 +2,10 @@
 	import { appear } from '#lib/motion.ts';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import ErrorState from '#lib/components/ErrorState.svelte';
 	import FilterRow from '#lib/components/FilterRow.svelte';
+	import PageBar from '#lib/components/PageBar.svelte';
 	import Loading from '#lib/components/Loading.svelte';
 	import Skeleton from '#lib/components/Skeleton.svelte';
 	import FilterSheet from '#lib/components/FilterSheet.svelte';
@@ -104,7 +107,13 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{t('Loans')} · Communal</title>
+</svelte:head>
+
 <div class="page">
+	<PageBar title={t('Loans')} />
+
 	<StickySearch>
 		<SearchBar bind:value={search} onSearch={() => loans.reset()} onFilter={() => sheet.open()} />
 	</StickySearch>
@@ -116,11 +125,9 @@
 			{/each}
 		</div>
 	{:else if loans.error}
-		<FillCenter><p class="error">{loans.error}</p></FillCenter>
+		<FillCenter><ErrorState message={loans.error} onretry={() => loans.reset()} /></FillCenter>
 	{:else if !loans.loading && !loans.hasMore}
-		<div class="empty">
-			<p>{t('No loans found.')}</p>
-		</div>
+		<EmptyState icon="loans" title={t('No loans found.')} />
 	{/if}
 	{#if loans.loading}
 		{#if loans.items.length === 0}
@@ -163,21 +170,5 @@
 		flex-direction: column;
 		gap: 10px;
 		padding: 10px 5px 0;
-	}
-	.error {
-		padding: 0 10px;
-		color: var(--error);
-	}
-	.empty {
-		margin-top: 40px;
-		padding: 0 20px;
-		text-align: center;
-		color: var(--on-surface-variant);
-	}
-	/* Flutter adds a 20px spacer above the search bar on desktop. */
-	@media (min-width: 800px) {
-		.page {
-			padding-top: 20px;
-		}
 	}
 </style>

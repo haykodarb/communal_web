@@ -30,6 +30,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{t('Recover password')} · Communal</title>
+</svelte:head>
+
 <div class="form-page">
 	<AuthHeader title={t('Recover password')} />
 

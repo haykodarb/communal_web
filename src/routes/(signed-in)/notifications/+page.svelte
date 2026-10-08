@@ -3,9 +3,10 @@
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { onMount, untrack } from 'svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import ErrorState from '#lib/components/ErrorState.svelte';
 	import Loading from '#lib/components/Loading.svelte';
 	import Skeleton from '#lib/components/Skeleton.svelte';
-	import Icon from '#lib/components/Icon.svelte';
 	import NotificationCard from '#lib/components/NotificationCard.svelte';
 	import {
 		acceptFriendRequest,
@@ -59,6 +60,13 @@
 			markRead(fresh.items);
 		});
 	});
+
+	/** The error branch's "Try again": reopens the door loadMore() closed. */
+	function retry() {
+		error = '';
+		hasMore = true;
+		loadMore();
+	}
 
 	async function loadMore() {
 		if (loading || !hasMore) return;
@@ -155,12 +163,9 @@
 	{/if}
 
 	{#if notifications.length === 0 && error}
-		<FillCenter><p class="error-text">{error}</p></FillCenter>
+		<FillCenter><ErrorState message={error} onretry={retry} /></FillCenter>
 	{:else if notifications.length === 0 && !loading && !hasMore}
-		<div class="empty">
-			<Icon name="bell" size={40} />
-			<p>{t('No notifications yet.')}</p>
-		</div>
+		<EmptyState icon="bell" title={t('No notifications yet.')} />
 	{:else}
 		<div class="list">
 			{#each notifications as notification, i (notification.id)}
@@ -203,14 +208,6 @@
 	.header {
 		margin-top: 5px;
 		font-size: 14px;
-		color: var(--on-surface-variant);
-	}
-	.empty {
-		margin-top: 50px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 14px;
 		color: var(--on-surface-variant);
 	}
 	.sentinel {

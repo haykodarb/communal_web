@@ -45,6 +45,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{t('Create account')} · Communal</title>
+</svelte:head>
+
 {#if submitted}
 	<div class="container confirm">
 		<p class="confirm-title">{t('A confirmation link has been sent to:')}</p>

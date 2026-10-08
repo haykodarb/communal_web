@@ -4,7 +4,7 @@
 	look in the app's font and colors.
 -->
 <svelte:head>
-	<title>Privacy Policy</title>
+	<title>Privacy Policy · Communal</title>
 </svelte:head>
 
 <article class="privacy">

@@ -23,6 +23,7 @@
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
 	import { profileHref } from '#lib/links.ts';
+	import { toast } from '#lib/toast.svelte.ts';
 	import type { PageProps } from './$types';
 
 	// The loan comes from the load (through the page cache).
@@ -46,13 +47,19 @@
 	const isOwned = $derived(loan ? loan.owner.id === data.userId : false);
 
 	/** Asks for confirmation, runs the action, then reloads the loan. */
-	async function act(title: string, action: () => Promise<void>, leave = false) {
+	async function act(
+		title: string,
+		action: () => Promise<void>,
+		leave = false,
+		doneMessage?: string
+	) {
 		confirmTitle = t(title);
 		if (!(await confirmDialog.confirm())) return;
 		busy = true;
 		error = '';
 		try {
 			await action();
+			if (doneMessage) toast.show(t(doneMessage));
 			if (leave) {
 				await goto('/loans', { replace: true });
 				return;
@@ -88,7 +95,13 @@
 	onMount(() => {
 		requestAnimationFrame(() => requestAnimationFrame(() => (timelineShown = true)));
 	});
+
+	const pageTitle = $derived(`${loan?.book.title ?? t('Loans')} · Communal`);
 </script>
+
+<svelte:head>
+	<title>{pageTitle}</title>
+</svelte:head>
 
 <div class="detail">
 	<div class="menu"><BackButton /></div>
@@ -202,14 +215,16 @@
 					<div class="row">
 						<Button
 							loading={busy}
-							onclick={() => act('Accept this loan?', () => setLoanFlag(id, 'accepted'))}
+							onclick={() =>
+								act('Accept this loan?', () => setLoanFlag(id, 'accepted'), false, 'Loan approved')}
 						>
 							{t('Approve')}
 						</Button>
 						<Button
 							variant="tonal"
 							disabled={busy}
-							onclick={() => act('Reject this loan?', () => setLoanFlag(id, 'rejected'), true)}
+							onclick={() =>
+								act('Reject this loan?', () => setLoanFlag(id, 'rejected'), true, 'Loan rejected')}
 						>
 							{t('Reject')}
 						</Button>

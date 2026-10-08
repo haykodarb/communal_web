@@ -9,6 +9,7 @@
 	import { formatMediumDate } from '#lib/format.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import { toast } from '#lib/toast.svelte.ts';
 	import type { PageProps } from './$types';
 
 	// BookOwnedPage. It comes from the load (through the page cache).
@@ -27,12 +28,19 @@
 		try {
 			await deleteBook(book);
 			await goto('/my-books', { replace: true });
+			toast.show(t('Book deleted'));
 		} catch (e) {
 			error = errorMessage(e);
 			deleting = false;
 		}
 	}
+
+	const pageTitle = $derived(`${book?.title ?? t('My Books')} · Communal`);
 </script>
+
+<svelte:head>
+	<title>{pageTitle}</title>
+</svelte:head>
 
 {#if book}
 	<BookDetail

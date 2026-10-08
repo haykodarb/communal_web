@@ -2,6 +2,8 @@
 	import { appear } from '#lib/motion.ts';
 	import { untrack } from 'svelte';
 	import FillCenter from '#lib/components/FillCenter.svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import ErrorState from '#lib/components/ErrorState.svelte';
 	import Loading from '#lib/components/Loading.svelte';
 	import Skeleton from '#lib/components/Skeleton.svelte';
 	import PageBar from '#lib/components/PageBar.svelte';
@@ -35,6 +37,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>{t('Reviews by friends')} · Communal</title>
+</svelte:head>
+
 <div class="page">
 	<PageBar title={t('Reviews by friends')} />
 
@@ -47,10 +53,10 @@
 			{/each}
 		</div>
 	{:else if reviews.error}
-		<FillCenter><p class="error">{reviews.error}</p></FillCenter>
+		<FillCenter><ErrorState message={reviews.error} onretry={() => reviews.reset()} /></FillCenter>
 	{:else if !reviews.loading && !reviews.hasMore}
 		<FillCenter>
-			<p class="muted">{t('Your friends have not reviewed any books yet.')}</p>
+			<EmptyState icon="comment-dots" title={t('Your friends have not reviewed any books yet.')} />
 		</FillCenter>
 	{/if}
 
@@ -75,11 +81,5 @@
 		flex-direction: column;
 		gap: 10px;
 		padding: 0 15px;
-	}
-	.error {
-		color: var(--error);
-	}
-	.muted {
-		color: var(--on-surface-variant);
 	}
 </style>

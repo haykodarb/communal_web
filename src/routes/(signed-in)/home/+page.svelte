@@ -3,9 +3,10 @@
 	import { goto } from '$app/navigation';
 	import Loading from '#lib/components/Loading.svelte';
 	import Skeleton from '#lib/components/Skeleton.svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import ErrorState from '#lib/components/ErrorState.svelte';
 	import LoanCard from '#lib/components/LoanCard.svelte';
 	import MasonryGrid from '#lib/components/MasonryGrid.svelte';
-	import PillButton from '#lib/components/PillButton.svelte';
 	import ReviewCard from '#lib/components/ReviewCard.svelte';
 	import Sentinel from '#lib/components/Sentinel.svelte';
 	import VerticalBookCard from '#lib/components/VerticalBookCard.svelte';
@@ -83,12 +84,15 @@
 				{#snippet item(book)}<VerticalBookCard {book} />{/snippet}
 			</MasonryGrid>
 		{:else if network.error}
-			<p class="error-text">{network.error}</p>
+			<ErrorState message={network.error} onretry={() => network.reset()} />
 		{:else if !network.loading && !network.hasMore}
-			<div class="empty">
-				<p>{t('No books from your friends yet. Find people you know in Search.')}</p>
-				<PillButton icon="search" label={t('Search')} onclick={() => goto('/search?tab=users')} />
-			</div>
+			<EmptyState
+				icon="book"
+				title={t('No books from your friends yet. Find people you know in Search.')}
+				actionLabel={t('Search')}
+				actionIcon="search"
+				onaction={() => goto('/search?tab=users')}
+			/>
 		{/if}
 		{#if network.loading}
 			{#if network.items.length === 0}
@@ -148,22 +152,6 @@
 		padding: 0 5px;
 	}
 
-	.error-text {
-		padding: 0 5px;
-		font-size: 13px;
-		color: var(--error);
-	}
-	.empty {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 12px;
-		padding: 30px 20px;
-		border-radius: 10px;
-		background: var(--surface-container);
-		text-align: center;
-		color: var(--on-surface-variant);
-	}
 
 	/* Recent reviews: the profile Reviews tab's cards, with the reviewer. */
 	.reviews {

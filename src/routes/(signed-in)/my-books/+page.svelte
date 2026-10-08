@@ -6,6 +6,8 @@
 	import Loading from '#lib/components/Loading.svelte';
 	import Skeleton from '#lib/components/Skeleton.svelte';
 	import BookCard from '#lib/components/BookCard.svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import ErrorState from '#lib/components/ErrorState.svelte';
 	import Fab from '#lib/components/Fab.svelte';
 	import FilterRow from '#lib/components/FilterRow.svelte';
 	import FilterSheet from '#lib/components/FilterSheet.svelte';
@@ -96,12 +98,15 @@
 			{/each}
 		</div>
 	{:else if books.error}
-		<FillCenter><p class="error">{books.error}</p></FillCenter>
+		<FillCenter><ErrorState message={books.error} onretry={() => books.reset()} /></FillCenter>
 	{:else if !books.loading && !books.hasMore}
-		<div class="empty">
-			<p>{t('No books found in your library.')}</p>
-			<p>{t('You can upload some with the floating button on the bottom right.')}</p>
-		</div>
+		<EmptyState
+			icon="library"
+			title={t('No books found in your library.')}
+			actionLabel={t('Add book')}
+			actionIcon="plus"
+			href="/my-books/create"
+		/>
 	{/if}
 	{#if books.loading}
 		{#if books.items.length === 0}
@@ -147,19 +152,6 @@
 		flex-direction: column;
 		gap: 10px;
 		padding: 10px 5px 0;
-	}
-	.error {
-		padding: 0 10px;
-		color: var(--error);
-	}
-	.empty {
-		margin-top: 40px;
-		padding: 0 20px;
-		text-align: center;
-		color: var(--on-surface-variant);
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
 	}
 	/* Flutter adds a 20px spacer above the search bar on desktop. */
 	@media (min-width: 800px) {

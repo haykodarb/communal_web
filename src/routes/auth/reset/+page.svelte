@@ -41,6 +41,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{t('Reset password')} · Communal</title>
+</svelte:head>
+
 <div class="form-page">
 	<AuthHeader title={t('Reset password')} />
 

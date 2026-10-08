@@ -73,10 +73,6 @@
 
 <svelte:head>
 	<title>Communal</title>
-	<meta
-		name="description"
-		content="Share books with your communities. Upload your physical collection to a decentralized library, shared among the circles you're connected with."
-	/>
 </svelte:head>
 
 <div class="landing">

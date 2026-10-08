@@ -78,7 +78,7 @@
 		padding: 0 10px;
 		border-radius: 5px;
 		font-size: 14px;
-		background: color-mix(in srgb, #7dae6b 25%, transparent);
+		background: color-mix(in srgb, var(--success) 25%, transparent);
 	}
 	.status.loaned {
 		background: color-mix(in srgb, var(--tertiary) 25%, transparent);
@@ -87,7 +87,7 @@
 		width: 8px;
 		height: 8px;
 		border-radius: 50%;
-		background: #7dae6b;
+		background: var(--success);
 	}
 	.status.loaned .dot {
 		background: var(--tertiary);

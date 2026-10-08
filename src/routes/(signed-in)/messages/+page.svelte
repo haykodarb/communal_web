@@ -3,6 +3,8 @@
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import ErrorState from '#lib/components/ErrorState.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import { deleteChatWith, getChats } from '#lib/data/api.ts';
 	import type { Message, Profile } from '#lib/data/models.ts';
@@ -71,12 +73,9 @@
 	{/if}
 
 	{#if chats.length === 0 && error}
-		<FillCenter><p class="error-text">{error}</p></FillCenter>
+		<FillCenter><ErrorState message={error} onretry={load} /></FillCenter>
 	{:else if chats.length === 0}
-		<div class="empty">
-			<Icon name="message" size={40} />
-			<p>{t('No messages yet.')}</p>
-		</div>
+		<EmptyState icon="message" title={t('No messages yet.')} />
 	{:else}
 		<ul class="list">
 			{#each chats as chat (chat.id)}
@@ -217,14 +216,6 @@
 		.delete {
 			opacity: 1;
 		}
-	}
-	.empty {
-		margin-top: 50px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 14px;
-		color: var(--on-surface-variant);
 	}
 	.error-text {
 		padding: 0 20px 12px;

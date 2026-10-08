@@ -15,7 +15,7 @@
 
 <style>
 	.badge {
-		--tone: #7dae6b;
+		--tone: var(--success);
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;

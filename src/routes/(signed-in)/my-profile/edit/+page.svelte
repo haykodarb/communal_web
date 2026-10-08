@@ -11,10 +11,10 @@
 	import { auth } from '#lib/auth.svelte.ts';
 	import { isUsernameAvailable, updateProfile } from '#lib/data/api.ts';
 	import type { Profile } from '#lib/data/models.ts';
-	import { i18n, t } from '#lib/i18n.svelte.ts';
+	import { t } from '#lib/i18n.svelte.ts';
 	import { currentProfile } from '#lib/profile.svelte.ts';
-	import { theme } from '#lib/theme.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import { toast } from '#lib/toast.svelte.ts';
 
 	let profile = $state<Profile | null>(null);
 	let username = $state('');
@@ -86,12 +86,17 @@
 			);
 			currentProfile.set(updated);
 			await goto('/my-profile', { replace: true });
+			toast.show(t('Profile saved'));
 		} catch (e) {
 			error = errorMessage(e);
 			loading = false;
 		}
 	}
 </script>
+
+<svelte:head>
+	<title>{t('Edit profile')} · Communal</title>
+</svelte:head>
 
 <div class="page">
 	<PageBar title={t('Edit profile')} mobileTitle />
@@ -132,7 +137,7 @@
 				/>
 			</div>
 
-			<!-- Flutter order: avatar, username, bio, show email, language, theme. -->
+			<!-- Flutter order: avatar, username, bio, show email. Language and theme live in Settings. -->
 			<div class="row">
 				<span>{t('Show email?')}</span>
 				<Switch value={showEmail} onchange={() => (showEmail = !showEmail)} ariaLabel={t('Show email?')}>
@@ -151,29 +156,12 @@
 					{#snippet right()}<Icon name="x" size={20} />{/snippet}
 				</Switch>
 			</div>
-			<div class="row">
-				<span>{t('Language')}</span>
-				<Switch value={i18n.locale === 'en'} onchange={i18n.toggle} ariaLabel={t('Change language')}>
-					{#snippet left()}EN{/snippet}
-					{#snippet right()}ES{/snippet}
-				</Switch>
-			</div>
-			<div class="row">
-				<span>{t('Theme')}</span>
-				<Switch value={!theme.isDark} onchange={theme.toggle} ariaLabel={t('Toggle theme')}>
-					{#snippet left()}<Icon name="sun" size={20} />{/snippet}
-					{#snippet right()}<Icon name="moon" size={20} />{/snippet}
-				</Switch>
-			</div>
 
 			{#if error}
 				<p class="error-text">{error}</p>
 			{/if}
 
 			<Button type="submit" {loading}>{t('Save')}</Button>
-			<Button variant="outlined" onclick={() => goto('/my-profile/account')}>
-				{t('Account settings')}
-			</Button>
 		</form>
 	{:else}
 		<Loading />

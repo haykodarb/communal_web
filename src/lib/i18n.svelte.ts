@@ -142,6 +142,13 @@ const es: Record<string, string> = {
 	Reject: 'Rechazar',
 	'Accept this loan?': '¿Aceptar este préstamo?',
 	'Reject this loan?': '¿Rechazar este préstamo?',
+	'Book added': 'Libro agregado',
+	'Changes saved': 'Cambios guardados',
+	'Book deleted': 'Libro eliminado',
+	'Profile saved': 'Perfil guardado',
+	'Loan requested': 'Préstamo solicitado',
+	'Loan approved': 'Préstamo aprobado',
+	'Friend request sent': 'Solicitud de amistad enviada',
 	'Review by': 'Reseña por',
 	'Write a review...': 'Escribir una reseña...',
 	Cancel: 'Cancelar',
@@ -228,6 +235,9 @@ const es: Record<string, string> = {
 		'No se encontraron libros en ninguna de tus comunidades.',
 	'No users found, likely a network issue.':
 		'No se encontraron usuarios, probablemente un error de red.',
+	'No users found.': 'No se encontraron usuarios.',
+	'No books match "{query}"': 'No se encontraron libros para "{query}"',
+	'No users match "{query}"': 'No se encontraron usuarios para "{query}"',
 	Previous: 'Anterior',
 	'No books.': 'Sin libros.',
 	'No reviews.': 'Sin reseñas.',
@@ -279,6 +289,7 @@ const es: Record<string, string> = {
 	Withdraw: 'Retirar',
 	'You have no friends yet. Find people in Search.':
 		'Todavía no tenés amigos. Buscá personas en Buscar.',
+	'You have no friends yet.': 'Todavía no tenés amigos.',
 	'You have not sent any requests.': 'No enviaste ninguna solicitud.',
 	'via {name}': 'vía {name}',
 	Home: 'Inicio',
@@ -307,13 +318,7 @@ const es: Record<string, string> = {
 	' is available again.': ' está disponible de nuevo.',
 	Message: 'Mensaje',
 	'Show my books to friends of friends': 'Mostrar mis libros a amigos de amigos',
-	'Account settings': 'Configuración de la cuenta',
-	'Please enter a valid email': 'Ingresá un email válido',
-	'New email': 'Nuevo email',
-	'Change email': 'Cambiar email',
-	'Check your inbox: we sent a confirmation link to {email}.':
-		'Revisá tu bandeja de entrada: enviamos un link de confirmación a {email}.',
-	'Waiting for confirmation of {email}.': 'Esperando la confirmación de {email}.',
+	Preferences: 'Preferencias',
 	'New password': 'Nueva contraseña',
 	'Repeat password': 'Repetir contraseña',
 	'Change password': 'Cambiar contraseña',
@@ -331,6 +336,7 @@ function readInitial(): Locale {
 		const stored = localStorage.getItem(STORAGE_KEY);
 		if (stored === 'en' || stored === 'es') return stored;
 	}
+	if (typeof navigator !== 'undefined' && navigator.language?.startsWith('es')) return 'es';
 	return 'en';
 }
 

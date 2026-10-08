@@ -2,20 +2,18 @@
 	import { goto } from '$app/navigation';
 	import Button from '#lib/components/Button.svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
-	import PageBar from '#lib/components/PageBar.svelte';
+	import Icon from '#lib/components/Icon.svelte';
+	import Switch from '#lib/components/Switch.svelte';
 	import TextField from '#lib/components/TextField.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
 	import { deleteAccount } from '#lib/data/api.ts';
 	import { errorMessage } from '#lib/errors.ts';
-	import { t } from '#lib/i18n.svelte.ts';
+	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { currentProfile } from '#lib/profile.svelte.ts';
+	import { theme } from '#lib/theme.svelte.ts';
 
-	// Account settings: change email, change password, delete account.
-	let email = $state('');
-	let emailError = $state('');
-	let emailMessage = $state('');
-	let emailLoading = $state(false);
-
+	// Settings: language, theme, change password, delete account. The title is
+	// only in the mobile app bar, like the other drawer pages.
 	let password = $state('');
 	let passwordRepeat = $state('');
 	let passwordError = $state('');
@@ -25,30 +23,6 @@
 	let deleteError = $state('');
 	let deleteLoading = $state(false);
 	let confirmDialog: ConfirmDialog;
-
-	const currentEmail = $derived(auth.user?.email ?? '');
-	// Set while a change waits for the link sent to the new address.
-	const pendingEmail = $derived(auth.user?.new_email ?? '');
-
-	async function changeEmail() {
-		emailMessage = '';
-		emailError = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())
-			? ''
-			: t('Please enter a valid email');
-		if (emailError) return;
-		emailLoading = true;
-		try {
-			await auth.updateEmail(email.trim());
-			emailMessage = t('Check your inbox: we sent a confirmation link to {email}.').replace(
-				'{email}',
-				email.trim()
-			);
-			email = '';
-		} catch (e) {
-			emailError = errorMessage(e);
-		}
-		emailLoading = false;
-	}
 
 	async function changePassword() {
 		passwordMessage = '';
@@ -87,24 +61,22 @@
 </script>
 
 <div class="page">
-	<PageBar title={t('Account settings')} mobileTitle />
-
 	<section>
-		<h2>{t('Email')}</h2>
-		<p class="muted">{currentEmail}</p>
-		{#if pendingEmail}
-			<p class="muted">{t('Waiting for confirmation of {email}.').replace('{email}', pendingEmail)}</p>
-		{/if}
-		<TextField
-			label={t('New email')}
-			type="email"
-			autocomplete="email"
-			bind:value={email}
-			error={emailError}
-			onsubmit={changeEmail}
-		/>
-		{#if emailMessage}<p class="success">{emailMessage}</p>{/if}
-		<Button loading={emailLoading} onclick={changeEmail}>{t('Change email')}</Button>
+		<h2>{t('Preferences')}</h2>
+		<div class="row">
+			<span>{t('Language')}</span>
+			<Switch value={i18n.locale === 'en'} onchange={i18n.toggle} ariaLabel={t('Change language')}>
+				{#snippet left()}EN{/snippet}
+				{#snippet right()}ES{/snippet}
+			</Switch>
+		</div>
+		<div class="row">
+			<span>{t('Theme')}</span>
+			<Switch value={!theme.isDark} onchange={theme.toggle} ariaLabel={t('Toggle theme')}>
+				{#snippet left()}<Icon name="sun" size={20} />{/snippet}
+				{#snippet right()}<Icon name="moon" size={20} />{/snippet}
+			</Switch>
+		</div>
 	</section>
 
 	<section>
@@ -160,6 +132,13 @@
 		font-size: 16px;
 		font-weight: 600;
 		color: var(--secondary);
+	}
+	.row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		font-size: 16px;
 	}
 	/* Destructive section: the outlined button picks up the error color. */
 	.danger {

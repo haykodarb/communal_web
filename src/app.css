@@ -51,6 +51,7 @@
 	--on-surface-variant: #797593;
 	--shadow: #cecacd;
 	--error: #c8463f;
+	--success: #7dae6b;
 	--outline: color-mix(in srgb, var(--on-surface) 14%, transparent);
 }
 
@@ -69,6 +70,7 @@
 	--on-surface-variant: #908caa;
 	--shadow: #524f67;
 	--error: #ef6e6b;
+	--success: #9ccc8f;
 	--outline: color-mix(in srgb, var(--on-surface) 18%, transparent);
 }
 

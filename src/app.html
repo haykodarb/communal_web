@@ -6,17 +6,46 @@
 		<meta name="text-scale" content="scale" />
 		<meta name="theme-color" content="#f2e9e1" />
 		<title>Communal</title>
+		<meta
+			name="description"
+			content="Share books with your communities. Upload your physical collection to a decentralized library, shared among the circles you're connected with."
+		/>
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Communal" />
+		<meta property="og:title" content="Communal" />
+		<meta
+			property="og:description"
+			content="Share books with your communities. Upload your physical collection to a decentralized library, shared among the circles you're connected with."
+		/>
+		<meta property="og:url" content="https://communal.ar/" />
+		<meta property="og:image" content="https://communal.ar/assets/icon-512.png" />
+		<meta name="twitter:card" content="summary" />
 		<script>
-			// Apply the persisted theme before first paint to avoid a flash.
+			// Apply the persisted theme (or the system's, if none was chosen yet)
+			// before first paint to avoid a flash. Mirrors #lib/theme.svelte.ts.
 			try {
-				const theme = localStorage.getItem('communal-theme');
-				if (theme === 'light' || theme === 'dark') {
-					document.documentElement.dataset.theme = theme;
-				}
-				const locale = localStorage.getItem('communal-locale');
-				if (locale === 'en' || locale === 'es') {
-					document.documentElement.lang = locale;
-				}
+				const SURFACE = { light: '#f2e9e1', dark: '#1a1825' };
+				const stored = localStorage.getItem('communal-theme');
+				const theme =
+					stored === 'light' || stored === 'dark'
+						? stored
+						: matchMedia('(prefers-color-scheme: dark)').matches
+							? 'dark'
+							: 'light';
+				document.documentElement.dataset.theme = theme;
+				document
+					.querySelector('meta[name="theme-color"]')
+					?.setAttribute('content', SURFACE[theme]);
+
+				// Mirrors #lib/i18n.svelte.ts's readInitial().
+				const storedLocale = localStorage.getItem('communal-locale');
+				const locale =
+					storedLocale === 'en' || storedLocale === 'es'
+						? storedLocale
+						: navigator.language?.startsWith('es')
+							? 'es'
+							: 'en';
+				document.documentElement.lang = locale;
 			} catch (e) {
 				/* ignore */
 			}

@@ -9,6 +9,7 @@
 	import { getBookById, updateBook } from '#lib/data/api.ts';
 	import type { Book } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
+	import { toast } from '#lib/toast.svelte.ts';
 
 	let book = $state<Book | null>(null);
 	let loading = $state(true);
@@ -23,6 +24,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>{t('Edit book')} · Communal</title>
+</svelte:head>
+
 <div class="page">
 	<PageBar title={t('Edit book')} mobileTitle />
 
@@ -35,6 +40,7 @@
 			onsubmit={async (form, cover) => {
 				await updateBook(auth.user!.id, book!, form, cover);
 				await goto(`/my-books/${id}`, { replace: true });
+				toast.show(t('Changes saved'));
 			}}
 		/>
 	{:else}

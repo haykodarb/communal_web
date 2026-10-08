@@ -10,6 +10,7 @@
 	import type { Friendship, Profile } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
+	import { toast } from '#lib/toast.svelte.ts';
 	import type { PageProps } from './$types';
 
 	// Another user's profile (ProfileOtherPage), with friendship and message
@@ -52,6 +53,7 @@
 	const addFriend = () =>
 		run(t('Add {name} as friend?').replace('{name}', profile!.username), async () => {
 			friendship = await sendFriendRequest(userId, id);
+			toast.show(t('Friend request sent'));
 		});
 
 	const removeFriend = () =>
@@ -64,7 +66,13 @@
 				friendship = null;
 			}
 		);
+
+	const pageTitle = $derived(`${profile?.username ?? t('Profile')} · Communal`);
 </script>
+
+<svelte:head>
+	<title>{pageTitle}</title>
+</svelte:head>
 
 <div class="page">
 	<PageBar title={t('Profile')} />

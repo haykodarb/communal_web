@@ -1,83 +1,93 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
-	import Avatar from './Avatar.svelte';
-	import Icon from './Icon.svelte';
-	import { auth } from '#lib/auth.svelte.ts';
-	import { t } from '#lib/i18n.svelte.ts';
-	import { currentProfile } from '#lib/profile.svelte.ts';
-	import { unread } from '#lib/unread.svelte.ts';
-	import { backOut } from 'svelte/easing';
-	import { scale } from '#lib/motion.ts';
+	import { goto } from "$app/navigation";
+	import { page } from "$app/state";
+	import Avatar from "./Avatar.svelte";
+	import Icon from "./Icon.svelte";
+	import { auth } from "#lib/auth.svelte.ts";
+	import { t } from "#lib/i18n.svelte.ts";
+	import { currentProfile } from "#lib/profile.svelte.ts";
+	import { unread } from "#lib/unread.svelte.ts";
+	import { backOut } from "svelte/easing";
+	import { scale } from "#lib/motion.ts";
 
 	let { onNavigate }: { onNavigate?: () => void } = $props();
 
 	const badges: Record<string, () => number> = {
-		'/notifications': () => unread.notifications,
-		'/messages': () => unread.messages,
-		'/friends': () => unread.friendRequests
+		"/notifications": () => unread.notifications,
+		"/messages": () => unread.messages,
+		"/friends": () => unread.friendRequests,
 	};
 
 	// Order mirrors the Flutter CommonDrawerWidget, plus Home (web only for now).
+	// Profile is reached through the header.
 	const items = [
-		{ href: '/home', key: 'Home', icon: 'home' },
-		{ href: '/my-profile', key: 'Profile', icon: 'user' },
-		{ href: '/notifications', key: 'Notifications', icon: 'bell' },
-		{ href: '/search', key: 'Search', icon: 'search' },
-		{ href: '/messages', key: 'Messages', icon: 'message' },
-		{ href: '/friends', key: 'Friends', icon: 'users' },
-		{ href: '/my-books', key: 'My Books', icon: 'library' },
+		{ href: "/home", key: "Home", icon: "home" },
+		{ href: "/search", key: "Search", icon: "search" },
+		{ href: "/notifications", key: "Notifications", icon: "bell" },
+		{ href: "/messages", key: "Messages", icon: "message" },
+		{ href: "/friends", key: "Friends", icon: "users" },
+		{ href: "/my-books", key: "My Books", icon: "library" },
 		// Communities is commented out of the Flutter drawer too; the pages still work by URL.
-		{ href: '/loans', key: 'Loans', icon: 'loans' }
+		// Loans is reached from Home's "See all".
+		{ href: "/settings", key: "Settings", icon: "gear" },
 	];
 
 	const profile = $derived(currentProfile.value);
 
 	$effect(() => {
 		const userId = auth.user?.id;
-		if (userId && currentProfile.value?.id !== userId) currentProfile.load(userId);
+		if (userId && currentProfile.value?.id !== userId)
+			currentProfile.load(userId);
 	});
 
 	const current = $derived(page.url.pathname);
-	const isActive = (href: string) => current === href || current.startsWith(href + '/');
-
-	function go(href: string) {
-		onNavigate?.();
-		goto(href);
-	}
+	const isActive = (href: string) =>
+		current === href || current.startsWith(href + "/");
 
 	async function logout() {
 		onNavigate?.();
 		await auth.signOut();
-		goto('/auth');
+		goto("/auth");
 	}
 </script>
 
 <div class="drawer">
-	<button class="header" type="button" onclick={() => go('/my-profile')}>
+	<a
+		class="header pressable"
+		href="/my-profile"
+		onclick={() => onNavigate?.()}
+	>
 		{#if profile}<Avatar {profile} size={80} />{/if}
-		<span class="username">{profile?.username ?? ''}</span>
-	</button>
+		<span class="username">{profile?.username ?? ""}</span>
+	</a>
 
 	<nav class="items" style:flex-grow={items.length}>
 		{#each items as item (item.href)}
-			<button
-				class="item"
+			<a
+				class="item pressable"
 				class:active={isActive(item.href)}
-				type="button"
-				onclick={() => go(item.href)}
+				aria-current={isActive(item.href) ? "page" : undefined}
+				href={item.href}
+				onclick={() => onNavigate?.()}
 			>
 				<Icon name={item.icon} size={26} />
 				<span>{t(item.key)}</span>
 				{#if (badges[item.href]?.() ?? 0) > 0}
 					<!-- Pops whenever the count changes. -->
 					{#key badges[item.href]()}
-						<span class="badge" in:scale|global={{ start: 0.4, duration: 260, easing: backOut }}>
+						<span
+							class="badge"
+							in:scale|global={{
+								start: 0.4,
+								duration: 260,
+								easing: backOut,
+							}}
+						>
 							{badges[item.href]()}
 						</span>
 					{/key}
 				{/if}
-			</button>
+			</a>
 		{/each}
 	</nav>
 
@@ -85,7 +95,7 @@
 	<div class="version">Version: {__APP_VERSION__}</div>
 	<button class="logout" type="button" onclick={logout}>
 		<Icon name="logout" size={26} />
-		<span>{t('Logout')}</span>
+		<span>{t("Logout")}</span>
 	</button>
 </div>
 
@@ -107,6 +117,7 @@
 		border: none;
 		cursor: pointer;
 		text-align: left;
+		text-decoration: none;
 		color: var(--on-surface);
 	}
 	.username {
@@ -138,6 +149,7 @@
 		font-size: 16px;
 		cursor: pointer;
 		text-align: left;
+		text-decoration: none;
 	}
 	.items .item {
 		border-top: 2px solid var(--surface);

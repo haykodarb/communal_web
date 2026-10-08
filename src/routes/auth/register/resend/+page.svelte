@@ -31,6 +31,10 @@
 	}
 </script>
 
+<svelte:head>
+	<title>{t('Resend confirmation')} · Communal</title>
+</svelte:head>
+
 <div class="form-page">
 	<AuthHeader title={t('Resend confirmation')} />
 

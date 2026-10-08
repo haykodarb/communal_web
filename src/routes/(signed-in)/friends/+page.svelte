@@ -4,6 +4,8 @@
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
+	import EmptyState from '#lib/components/EmptyState.svelte';
+	import ErrorState from '#lib/components/ErrorState.svelte';
 	import Loading from '#lib/components/Loading.svelte';
 	import Skeleton from '#lib/components/Skeleton.svelte';
 	import PillButton from '#lib/components/PillButton.svelte';
@@ -106,7 +108,7 @@
 			deleteFriendship(f.id)
 		);
 
-	const empty = ['You have no friends yet. Find people in Search.', 'No pending requests.'];
+	const empty = ['You have no friends yet.', 'No pending requests.'];
 </script>
 
 <div class="page">
@@ -156,9 +158,17 @@
 			{/each}
 		</div>
 	{:else if current.error}
-		<FillCenter><p class="error-text">{current.error}</p></FillCenter>
+		<FillCenter>
+			<ErrorState message={current.error} onretry={() => current.reset()} />
+		</FillCenter>
 	{:else if !current.loading && !current.hasMore}
-		<p class="muted">{t(empty[tab])}</p>
+		<EmptyState
+			icon="users"
+			title={t(empty[tab])}
+			actionLabel={tab === 0 ? t('Search') : undefined}
+			actionIcon={tab === 0 ? 'search' : undefined}
+			href={tab === 0 ? '/search' : undefined}
+		/>
 	{/if}
 
 	{#if current.loading || (current.items.length === 0 && current.hasMore)}
@@ -189,11 +199,6 @@
 		flex-direction: column;
 		gap: 5px;
 		padding: 0 10px 20px;
-	}
-	.muted {
-		padding: 20px;
-		text-align: center;
-		color: var(--on-surface-variant);
 	}
 	.error-text {
 		padding: 0 20px;

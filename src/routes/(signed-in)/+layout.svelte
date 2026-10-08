@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
+	import { goto, preloadData } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import Drawer from '#lib/components/Drawer.svelte';
 	import Icon from '#lib/components/Icon.svelte';
@@ -78,6 +78,37 @@
 			unread.stop();
 			unsubscribeFromDatabase();
 		};
+	});
+
+	// Once the app has settled, preload the main pages (their code and data,
+	// through the page cache) one after another, so the first visit to each is
+	// instant instead of waiting for a hover. Later visits refresh in the
+	// background as usual.
+	const WARM = [
+		'/home',
+		'/my-books',
+		'/messages',
+		'/notifications',
+		'/friends',
+		'/loans',
+		'/search',
+		'/search?tab=users',
+		'/my-profile'
+	];
+	$effect(() => {
+		if (!userId) return;
+		let cancelled = false;
+		const idle = (fn: () => void) =>
+			'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 3000 }) : setTimeout(fn, 1500);
+		idle(async () => {
+			for (const path of WARM) {
+				if (cancelled) return;
+				if (path === page.url.pathname + page.url.search) continue;
+				// A failed preload only means that page loads on visit as before.
+				await preloadData(path).catch(() => {});
+			}
+		});
+		return () => (cancelled = true);
 	});
 
 	// Changes made elsewhere (the other person, another device) make cached page

@@ -38,7 +38,7 @@
 				<span class="block loan-cover"></span>
 			</div>
 		{:else if kind === 'row'}
-			<div class="card row">
+			<div class="card user-row">
 				<span class="block avatar"></span>
 				{@render line(widths[i % widths.length], 14)}
 			</div>
@@ -128,7 +128,7 @@
 		flex: 0 0 96px;
 	}
 	/* UserRow: a 44px avatar and the name. */
-	.row {
+	.user-row {
 		display: flex;
 		align-items: center;
 		gap: 12px;

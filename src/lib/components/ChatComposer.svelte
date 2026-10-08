@@ -37,7 +37,7 @@
 	.composer {
 		display: flex;
 		align-items: flex-end;
-		gap: 10px;
+		gap: 6px;
 		padding: 10px;
 	}
 	textarea {
@@ -50,7 +50,9 @@
 		color: var(--on-surface);
 		font: inherit;
 		font-size: 14px;
-		line-height: 1.4;
+		/* One line is 52px (20 + 2 × 14 padding + 2 × 2 border), the send
+		   button's size. */
+		line-height: 20px;
 		resize: none;
 		field-sizing: content;
 		outline: none;
@@ -59,8 +61,12 @@
 		border-color: var(--primary);
 	}
 	.send {
+		flex: 0 0 52px;
+		height: 52px;
 		display: flex;
-		padding: 14px;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
 		border: none;
 		border-radius: 50%;
 		background: var(--primary);

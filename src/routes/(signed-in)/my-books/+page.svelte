@@ -1,11 +1,11 @@
 <script lang="ts">
-	import { appear } from '#lib/motion.ts';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import { untrack } from 'svelte';
 	import { goto } from '$app/navigation';
 	import Loading from '#lib/components/Loading.svelte';
 	import Skeleton from '#lib/components/Skeleton.svelte';
-	import BookCard from '#lib/components/BookCard.svelte';
+	import MasonryGrid from '#lib/components/MasonryGrid.svelte';
+	import VerticalBookCard from '#lib/components/VerticalBookCard.svelte';
 	import EmptyState from '#lib/components/EmptyState.svelte';
 	import ErrorState from '#lib/components/ErrorState.svelte';
 	import Fab from '#lib/components/Fab.svelte';
@@ -88,14 +88,16 @@
 
 <div class="page">
 	<StickySearch>
-		<SearchBar bind:value={search} onSearch={() => books.reset()} onFilter={() => sheet.open()} />
+		<div class="search">
+			<SearchBar bind:value={search} onSearch={() => books.reset()} onFilter={() => sheet.open()} />
+		</div>
 	</StickySearch>
 
 	{#if books.items.length > 0}
-		<div class="list">
-			{#each books.items as book, i (book.id)}
-				<div in:appear={{ index: i % PAGE_SIZE.books }}><BookCard {book} /></div>
-			{/each}
+		<div class="grid">
+			<MasonryGrid items={books.items} key={(b) => b.id} columns={3}>
+				{#snippet item(book)}<VerticalBookCard {book} showLoaned />{/snippet}
+			</MasonryGrid>
 		</div>
 	{:else if books.error}
 		<FillCenter><ErrorState message={books.error} onretry={() => books.reset()} /></FillCenter>
@@ -110,7 +112,7 @@
 	{/if}
 	{#if books.loading}
 		{#if books.items.length === 0}
-			<div class="list"><Skeleton kind="book" count={3} /></div>
+			<div class="grid"><Skeleton kind="grid" count={6} /></div>
 		{:else}
 			<Loading fill={false} />
 		{/if}
@@ -147,11 +149,13 @@
 		display: flex;
 		flex-direction: column;
 	}
-	.list {
-		display: flex;
-		flex-direction: column;
-		gap: 10px;
-		padding: 10px 5px 0;
+	.search {
+		/* 5px here + SearchBar's own 5px = the 10px the grid uses. */
+		padding: 0 5px;
+	}
+	/* CommonListView grid: a masonry (see MasonryGrid), as on Search and profiles. */
+	.grid {
+		padding: 10px 10px 20px;
 	}
 	/* Flutter adds a 20px spacer above the search bar on desktop. */
 	@media (min-width: 800px) {

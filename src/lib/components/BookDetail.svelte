@@ -189,11 +189,14 @@
 		min-height: 100dvh;
 		display: flex;
 		flex-direction: column;
-		background: var(--surface);
+		/* The header and content paint their own backgrounds; this one shows
+		   only around the floating actions, continuing the content's. */
+		background: var(--surface-container);
 	}
 	/* The compact bar: sticky at the top but taking no room (the negative
 	   margin), hidden until the title scrolls under it, then fading and sliding
-	   in with a hairline and soft shadow so the reviews pass under it. */
+	   in with a soft drop shadow (as on the chat bar) so the reviews pass
+	   under it. */
 	.bar {
 		position: sticky;
 		top: 0;
@@ -205,9 +208,7 @@
 		gap: 10px;
 		padding: 0 16px 0 8px;
 		background: var(--surface-container);
-		box-shadow:
-			0 1px 0 color-mix(in srgb, var(--on-surface) 8%, transparent),
-			0 2px 10px color-mix(in srgb, var(--shadow) 50%, transparent);
+		box-shadow: 0 3px 12px color-mix(in srgb, var(--shadow) 75%, transparent);
 		opacity: 0;
 		transform: translateY(-8px);
 		pointer-events: none;
@@ -463,15 +464,23 @@
 		color: var(--error);
 	}
 	/* Pinned at the bottom of the viewport. The space above it lives in
-	   .reviews so the buttons hug the edges. */
+	   .reviews so the buttons hug the edges. Transparent around the buttons,
+	   so they float over the reviews scrolling behind them. */
 	.actions {
 		position: sticky;
 		bottom: 0;
 		z-index: 2;
 		display: flex;
 		flex-direction: column;
-		gap: 12px;
-		padding: 5px;
+		gap: 8px;
+		padding: 5px 10px 10px;
+	}
+	/* The outlined and tonal buttons are see-through; give them the solid
+	   colour they had over the old backing so the reviews don't show through. */
+	.actions :global(.btn.outlined) {
 		background: var(--surface-container);
+	}
+	.actions :global(.btn.tonal) {
+		background: color-mix(in srgb, var(--primary) 15%, var(--surface-container));
 	}
 </style>

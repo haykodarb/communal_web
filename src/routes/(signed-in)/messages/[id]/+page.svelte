@@ -222,15 +222,20 @@
 		min-height: 100vh;
 		min-height: 100dvh;
 	}
-	/* The page scrolls; the bar and composer stay pinned over it. */
+	/* The page scrolls; the bar and composer stay pinned over it. Around the
+	   composer it's transparent, so messages show as they scroll behind (the
+	   field and send button keep their own backgrounds). */
 	.bar,
 	.bottom {
 		position: sticky;
 		z-index: 5;
-		background: var(--surface);
 	}
+	/* Raised over the messages scrolling under it by a soft drop shadow (as on
+	   BookDetail's compact bar). */
 	.bar {
 		top: 0;
+		background: var(--surface);
+		box-shadow: 0 3px 12px color-mix(in srgb, var(--shadow) 75%, transparent);
 	}
 	.bottom {
 		bottom: 0;
@@ -279,8 +284,13 @@
 		min-height: 1px;
 		text-align: center;
 	}
+	/* Over the messages, so it gets a backing of its own. */
 	.error-text {
-		padding: 0 20px;
+		width: fit-content;
+		margin: 0 10px;
+		padding: 4px 10px;
+		border-radius: 10px;
+		background: var(--surface);
 		font-size: 13px;
 		color: var(--error);
 	}

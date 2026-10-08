@@ -128,17 +128,27 @@
 		align-items: baseline;
 		justify-content: space-between;
 	}
+	/* Sits on the heading's baseline (.heading aligns to it), so the two read
+	   as one line whatever their sizes. */
 	.see-all {
-		padding: 0 5px;
-		font-size: 13px;
+		margin: 0 5px;
+		font-size: 14px;
+		font-weight: 500;
 		color: var(--primary);
 		text-decoration: none;
+		/* UserLink's underline: a 1px stripe growing from the left on hover. */
+		padding-bottom: 2px;
+		background: linear-gradient(currentColor, currentColor) left bottom / 0% 1px
+			no-repeat;
+		transition: background-size 220ms var(--ease-standard);
 	}
 	@media (hover: hover) {
 		.see-all:hover {
-			text-decoration: underline;
-			text-underline-offset: 3px;
+			background-size: 100% 1px;
 		}
+	}
+	.see-all:focus-visible {
+		background-size: 100% 1px;
 	}
 	a {
 		color: inherit;

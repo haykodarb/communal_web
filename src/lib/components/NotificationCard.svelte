@@ -79,17 +79,26 @@
 	const canRespond = $derived(
 		event === 'created' && table === 'friendships' && notification.friendship !== null
 	);
+	// The whole card is the link. Never with Accept/Reject, which can't sit
+	// inside a link (no notification has both today).
+	const link = $derived(canRespond ? null : href);
 </script>
 
-<div class="card" class:loading>
-	<svelte:element this={href ? 'a' : 'div'} class="body" {href}>
+<svelte:element
+	this={link ? 'a' : 'div'}
+	class="card"
+	class:pressable={link}
+	class:loading
+	href={link}
+>
+	<div class="body">
 		<span class="icon"><Icon name={icon} size={22} /></span>
 		<p class="text">
 			{#each segments as segment, i (i)}
 				{#if segment.strong}<strong>{segment.text}</strong>{:else}{segment.text}{/if}
 			{/each}
 		</p>
-	</svelte:element>
+	</div>
 	{#if canRespond}
 		<div class="actions">
 			<button type="button" class="accept" disabled={loading} onclick={() => onrespond(true)}>
@@ -100,7 +109,7 @@
 			</button>
 		</div>
 	{/if}
-</div>
+</svelte:element>
 
 <style>
 	.card {
@@ -110,6 +119,8 @@
 		padding: 15px;
 		border-radius: 10px;
 		background: var(--surface-container);
+		color: inherit;
+		text-decoration: none;
 		transition: opacity 150ms ease;
 	}
 	.card.loading {
@@ -121,8 +132,6 @@
 		display: flex;
 		align-items: center;
 		gap: 10px;
-		color: inherit;
-		text-decoration: none;
 	}
 	.icon {
 		flex: 0 0 auto;

@@ -148,7 +148,12 @@
 <ConfirmDialog bind:this={confirmDialog} title={confirmTitle} />
 
 <style>
+	/* Floats over the reviews with the actions, so it gets a backing. */
 	.error-text {
+		align-self: center;
+		padding: 4px 10px;
+		border-radius: 10px;
+		background: var(--surface-container);
 		text-align: center;
 		font-size: 14px;
 		color: var(--error);

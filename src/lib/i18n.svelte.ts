@@ -86,6 +86,7 @@ const es: Record<string, string> = {
 	'Community not found.': 'Comunidad no encontrada.',
 	'Loan not found.': 'Préstamo no encontrado.',
 	'Edit profile': 'Editar perfil',
+	'View profile': 'Ver perfil',
 	'About me': 'Sobre mí',
 	Books: 'Libros',
 	Reviews: 'Reseñas',
@@ -294,7 +295,7 @@ const es: Record<string, string> = {
 	'via {name}': 'vía {name}',
 	Home: 'Inicio',
 	'New in your network': 'Nuevo en tu red',
-	'See all': 'Ver todo',
+	'See all': 'Ver todos',
 	'No books from your friends yet. Find people you know in Search.':
 		'Todavía no hay libros de tus amigos. Buscá gente que conozcas en Buscar.',
 	'Recent reviews from friends': 'Reseñas recientes de tus amigos',

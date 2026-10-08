@@ -80,11 +80,17 @@
 <ConfirmDialog bind:this={confirmDialog} title={t('Delete book?')} />
 
 <style>
+	/* The same 8px as between the stacked actions. */
 	.row {
 		display: flex;
-		gap: 20px;
+		gap: 8px;
 	}
+	/* Floats over the reviews with the actions, so it gets a backing. */
 	.error-text {
+		align-self: center;
+		padding: 4px 10px;
+		border-radius: 10px;
+		background: var(--surface-container);
 		text-align: center;
 		font-size: 14px;
 		color: var(--error);

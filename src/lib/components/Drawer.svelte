@@ -58,7 +58,16 @@
 		onclick={() => onNavigate?.()}
 	>
 		{#if profile}<Avatar {profile} size={80} />{/if}
-		<span class="username">{profile?.username ?? ""}</span>
+		<!-- The whole header is the link; "View profile" only says so. -->
+		<span class="identity">
+			<span class="username">{profile?.username ?? ""}</span>
+			<span class="view-profile">
+				<span class="view-profile-label">{t("View profile")}</span><Icon
+					name="chevron-right"
+					size={18}
+				/>
+			</span>
+		</span>
 	</a>
 
 	<nav class="items" style:flex-grow={items.length}>
@@ -106,19 +115,26 @@
 		height: 100%;
 		background: var(--surface-container);
 	}
+	/* As tall as one and a half rows: it grows with the window like they do
+	   (the items take one flex unit each), but never squeezes the 80px avatar. */
 	.header {
-		height: 150px;
-		flex: 0 0 150px;
+		flex: 1.5 1 0;
+		min-height: 100px;
 		display: flex;
 		align-items: center;
 		gap: 20px;
 		padding: 10px 30px;
-		background: var(--surface);
 		border: none;
 		cursor: pointer;
 		text-align: left;
 		text-decoration: none;
 		color: var(--on-surface);
+	}
+	.identity {
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
 	}
 	.username {
 		font-size: 16px;
@@ -126,6 +142,38 @@
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+	}
+	/* The text's line box matches the 18px chevron so the two center on each
+	   other. */
+	.view-profile {
+		align-self: flex-start;
+		display: flex;
+		align-items: center;
+		padding-bottom: 2px;
+		font-size: 14px;
+		font-weight: 500;
+		line-height: 18px;
+		color: var(--primary);
+	}
+	/* Underlined like UserLink: a 1px stripe under the text that grows from the
+	   left while the whole header is hovered, pressed or focused. It sits 2px
+	   below the line box; the negative margin keeps that padding out of the
+	   centering, so the text stays level with the chevron. */
+	.view-profile-label {
+		padding-bottom: 2px;
+		margin-bottom: -2px;
+		background: linear-gradient(currentColor, currentColor) left bottom / 0% 1px
+			no-repeat;
+		transition: background-size 220ms var(--ease-standard);
+	}
+	@media (hover: hover) {
+		.header:hover .view-profile-label {
+			background-size: 100% 1px;
+		}
+	}
+	.header:active .view-profile-label,
+	.header:focus-visible .view-profile-label {
+		background-size: 100% 1px;
 	}
 	/* Flutter: every row (and Logout) is Expanded and a flex-3 spacer sits above
 	   the version line, so rows grow with the window height. */

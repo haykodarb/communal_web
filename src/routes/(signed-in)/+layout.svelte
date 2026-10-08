@@ -91,6 +91,7 @@
 		'/notifications',
 		'/friends',
 		'/loans',
+		'/reviews',
 		'/search',
 		'/search?tab=users',
 		'/my-profile'
@@ -130,7 +131,7 @@
 </script>
 
 <svelte:head>
-	{#if topLevel}
+	{#if topLevel
 		<title>{t(titles[titleKey])} · Communal</title>
 	{/if}
 </svelte:head>

@@ -3,10 +3,13 @@
 	import { page } from '$app/state';
 	import Loading from '#lib/components/Loading.svelte';
 	import { fly } from '#lib/motion.ts';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, goto } from '$app/navigation';
 	import PageBar from '#lib/components/PageBar.svelte';
 	import ChatComposer from '#lib/components/ChatComposer.svelte';
-	import { getMessagesWith, markMessagesRead, sendMessage } from '#lib/data/api.ts';
+	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
+	import MoreMenu from '#lib/components/MoreMenu.svelte';
+	import { deleteChatWith, getMessagesWith, markMessagesRead, sendMessage } from '#lib/data/api.ts';
+	import { errorMessage } from '#lib/errors.ts';
 	import type { Message, Profile } from '#lib/data/models.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { currentProfile } from '#lib/profile.svelte.ts';
@@ -171,6 +174,20 @@
 		}
 	}
 
+	// "Delete chat" in the bar's ⋮ menu: hides the conversation for you, then
+	// goes back to the chat list.
+	let confirmDialog: ConfirmDialog;
+	async function deleteChat() {
+		if (!(await confirmDialog.confirm())) return;
+		error = '';
+		try {
+			await deleteChatWith(otherId);
+			await goto('/messages', { replace: true });
+		} catch (e) {
+			error = errorMessage(e);
+		}
+	}
+
 	const pageTitle = $derived(`${chatter?.username ?? t('Messages')} · Communal`);
 </script>
 
@@ -180,7 +197,13 @@
 
 <div class="chat">
 	<!-- Flutter: the chatter's username is the AppBar title. -->
-	<div class="bar"><PageBar title={chatter?.username ?? ''} /></div>
+	<div class="bar">
+		<PageBar title={chatter?.username ?? ''}>
+			{#snippet actions()}
+				<MoreMenu items={[{ label: t('Delete chat'), onclick: deleteChat, danger: true }]} />
+			{/snippet}
+		</PageBar>
+	</div>
 
 	<ol class="messages">
 		{#each messages as message, i (message.id)}
@@ -214,6 +237,8 @@
 		<ChatComposer bind:value={draft} onsend={send} />
 	</div>
 </div>
+
+<ConfirmDialog bind:this={confirmDialog} title={t('Delete chat?')} />
 
 <style>
 	.chat {

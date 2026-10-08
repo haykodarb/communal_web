@@ -198,6 +198,7 @@ const es: Record<string, string> = {
 	'Wrong link. Please re-request a password reset.':
 		'Link inválido. Pedí un nuevo reestablecimiento de contraseña.',
 	'Delete chat?': '¿Borrar chat?',
+	'Delete chat': 'Borrar chat',
 	Seen: 'Visto',
 	'Type something...': 'Escribí algo...',
 	'Could not send message, likely network error.':

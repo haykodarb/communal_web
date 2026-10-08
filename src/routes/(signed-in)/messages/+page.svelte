@@ -2,11 +2,9 @@
 	import { leave } from '#lib/motion.ts';
 	import FillCenter from '#lib/components/FillCenter.svelte';
 	import Avatar from '#lib/components/Avatar.svelte';
-	import ConfirmDialog from '#lib/components/ConfirmDialog.svelte';
 	import EmptyState from '#lib/components/EmptyState.svelte';
 	import ErrorState from '#lib/components/ErrorState.svelte';
-	import Icon from '#lib/components/Icon.svelte';
-	import { deleteChatWith, getChats } from '#lib/data/api.ts';
+	import { getChats } from '#lib/data/api.ts';
 	import type { Message, Profile } from '#lib/data/models.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { onTableChange } from '#lib/realtime.ts';
@@ -20,7 +18,6 @@
 	let { data }: PageProps = $props();
 	let chats = $derived<Message[]>(data.chats);
 	let error = $state('');
-	let confirmDialog: ConfirmDialog;
 
 	const userId = $derived(data.userId);
 
@@ -55,16 +52,6 @@
 			day: 'numeric'
 		}).format(new Date(date));
 
-	async function remove(chat: Message) {
-		if (!(await confirmDialog.confirm())) return;
-		const other = chatter(chat);
-		try {
-			await deleteChatWith(other.id);
-			chats = chats.filter((c) => chatter(c).id !== other.id);
-		} catch (e) {
-			error = errorMessage(e);
-		}
-	}
 </script>
 
 <div class="page">
@@ -96,21 +83,11 @@
 							</div>
 						</div>
 					</a>
-					<button
-						class="delete"
-						type="button"
-						aria-label={t('Delete chat?')}
-						onclick={() => remove(chat)}
-					>
-						<Icon name="trash" size={18} />
-					</button>
 				</li>
 			{/each}
 		</ul>
 	{/if}
 </div>
-
-<ConfirmDialog bind:this={confirmDialog} title={t('Delete chat?')} />
 
 <style>
 	/* CommonListView padding/separators; each chat is a 90px Card. */
@@ -192,30 +169,6 @@
 		font-size: 12px;
 		font-weight: 600;
 		text-align: center;
-	}
-	/* Flutter deletes on long-press; here a hover button overlays the card corner. */
-	.delete {
-		position: absolute;
-		bottom: 4px;
-		right: 4px;
-		display: flex;
-		padding: 8px;
-		border: none;
-		border-radius: 50%;
-		background: none;
-		color: var(--on-surface-variant);
-		cursor: pointer;
-		opacity: 0;
-		transition: var(--state-transition);
-	}
-	.row:hover .delete,
-	.delete:focus-visible {
-		opacity: 1;
-	}
-	@media (hover: none) {
-		.delete {
-			opacity: 1;
-		}
 	}
 	.error-text {
 		padding: 0 20px 12px;

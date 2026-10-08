@@ -297,8 +297,8 @@ const es: Record<string, string> = {
 	Home: 'Inicio',
 	'New in your network': 'Nuevo en tu red',
 	'See all': 'Ver todos',
-	'No books from your friends yet. Find people you know in Search.':
-		'Todavía no hay libros de tus amigos. Buscá gente que conozcas en Buscar.',
+	'No books from your friends yet.\nFind people you know in Search.':
+		'Todavía no hay libros de tus amigos.\nBuscá gente que conozcas en Buscar.',
 	'Recent reviews from friends': 'Reseñas recientes de tus amigos',
 	'Reviews by friends': 'Reseñas de amigos',
 	"Owner's note": 'Nota del dueño',

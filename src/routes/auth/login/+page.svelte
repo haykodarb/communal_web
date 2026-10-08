@@ -28,10 +28,11 @@
 		loading = true;
 		try {
 			await auth.signIn(email, password);
-			goto('/home');
+			// Home loads its data before the page switches; keep the spinner
+			// until it does, so the button doesn't come back in between.
+			await goto('/home');
 		} catch (e) {
 			errorMessage = describeError(e);
-		} finally {
 			loading = false;
 		}
 	}

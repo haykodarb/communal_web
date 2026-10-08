@@ -33,10 +33,11 @@
 		try {
 			const hasSession = await auth.signUp(email, password, username);
 			if (hasSession) {
-				goto('/home');
-			} else {
-				submitted = true;
+				// Keep the spinner until Home (which loads its data first) shows.
+				await goto('/home');
+				return;
 			}
+			submitted = true;
 		} catch (e) {
 			errorMessage = describeError(e);
 		} finally {

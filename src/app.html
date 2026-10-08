@@ -3,6 +3,10 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!-- Open the connection to Supabase while the app's code downloads: one
+		     for supabase-js (CORS, no credentials), one for <img> covers. -->
+		<link rel="preconnect" href="%sveltekit.env.PUBLIC_SUPABASE_URL%" crossorigin />
+		<link rel="preconnect" href="%sveltekit.env.PUBLIC_SUPABASE_URL%" />
 		<meta name="text-scale" content="scale" />
 		<meta name="theme-color" content="#f2e9e1" />
 		<title>Communal</title>

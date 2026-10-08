@@ -88,7 +88,7 @@
 		{:else if !network.loading && !network.hasMore}
 			<EmptyState
 				icon="book"
-				title={t('No books from your friends yet. Find people you know in Search.')}
+				title={t('No books from your friends yet.\nFind people you know in Search.')}
 				actionLabel={t('Search')}
 				actionIcon="search"
 				onaction={() => goto('/search?tab=users')}

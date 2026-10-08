@@ -90,6 +90,7 @@
 		'/messages',
 		'/notifications',
 		'/friends',
+		'/friends?tab=received',
 		'/loans',
 		'/reviews',
 		'/search',

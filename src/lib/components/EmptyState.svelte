@@ -50,9 +50,11 @@
 		text-align: center;
 		color: var(--on-surface-variant);
 	}
+	/* A "\n" in the title starts a new line. */
 	.title {
 		font-size: 14px;
 		line-height: 1.4;
+		white-space: pre-line;
 	}
 	.text {
 		margin-top: -4px;

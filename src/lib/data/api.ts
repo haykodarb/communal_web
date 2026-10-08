@@ -774,7 +774,7 @@ export async function getPendingRequestsCount(userId: string): Promise<number> {
 	return count ?? 0;
 }
 
-/** Friends you share with another user (get_mutual_friends RPC), for "via <friend>". */
+/** Friends you share with another user (get_mutual_friends RPC), for "Is friends with <friend>". */
 export async function getMutualFriends(otherUserId: string): Promise<Profile[]> {
 	const { data, error } = await supabase.rpc('get_mutual_friends', { other: otherUserId });
 	if (error) throw error;

@@ -293,7 +293,7 @@ const es: Record<string, string> = {
 		'Todavía no tenés amigos. Buscá personas en Buscar.',
 	'You have no friends yet.': 'Todavía no tenés amigos.',
 	'You have not sent any requests.': 'No enviaste ninguna solicitud.',
-	'via {name}': 'vía {name}',
+	'Is friends with {name}': 'Es amigo/a de {name}',
 	Home: 'Inicio',
 	'New in your network': 'Nuevo en tu red',
 	'See all': 'Ver todos',

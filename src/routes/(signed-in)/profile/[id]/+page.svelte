@@ -41,10 +41,10 @@
 		busy = false;
 	}
 
-	/** How you're connected to a friend of a friend ("via <friend>"). */
-	const viaNote = $derived.by(() => {
+	/** How you're connected to a friend of a friend ("Is friends with <friend>"). */
+	const mutualNote = $derived.by(() => {
 		if (friendship?.accepted || mutual.length === 0) return undefined;
-		const first = t('via {name}').replace('{name}', mutual[0].username);
+		const first = t('Is friends with {name}').replace('{name}', mutual[0].username);
 		return mutual.length === 1
 			? first
 			: `${first} ${t('and {n} more').replace('{n}', String(mutual.length - 1))}`;
@@ -84,7 +84,7 @@
 			lists={data.lists}
 			emptyBooks={t('No books.')}
 			emptyReviews={t('No reviews.')}
-			note={viaNote}
+			note={mutualNote}
 		>
 			{#snippet actions()}
 				{#if !friendship}

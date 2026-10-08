@@ -131,7 +131,7 @@
 </script>
 
 <svelte:head>
-	{#if topLevel
+	{#if topLevel}
 		<title>{t(titles[titleKey])} · Communal</title>
 	{/if}
 </svelte:head>

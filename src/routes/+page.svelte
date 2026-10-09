@@ -341,13 +341,13 @@
 		gap: 12px;
 		margin-top: 8px;
 	}
-	/* The same crow mask as Logo, filled with the theme's gradient. */
+	/* The same crow mask as Logo, filled with the theme's primary colour. */
 	.crow {
 		display: block;
 		width: 100%;
 		aspect-ratio: 713 / 1024;
 		max-height: 460px;
-		background: linear-gradient(90deg, var(--primary) 25%, var(--tertiary));
+		background: var(--primary);
 		-webkit-mask: url('../lib/assets/crow.png') center / contain no-repeat;
 		mask: url('../lib/assets/crow.png') center / contain no-repeat;
 	}

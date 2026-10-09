@@ -46,9 +46,9 @@
 	});
 
 	const steps = [
-		{ name: 'Request', text: "Find a book you've been dying to read and ask its owner to loan it out." },
-		{ name: 'Accept', text: 'Once they agree, arrange the handover through messages.' },
-		{ name: 'Return', text: "Bring it back when you're done and share what you thought of it." }
+		{ name: 'Request', text: 'Find a book you want to read and ask the owner if you can borrow it.' },
+		{ name: 'Accept', text: 'If they say yes, message each other to figure out when and where to meet.' },
+		{ name: 'Return', text: "Give it back when you're done, and leave a review if you feel like it." }
 	];
 
 	// The original site's three cards, with its own icons.
@@ -98,10 +98,10 @@
 	<main>
 		<section class="hero">
 			<div class="hero-text">
-				<h1>{t('Share books with your communities.')}</h1>
+				<h1>{t('Borrow books from people you know.')}</h1>
 				<p class="lead">
 					{t(
-						"Connect with your peers and upload your physical collection to contribute to a decentralized library, shared among the circles you're connected with."
+						"Communal is a shared library made out of your friends' bookshelves. Add the books you own, see what everyone else has, and ask to borrow the ones you want to read."
 					)}
 				</p>
 				<div class="actions">
@@ -120,29 +120,29 @@
 
 		<section class="reach" aria-labelledby="reach-title">
 			<div class="reach-text">
-				<h2 id="reach-title">{t('Your community grows with your friends')}</h2>
+				<h2 id="reach-title">{t("Who's in your community")}</h2>
 				<p class="lead">
-					{t("Your community is made of your friends and the people they know. Every book in it is one or two introductions away.")}
+					{t("The people you've added as friends, and the people they've added. That's a lot of bookshelves, and there's always someone you both know.")}
 				</p>
 				<dl class="legend">
 					<div>
 						<dt><span class="dot you"></span>{t('You')}</dt>
-						<dd>{t('Your shelf, open to your community.')}</dd>
+						<dd>{t("The books you've added.")}</dd>
 					</div>
 					<div>
 						<dt><span class="dot friend"></span>{t('Friends')}</dt>
-						<dd>{t("The people you add, and their collections.")}</dd>
+						<dd>{t("People you've added, and their books.")}</dd>
 					</div>
 					<div>
 						<dt><span class="dot fof"></span>{t('Friends of friends')}</dt>
 						<dd>
-							{t("Your friends' friends are part of your community too.")}
+							{t("Your friends' friends. You can see their books, and they can see yours.")}
 						</dd>
 					</div>
 				</dl>
 				<p class="boundary-note">
 					{t(
-						'Your community stops there, so it stays close to you. You can also keep your shelf among direct friends.'
+						"Nobody past that can see your shelf. If you'd rather only your friends see it, there's a setting for that."
 					)}
 				</p>
 			</div>
@@ -173,7 +173,7 @@
 		</section>
 
 		<section class="how" aria-labelledby="how-title">
-			<h2 id="how-title">{t('From shelf to shelf')}</h2>
+			<h2 id="how-title">{t('How borrowing works')}</h2>
 			<!-- The loan page's own timeline: requested, accepted, returned. -->
 			<ol class="timeline" class:shown={timelineShown} bind:this={timeline}>
 				<span class="track" aria-hidden="true"></span>

@@ -105,11 +105,9 @@
 					)}
 				</p>
 				<div class="actions">
-					{#if auth.session}
-						<a class="pill large filled" href="/home">{t('Open Communal')}</a>
-					{:else}
-						<a class="pill large filled" href="/auth/register">{t('Create an account')}</a>
-					{/if}
+					<a class="pill large filled" href={auth.session ? '/home' : '/auth'}>
+						{t('Open Communal')}
+					</a>
 					<a class="pill large" href={APK_URL} target="_blank" rel="noopener noreferrer">
 						{t('Get the Android app')}
 					</a>

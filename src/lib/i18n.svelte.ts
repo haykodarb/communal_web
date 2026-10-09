@@ -261,7 +261,6 @@ const es: Record<string, string> = {
 	"Open Communal": "Abrir Communal",
 	"Borrow books from people you know.": "Pedí libros prestados a gente que conocés.",
 	"Communal is a shared library made out of your friends' bookshelves. Add the books you own, see what everyone else has, and ask to borrow the ones you want to read.": "Communal es una biblioteca compartida, armada con los estantes de tus amigos. Subí los libros que tenés, mirá qué tienen los demás y pedí prestados los que quieras leer.",
-	"Create an account": "Crear una cuenta",
 	"Get the Android app": "Descargar la app para Android",
 	"Who's in your community": "Quién está en tu comunidad",
 	"The people you've added as friends, and the people they've added. That's a lot of bookshelves, and there's always someone you both know.": "Las personas que agregaste como amigos, y las que agregaron ellos. Son muchos estantes, y siempre hay alguien que los dos conocen.",

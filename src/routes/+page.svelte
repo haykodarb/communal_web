@@ -78,7 +78,7 @@
 <div class="landing">
 	<header class="bar">
 		<a class="brand" href="/">
-			<img src="/assets/icon-512.png" alt="" width="40" height="40" />
+			<span class="brand-icon" aria-hidden="true"></span>
 			<span>Communal</span>
 		</a>
 		<nav class="account">
@@ -243,6 +243,15 @@
 		font-size: 20px;
 		font-weight: 600;
 	}
+	/* The app icon's bird, as a mask so it takes the theme's primary colour. */
+	.brand-icon {
+		width: 40px;
+		height: 40px;
+		flex: 0 0 auto;
+		background: var(--primary);
+		-webkit-mask: url('/assets/icon-512.png') center / contain no-repeat;
+		mask: url('/assets/icon-512.png') center / contain no-repeat;
+	}
 	.account {
 		display: flex;
 		align-items: center;
@@ -341,13 +350,13 @@
 		gap: 12px;
 		margin-top: 8px;
 	}
-	/* The same crow mask as Logo, filled with the theme's primary colour. */
+	/* The same crow mask as Logo, filled with the theme's gradient. */
 	.crow {
 		display: block;
 		width: 100%;
 		aspect-ratio: 713 / 1024;
 		max-height: 460px;
-		background: var(--primary);
+		background: linear-gradient(90deg, var(--primary) 25%, var(--tertiary));
 		-webkit-mask: url('../lib/assets/crow.png') center / contain no-repeat;
 		mask: url('../lib/assets/crow.png') center / contain no-repeat;
 	}

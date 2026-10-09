@@ -243,12 +243,12 @@
 		font-size: 20px;
 		font-weight: 600;
 	}
-	/* The app icon's bird, as a mask so it takes the theme's primary colour. */
+	/* The app icon's bird, as a mask so it takes the brand text's colour. */
 	.brand-icon {
 		width: 40px;
 		height: 40px;
 		flex: 0 0 auto;
-		background: var(--primary);
+		background: currentColor;
 		-webkit-mask: url('/assets/icon-512.png') center / contain no-repeat;
 		mask: url('/assets/icon-512.png') center / contain no-repeat;
 	}

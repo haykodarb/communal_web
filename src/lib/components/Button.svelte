@@ -65,7 +65,7 @@
 	}
 	@media (hover: hover) {
 		.btn:not(.text):not(:disabled):hover {
-			box-shadow: 0 10px 20px -8px color-mix(in srgb, var(--primary) 70%, transparent);
+			box-shadow: 0 6px 12px -5px color-mix(in srgb, var(--primary) 35%, transparent);
 		}
 	}
 	.btn:not(.text):active:not(:disabled) {

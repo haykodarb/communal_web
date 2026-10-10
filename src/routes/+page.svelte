@@ -316,7 +316,7 @@
 	/* The shadow always shows; only the movement waits on reduced motion. */
 	@media (hover: hover) {
 		.pill:hover {
-			box-shadow: 0 10px 20px -8px color-mix(in srgb, var(--primary) 70%, transparent);
+			box-shadow: 0 6px 12px -5px color-mix(in srgb, var(--primary) 35%, transparent);
 		}
 	}
 	.pill:active {

@@ -52,10 +52,35 @@
 		font-size: 20px;
 		font-weight: 600;
 		cursor: pointer;
-		transition: var(--state-transition);
+		transition:
+			var(--state-transition),
+			box-shadow 200ms var(--ease-standard);
 	}
-	.btn:active:not(:disabled) {
-		transform: scale(0.98);
+	/* Like the landing page's buttons: instead of the state layer, they lift
+	   with a soft primary shadow on hover and press back down. The shadow
+	   always shows; the movement waits on reduced motion. Text buttons keep
+	   the plain state layer. */
+	.btn:not(.text)::after {
+		display: none;
+	}
+	@media (hover: hover) {
+		.btn:not(.text):not(:disabled):hover {
+			box-shadow: 0 10px 20px -8px color-mix(in srgb, var(--primary) 70%, transparent);
+		}
+	}
+	.btn:not(.text):active:not(:disabled) {
+		box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--primary) 50%, transparent);
+		transition-duration: 80ms;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		@media (hover: hover) {
+			.btn:not(.text):not(:disabled):hover {
+				transform: translateY(-2px);
+			}
+		}
+		.btn:active:not(:disabled) {
+			transform: translateY(0) scale(0.97);
+		}
 	}
 	.btn:disabled {
 		opacity: 0.55;

@@ -54,6 +54,7 @@
 <div class="drawer">
 	<a
 		class="header pressable"
+		class:current={isActive("/my-profile")}
 		href="/my-profile"
 		onclick={() => onNavigate?.()}
 	>
@@ -156,7 +157,10 @@
 		color: var(--primary);
 	}
 	/* Underlined like UserLink: a 1px stripe under the text that grows from the
-	   left while the whole header is hovered, pressed or focused. It sits 2px
+	   left while the whole header is hovered, pressed or focused, and stays
+	   while the profile is the current page (like the items' active state;
+	   it also keeps the underline through the page transition, during which
+	   the browser drops the hover). It sits 2px
 	   below the line box; the negative margin keeps that padding out of the
 	   centering, so the text stays level with the chevron. */
 	.view-profile-label {
@@ -172,7 +176,8 @@
 		}
 	}
 	.header:active .view-profile-label,
-	.header:focus-visible .view-profile-label {
+	.header:focus-visible .view-profile-label,
+	.header.current .view-profile-label {
 		background-size: 100% 1px;
 	}
 	/* Flutter: every row (and Logout) is Expanded and a flex-3 spacer sits above

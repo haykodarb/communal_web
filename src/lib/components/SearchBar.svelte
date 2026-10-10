@@ -75,6 +75,13 @@
 		border-radius: 10px;
 		background: var(--surface-container);
 		color: var(--on-surface);
+		/* A border drawn as an inset shadow, so the bar keeps its size. */
+		box-shadow: inset 0 0 0 2px transparent;
+		transition: box-shadow 300ms ease;
+	}
+	/* Focus fades the border to primary, like TextField's. */
+	.search:focus-within {
+		box-shadow: inset 0 0 0 2px var(--primary);
 	}
 	.search input {
 		flex: 1;

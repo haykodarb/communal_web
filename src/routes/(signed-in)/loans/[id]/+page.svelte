@@ -72,6 +72,8 @@
 	}
 
 	async function saveReview() {
+		// Ctrl+Enter in the review box can call this while a save is running.
+		if (busy) return;
 		busy = true;
 		error = '';
 		try {
@@ -232,7 +234,12 @@
 				{/if}
 			{:else if loan.accepted || loan.returned}
 				{#if editingReview}
-					<TextField label={t('Write a review...')} bind:value={reviewDraft} rows={5} />
+					<TextField
+						label={t('Write a review...')}
+						bind:value={reviewDraft}
+						rows={5}
+						onsubmit={saveReview}
+					/>
 					<div class="row">
 						<Button loading={busy} onclick={saveReview}>{t('Submit')}</Button>
 						<Button variant="tonal" disabled={busy} onclick={() => (editingReview = false)}>

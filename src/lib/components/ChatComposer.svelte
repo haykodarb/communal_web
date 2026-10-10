@@ -56,6 +56,8 @@
 		resize: none;
 		field-sizing: content;
 		outline: none;
+		/* Focus fades in like TextField's. */
+		transition: border-color 300ms ease;
 	}
 	textarea:focus {
 		border-color: var(--primary);

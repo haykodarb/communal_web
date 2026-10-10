@@ -34,6 +34,15 @@
 			onsubmit();
 		}
 	}
+
+	// In a textarea Enter adds a line, so Ctrl+Enter (Cmd+Enter on a Mac)
+	// submits instead.
+	function onTextareaKeydown(event: KeyboardEvent) {
+		if (event.key === 'Enter' && (event.ctrlKey || event.metaKey) && onsubmit) {
+			event.preventDefault();
+			onsubmit();
+		}
+	}
 </script>
 
 <label class="field">
@@ -46,6 +55,7 @@
 			aria-label={label}
 			class:error={error.length > 0}
 			{oninput}
+			onkeydown={onTextareaKeydown}
 		></textarea>
 	{:else}
 		<span class="control">
@@ -98,7 +108,8 @@
 		font: inherit;
 		font-size: 16px;
 		outline: none;
-		transition: border-color 150ms ease;
+		/* Focusing fades the border to primary. */
+		transition: border-color 300ms ease;
 	}
 	.control {
 		position: relative;

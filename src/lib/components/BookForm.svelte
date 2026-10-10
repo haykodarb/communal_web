@@ -79,7 +79,13 @@
 	<div class="fields">
 		<TextField label={t('Title')} bind:value={title} maxlength={50} error={titleError} onsubmit={submit} />
 		<TextField label={t('Author')} bind:value={author} maxlength={50} error={authorError} onsubmit={submit} />
-		<TextField label={t('Review (Optional)')} bind:value={review} rows={3} error={reviewError} />
+		<TextField
+			label={t('Review (Optional)')}
+			bind:value={review}
+			rows={3}
+			error={reviewError}
+			onsubmit={submit}
+		/>
 	</div>
 
 	<div class="row">

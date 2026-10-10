@@ -195,7 +195,7 @@
 	}
 	/* The compact bar: sticky at the top but taking no room (the negative
 	   margin), hidden until the title scrolls under it, then fading and sliding
-	   in with a soft drop shadow (as on the chat bar) so the reviews pass
+	   in with the bars' drop shadow (app.css) so the reviews pass
 	   under it. */
 	.bar {
 		position: sticky;
@@ -208,7 +208,7 @@
 		gap: 10px;
 		padding: 0 16px 0 8px;
 		background: var(--surface-container);
-		box-shadow: 0 3px 12px color-mix(in srgb, var(--shadow) 75%, transparent);
+		box-shadow: var(--bar-shadow);
 		opacity: 0;
 		transform: translateY(-8px);
 		pointer-events: none;

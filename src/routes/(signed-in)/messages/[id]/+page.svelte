@@ -255,12 +255,12 @@
 		position: sticky;
 		z-index: 5;
 	}
-	/* Raised over the messages scrolling under it by a soft drop shadow (as on
-	   BookDetail's compact bar). */
+	/* Raised over the messages scrolling under it by the bars' drop shadow
+	   (app.css). */
 	.bar {
 		top: 0;
 		background: var(--surface);
-		box-shadow: 0 3px 12px color-mix(in srgb, var(--shadow) 75%, transparent);
+		box-shadow: var(--bar-shadow);
 	}
 	.bottom {
 		bottom: 0;

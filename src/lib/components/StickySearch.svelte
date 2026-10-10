@@ -11,27 +11,31 @@
 	let { floating = true, children }: { floating?: boolean; children: Snippet } = $props();
 
 	let hidden = $state(false);
+	let stuck = $state(false);
 	let marker: HTMLElement;
+	let bar: HTMLElement;
 
 	$effect(() => {
-		if (!floating) return;
 		let last = window.scrollY;
 		const onScroll = () => {
 			const y = window.scrollY;
-			if (Math.abs(y - last) < 4) return;
-			// Hide only once the bar would otherwise stick (its spot has scrolled
-			// under the top of the window, or the mobile app bar).
-			const stuck = marker.getBoundingClientRect().top < 60;
-			hidden = y > last && stuck;
+			// Stuck once its spot has scrolled under its sticky top (the top of
+			// the window, or the mobile app bar).
+			const top = marker.getBoundingClientRect().top;
+			stuck = top < parseFloat(getComputedStyle(bar).top) + 1;
+			if (!floating || Math.abs(y - last) < 4) return;
+			// Hide only once the bar would otherwise stick.
+			hidden = y > last && top < 60;
 			last = y;
 		};
+		onScroll();
 		window.addEventListener('scroll', onScroll, { passive: true });
 		return () => window.removeEventListener('scroll', onScroll);
 	});
 </script>
 
 <div bind:this={marker} class="marker"></div>
-<div class="bar" class:hidden>{@render children()}</div>
+<div bind:this={bar} class="bar" class:stuck class:hidden>{@render children()}</div>
 
 <style>
 	.marker {
@@ -44,9 +48,17 @@
 		z-index: 10;
 		padding: 3px 0;
 		background: var(--surface);
-		transition: transform 200ms ease;
+		transition:
+			transform 200ms ease,
+			box-shadow 200ms ease;
 	}
+	/* The bars' drop shadow (app.css), only while the list scrolls under it. */
+	.bar.stuck {
+		box-shadow: var(--bar-shadow);
+	}
+	/* No shadow while hidden: it would peek out below the top of the window. */
 	.bar.hidden {
 		transform: translateY(calc(-100% - var(--sticky-top, 0px)));
+		box-shadow: none;
 	}
 </style>

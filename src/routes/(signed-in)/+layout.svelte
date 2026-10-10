@@ -289,7 +289,7 @@
 		height: 56px;
 		padding: 0 8px;
 		background: var(--surface);
-		box-shadow: 0 1px 4px color-mix(in srgb, var(--shadow) 40%, transparent);
+		box-shadow: var(--bar-shadow);
 		position: sticky;
 		top: 0;
 		z-index: 20;

@@ -141,7 +141,7 @@
 		padding: 0 8px;
 		border-radius: 50px;
 		background: var(--surface-container);
-		box-shadow: 0 0 2px var(--shadow);
+		box-shadow: 0 2px 12px color-mix(in srgb, var(--shadow) 75%, transparent);
 	}
 	.tab {
 		flex: 2 1 0;

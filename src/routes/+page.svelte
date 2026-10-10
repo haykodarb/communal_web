@@ -107,9 +107,20 @@
 				<div class="actions">
 					<a class="pill large filled" href={auth.session ? '/home' : '/auth'}>
 						{t('Open Communal')}
+						<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
+							<path d="M5 12h14M13 6l6 6-6 6" />
+						</svg>
 					</a>
-					<a class="pill large" href={APK_URL} target="_blank" rel="noopener noreferrer">
+					<a
+						class="pill large external"
+						href={APK_URL}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
 						{t('Get the Android app')}
+						<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
+							<path d="M7 17 17 7M8 7h9v9" />
+						</svg>
 					</a>
 				</div>
 			</div>
@@ -265,11 +276,15 @@
 		font-size: 14px;
 		font-weight: 600;
 		cursor: pointer;
+		/* Rounds the state layer every button gets. */
+		border-radius: 8px;
 	}
 
 	/* Pills: the app's button shapes as links (outlined, or filled for the
-	   main action). */
+	   main action). On hover they lift with a soft primary shadow and the big
+	   ones' arrows nudge the way they go; pressing pushes them back down. */
 	.pill {
+		gap: 8px;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
@@ -282,6 +297,47 @@
 		font-weight: 600;
 		text-decoration: none;
 		white-space: nowrap;
+		-webkit-tap-highlight-color: transparent;
+		transition:
+			transform 200ms var(--ease-standard),
+			box-shadow 200ms var(--ease-standard);
+	}
+	.arrow {
+		width: 20px;
+		height: 20px;
+		margin-right: -4px;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 2.5;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+		transition: transform 200ms var(--ease-standard);
+	}
+	/* The shadow always shows; only the movement waits on reduced motion. */
+	@media (hover: hover) {
+		.pill:hover {
+			box-shadow: 0 10px 20px -8px color-mix(in srgb, var(--primary) 70%, transparent);
+		}
+	}
+	.pill:active {
+		box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--primary) 50%, transparent);
+		transition-duration: 80ms;
+	}
+	@media (prefers-reduced-motion: no-preference) {
+		@media (hover: hover) {
+			.pill:hover {
+				transform: translateY(-2px);
+			}
+			.pill:hover .arrow {
+				transform: translateX(4px);
+			}
+			.pill.external:hover .arrow {
+				transform: translate(3px, -3px);
+			}
+		}
+		.pill:active {
+			transform: translateY(0) scale(0.97);
+		}
 	}
 	.pill.filled {
 		background: var(--primary);
@@ -639,6 +695,18 @@
 	}
 	.footer-links a {
 		color: var(--on-surface-variant);
+	}
+	/* Footer links show their underline on hover. */
+	.footer-links a,
+	a.credit {
+		text-decoration-color: transparent;
+		transition: text-decoration-color 150ms ease;
+	}
+	@media (hover: hover) {
+		.footer-links a:hover,
+		a.credit:hover {
+			text-decoration-color: currentColor;
+		}
 	}
 
 	/* ---- Small screens ------------------------------------------------- */

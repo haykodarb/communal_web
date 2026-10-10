@@ -96,7 +96,7 @@
 	{#if books.items.length > 0}
 		<div class="grid">
 			<MasonryGrid items={books.items} key={(b) => b.id} columns={3}>
-				{#snippet item(book)}<VerticalBookCard {book} showLoaned />{/snippet}
+				{#snippet item(book)}<VerticalBookCard {book} />{/snippet}
 			</MasonryGrid>
 		</div>
 	{:else if books.error}

@@ -74,6 +74,9 @@ if [ -d web ] && [ ! -L web ]; then
 	echo "    moved the old web directory to releases/$legacy"
 fi
 
+# The Android app is uploaded separately (scripts/publish-apk.sh).
+ln -sfn ../../downloads/communal.apk "releases/$release/communal.apk"
+
 ln -sfn "releases/$release" web.next
 mv -T web.next web
 

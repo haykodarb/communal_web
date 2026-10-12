@@ -228,3 +228,8 @@ scripts/rollback.sh --list     # releases, newest version first, live one marked
 scripts/rollback.sh            # go back to the previous release
 scripts/rollback.sh <release>  # or to a specific one
 ```
+
+The landing page's "Get the Android app" downloads `/communal.apk`, which isn't
+part of the web build: `scripts/publish-apk.sh` uploads the Flutter app's release
+APK (`../communal_app/build/app/outputs/flutter-apk/app-release.apk`, or a path
+you pass) to `/home/communal/downloads/`, and every release links to it there.

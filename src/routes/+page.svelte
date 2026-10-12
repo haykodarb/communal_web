@@ -7,7 +7,8 @@
 	// their friends (the diagram explains that). Its one visual statement is the diagram of how
 	// far your library reaches; everything else stays in the app's own style.
 
-	const APK_URL = 'https://github.com/haykodarb/communal_app/releases/';
+	// Uploaded by scripts/publish-apk.sh, outside the web build.
+	const APK_URL = '/communal.apk';
 
 	// Diagram geometry (viewBox 400 x 400): you in the middle, five friends on
 	// the first ring, their friends on the second, and the boundary beyond it.
@@ -111,15 +112,10 @@
 							<path d="M5 12h14M13 6l6 6-6 6" />
 						</svg>
 					</a>
-					<a
-						class="pill large external"
-						href={APK_URL}
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						{t('Get the Android app')}
+					<a class="pill large download" href={APK_URL} download>
+						{t('Get Android app')}
 						<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true">
-							<path d="M7 17 17 7M8 7h9v9" />
+							<path d="M12 4v12M6 10l6 6 6-6M5 20h14" />
 						</svg>
 					</a>
 				</div>
@@ -222,7 +218,7 @@
 		</p>
 		<nav class="footer-links">
 			<a href="/privacy">{t('Privacy policy')}</a>
-			<a href={APK_URL} target="_blank" rel="noopener noreferrer">{t('Get the Android app')}</a>
+			<a href={APK_URL} download>{t('Get Android app')}</a>
 		</nav>
 	</footer>
 </div>
@@ -331,8 +327,8 @@
 			.pill:hover .arrow {
 				transform: translateX(4px);
 			}
-			.pill.external:hover .arrow {
-				transform: translate(3px, -3px);
+			.pill.download:hover .arrow {
+				transform: translateY(3px);
 			}
 		}
 		.pill:active {

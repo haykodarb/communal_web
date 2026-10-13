@@ -19,6 +19,7 @@ import {
 	getReviewsForBook,
 	getReviewsForUser,
 	isOnWaitlist,
+	canRequestBook,
 	presignStorageUrls,
 	searchNetworkBooks,
 	searchUsers,
@@ -241,14 +242,15 @@ export const book = (userId: string, id: string, depends: Depends) =>
 	cached(
 		keys.book(id),
 		async () => {
-			const [found, currentLoan, waitlisted] = await Promise.all([
+			const [found, currentLoan, waitlisted, canRequest] = await Promise.all([
 				getBookById(id),
 				getCurrentLoanForBook(userId, id),
-				isOnWaitlist(userId, id)
+				isOnWaitlist(userId, id),
+				canRequestBook(id)
 			]);
 			if (!found) {
 				const reviews: PagedState<Review> = { items: [], pages: 0, hasMore: false };
-				return { book: found, currentLoan, reviews, waitlisted, reviewCount: 0, ownerReview: null };
+				return { book: found, currentLoan, reviews, waitlisted, canRequest, reviewCount: 0, ownerReview: null };
 			}
 			const ownerId = found.owner.id;
 			const [reviews, reviewCount, ownerReview] = await Promise.all([
@@ -263,7 +265,7 @@ export const book = (userId: string, id: string, depends: Depends) =>
 				getReview(ownerId, id),
 				covers([found])
 			]);
-			return { book: found, currentLoan, reviews, waitlisted, reviewCount, ownerReview };
+			return { book: found, currentLoan, reviews, waitlisted, canRequest, reviewCount, ownerReview };
 		},
 		depends
 	);

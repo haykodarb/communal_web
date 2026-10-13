@@ -25,6 +25,8 @@
 	let currentLoan = $derived<Loan | null>(data.details.currentLoan);
 	const reviews = $derived(data.details.reviews);
 	let waitlisted = $derived(data.details.waitlisted);
+	// Outside the owner's network the book can be seen but not requested.
+	const canRequest = $derived(data.details.canRequest);
 	let busy = $state(false);
 	let error = $state('');
 
@@ -126,13 +128,15 @@
 		{#snippet actions()}
 			{#if requestedByMe && book!.loaned}
 				<Button onclick={() => goto(`/loans/${currentLoan!.id}`)}>{t('View loan')}</Button>
-			{:else if book!.loaned}
-				<Button variant={waitlisted ? 'outlined' : 'filled'} loading={busy} onclick={onToggleWaitlist}>
-					{waitlisted ? t('Stop notifying me') : t('Notify me when available')}
-				</Button>
 			{:else if requestedByMe}
 				<Button variant="outlined" loading={busy} onclick={onWithdraw}>
 					{t('Withdraw request')}
+				</Button>
+			{:else if !canRequest}
+				<!-- Outside the owner's network: visible, not requestable. -->
+			{:else if book!.loaned}
+				<Button variant={waitlisted ? 'outlined' : 'filled'} loading={busy} onclick={onToggleWaitlist}>
+					{waitlisted ? t('Stop notifying me') : t('Notify me when available')}
 				</Button>
 			{:else}
 				<Button loading={busy} onclick={onRequest}>{t('Request')}</Button>

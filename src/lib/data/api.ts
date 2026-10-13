@@ -1364,6 +1364,17 @@ export async function searchUsers(
 // ---------------------------------------------------------------------------
 // Waitlist ("notify me when available" on loaned books)
 
+/**
+ * Anyone can see a public book on its owner's profile, but only the owner's
+ * network (friends, and friends of friends if the owner opted in) can request
+ * it or join its waitlist.
+ */
+export async function canRequestBook(bookId: string): Promise<boolean> {
+	const { data, error } = await supabase.rpc('can_request_book', { book_id: bookId });
+	if (error) throw error;
+	return data === true;
+}
+
 export async function isOnWaitlist(userId: string, bookId: string): Promise<boolean> {
 	const { count, error } = await supabase
 		.from('waitlist')
@@ -1466,8 +1477,8 @@ export const deleteLoan = invalidates(deleteLoan_, 'loans:', 'loan:', 'book:');
 export const setLoanFlag = invalidates(setLoanFlag_, 'loans:', 'loan:', 'book:', 'books:', 'network', 'profile-books:');
 export const setReview = invalidates(setReview_, 'loans:', 'loan:', 'book:', 'profile-reviews:');
 export const sendFriendRequest = invalidates(sendFriendRequest_, 'friends:', 'profile:');
-export const acceptFriendRequest = invalidates(acceptFriendRequest_, 'friends:', 'profile:', 'network', 'notifications');
-export const deleteFriendship = invalidates(deleteFriendship_, 'friends:', 'profile:', 'network', 'notifications');
+export const acceptFriendRequest = invalidates(acceptFriendRequest_, 'friends:', 'profile:', 'network', 'notifications', 'book:');
+export const deleteFriendship = invalidates(deleteFriendship_, 'friends:', 'profile:', 'network', 'notifications', 'book:');
 export const setNotificationsRead = invalidates(setNotificationsRead_, 'notifications');
 export const sendMessage = invalidates(sendMessage_, 'chats', 'chat:');
 export const markMessagesRead = invalidates(markMessagesRead_, 'chats');

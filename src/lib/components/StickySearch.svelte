@@ -50,10 +50,16 @@
 		background: var(--surface);
 		transition:
 			transform 200ms ease,
-			box-shadow 200ms ease;
+			box-shadow 200ms ease,
+			padding-top 200ms ease,
+			margin-bottom 200ms ease;
 	}
-	/* The bars' drop shadow (app.css), only while the list scrolls under it. */
+	/* While the list scrolls under it: the bars' drop shadow (app.css) and 5px
+	   above the field. The negative margin takes back the extra padding, so the
+	   list doesn't shift. */
 	.bar.stuck {
+		padding-top: 5px;
+		margin-bottom: -2px;
 		box-shadow: var(--bar-shadow);
 	}
 	/* No shadow while hidden: it would peek out below the top of the window. */

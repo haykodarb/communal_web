@@ -22,7 +22,7 @@
 	let { data }: PageProps = $props();
 
 	const reviews = createPaged<Review>(
-		(page) => getFriendReviews(data.userId, { page, pageSize: PAGE_SIZE.friendReviews }),
+		(page) => getFriendReviews({ page, pageSize: PAGE_SIZE.friendReviews }),
 		PAGE_SIZE.friendReviews,
 		{
 			seed: untrack(() => data.reviews),

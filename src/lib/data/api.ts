@@ -1336,11 +1336,12 @@ export async function searchUsers(
 /**
  * Anyone can see a public book on its owner's profile, but only the owner's
  * network (friends, and friends of friends if the owner opted in) can request
- * it or join its waitlist.
+ * it or join its waitlist. A failed check counts as no, so the book page still
+ * loads, just without Request (like BooksBackend.canRequestBook).
  */
 export async function canRequestBook(bookId: string): Promise<boolean> {
 	const { data, error } = await supabase.rpc('can_request_book', { book_id: bookId });
-	if (error) throw error;
+	if (error) return false;
 	return data === true;
 }
 
@@ -1372,26 +1373,21 @@ async function leaveWaitlist_(userId: string, bookId: string): Promise<void> {
 // Home
 
 /**
- * The newest reviews written by your friends, of books they own or borrowed.
- * Reviews of public books are readable by everyone, so this narrows to friends
- * explicitly.
+ * The newest reviews written by your friends, of books in your circle
+ * (get_circle_reviews RPC). Reviews of public books are readable by everyone,
+ * and a friend may have reviewed a book from outside your circle, which Home
+ * shouldn't surface.
  */
 export async function getFriendReviews(
-	userId: string,
 	{ page = 0, pageSize = 20 }: { page?: number; pageSize?: number } = {}
 ): Promise<Review[]> {
-	const friends = await getFriendships(userId, 'friends', { pageSize: 200 });
-	const ids = friends.map((f) => (f.requester.id === userId ? f.responder.id : f.requester.id));
-	if (ids.length === 0) return [];
 	const { data, error } = await supabase
-		.from('reviews')
+		.rpc('get_circle_reviews', { offset_num: page * pageSize, limit_num: pageSize })
 		.select(REVIEW_SELECT)
-		.in('reviewer', ids)
 		.order('created_at', { ascending: false })
-		.order('id', { ascending: false })
-		.range(page * pageSize, page * pageSize + pageSize - 1);
+		.order('id', { ascending: false });
 	if (error) throw error;
-	return (data ?? []).map((row) => toReview(row as Record<string, unknown>));
+	return ((data ?? []) as Record<string, unknown>[]).map((row) => toReview(row));
 }
 
 // ---------------------------------------------------------------------------

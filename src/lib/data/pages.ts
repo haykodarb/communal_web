@@ -292,7 +292,7 @@ export const friendReviews = (userId: string, depends: Depends) =>
 	list<Review>(
 		keys.friendReviews(userId),
 		PAGE_SIZE.friendReviews,
-		(page, pageSize) => getFriendReviews(userId, { page, pageSize }),
+		(page, pageSize) => getFriendReviews({ page, pageSize }),
 		async (reviews) => {
 			await Promise.all([
 				covers(reviews.map((r) => r.book)),

@@ -24,7 +24,7 @@
 	import UserLink from './UserLink.svelte';
 	import { store } from '#lib/cache.ts';
 	import { getReviewsForBook } from '#lib/data/api.ts';
-	import type { Book, Loan } from '#lib/data/models.ts';
+	import type { Book, Review } from '#lib/data/models.ts';
 	import { keys, PAGE_SIZE } from '#lib/data/pages.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { afterExitAnimation } from '#lib/motion.ts';
@@ -39,15 +39,18 @@
 		book,
 		reviews,
 		reviewCount = 0,
+		ownerReview = null,
 		info,
 		large = false,
 		actions
 	}: {
 		book: Book;
-		/** First page of the completed loans with a review (from the page cache). */
-		reviews: PagedState<Loan>;
+		/** First page of the readers' reviews (from the page cache). */
+		reviews: PagedState<Review>;
 		/** How many readers reviewed it (the owner's own review is added on top). */
 		reviewCount?: number;
+		/** The owner's own review, shown first. */
+		ownerReview?: Review | null;
 		info: InfoItem[];
 		/** BookForeignPage uses a bigger title (24/20 vs 18/16). */
 		large?: boolean;
@@ -55,8 +58,8 @@
 	} = $props();
 
 	// The rest of the pages load on scroll; every page is kept in the cache.
-	const paged = createPaged<Loan>(
-		(page) => getReviewsForBook(book.id, { page, pageSize: PAGE_SIZE.bookReviews }),
+	const paged = createPaged<Review>(
+		(page) => getReviewsForBook(book.id, book.owner.id, { page, pageSize: PAGE_SIZE.bookReviews }),
 		PAGE_SIZE.bookReviews,
 		{
 			seed: untrack(() => reviews),
@@ -70,13 +73,13 @@
 		untrack(() => paged.seed(fresh));
 	});
 
-	// The owner's own review has no date and is shown first, as in Flutter.
+	// The owner's own review is tagged instead of dated and shown first, as in Flutter.
 	const empty = $derived(
-		!book.review && paged.items.length === 0 && !paged.loading && !paged.hasMore
+		!ownerReview && paged.items.length === 0 && !paged.loading && !paged.hasMore
 	);
 
 	// The heading's count: readers' reviews plus the owner's own, if any.
-	const totalReviews = $derived(reviewCount + (book.review ? 1 : 0));
+	const totalReviews = $derived(reviewCount + (ownerReview ? 1 : 0));
 
 	// Tapping the cover shows it large over a dimmed page (Flutter's
 	// expandOnTap); a click anywhere or Escape closes it.
@@ -146,11 +149,11 @@
 				{t('Reviews')}{#if totalReviews > 0}<span class="count">· {totalReviews}</span>{/if}
 			</h2>
 			<section class="reviews" aria-labelledby="reviews-heading">
-				{#if book.review}
-					<ReviewItem author={book.owner} text={book.review} tag={t("Owner's note")} />
+				{#if ownerReview}
+					<ReviewItem author={book.owner} text={ownerReview.body} tag={t("Owner's note")} />
 				{/if}
-				{#each paged.items as loan (loan.id)}
-					<ReviewItem author={loan.loanee} text={loan.review ?? ''} date={loan.latest_date} />
+				{#each paged.items as review (review.id)}
+					<ReviewItem author={review.reviewer} text={review.body} date={review.created_at} />
 				{/each}
 				{#if paged.error}
 					<p class="error-text">{paged.error}</p>

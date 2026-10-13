@@ -1,49 +1,53 @@
 <script lang="ts">
-	import type { Loan } from '#lib/data/models.ts';
+	import { auth } from '#lib/auth.svelte.ts';
+	import type { Review } from '#lib/data/models.ts';
 	import { i18n } from '#lib/i18n.svelte.ts';
 	import Avatar from './Avatar.svelte';
 	import CoverImage from './CoverImage.svelte';
 
 	// A review in a list, laid out like LoanCard: the book and the review text
 	// on the left, the cover on the right, the date in the top corner. Long
-	// reviews clamp to 4 lines (the loan page has the rest). `showReviewer` adds
-	// who wrote it as a byline under the text, for lists mixing several people
-	// (Home); a profile's Reviews tab leaves it out.
-	let { loan, showReviewer = false }: { loan: Loan; showReviewer?: boolean } = $props();
+	// reviews clamp to 4 lines (the book page has the rest, so it links there:
+	// a review isn't always tied to a loan). `showReviewer` adds who wrote it as
+	// a byline under the text, for lists mixing several people (Home); a
+	// profile's Reviews tab leaves it out.
+	let { review, showReviewer = false }: { review: Review; showReviewer?: boolean } = $props();
+
+	const href = $derived(
+		review.book.owner.id === auth.user?.id ? `/my-books/${review.book.id}` : `/book/${review.book.id}`
+	);
 
 	const dateText = $derived(
-		loan.latest_date
-			? new Intl.DateTimeFormat(i18n.locale === 'es' ? 'es-ES' : 'en-US', {
-					month: 'short',
-					day: 'numeric',
-					year: 'numeric'
-				}).format(new Date(loan.latest_date))
-			: ''
+		new Intl.DateTimeFormat(i18n.locale === 'es' ? 'es-ES' : 'en-US', {
+			month: 'short',
+			day: 'numeric',
+			year: 'numeric'
+		}).format(new Date(review.created_at))
 	);
 </script>
 
-<a class="rcard pressable" href={`/loans/${loan.id}`}>
+<a class="rcard pressable" {href}>
 	<div class="body">
 		<div class="head">
 			<div class="book">
-				<span class="title">{loan.book.title}</span>
-				<span class="author">{loan.book.author}</span>
+				<span class="title">{review.book.title}</span>
+				<span class="author">{review.book.author}</span>
 			</div>
-			{#if dateText}<span class="date">{dateText}</span>{/if}
+			<span class="date">{dateText}</span>
 		</div>
 		<!-- Pinned to the bottom, so spare space goes between the book and the text. -->
 		<div class="foot">
-			<p class="review">{loan.review}</p>
+			<p class="review">{review.body}</p>
 			{#if showReviewer}
 				<span class="reviewer">
-					<Avatar profile={loan.loanee} size={20} />
-					<span>{loan.loanee.username}</span>
+					<Avatar profile={review.reviewer} size={20} />
+					<span>{review.reviewer.username}</span>
 				</span>
 			{/if}
 		</div>
 	</div>
 	<div class="cover">
-		<CoverImage bucket="book_covers" path={loan.book.image_path} alt={loan.book.title} />
+		<CoverImage bucket="book_covers" path={review.book.image_path} alt={review.book.title} />
 	</div>
 </a>
 

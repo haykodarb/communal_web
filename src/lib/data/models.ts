@@ -18,7 +18,6 @@ export interface Book {
 	title: string;
 	author: string;
 	image_path: string;
-	review?: string | null;
 	owner: Profile;
 	loaned: boolean;
 	public: boolean;
@@ -46,7 +45,6 @@ export interface Loan {
 	returned_at?: string | null;
 	rejected_at?: string | null;
 	latest_date?: string | null;
-	review?: string | null;
 	community?: Community | null;
 	book: Book;
 	owner: Profile;
@@ -54,6 +52,15 @@ export interface Loan {
 	accepted: boolean;
 	rejected: boolean;
 	returned: boolean;
+}
+
+/** A person's review of a book they own or borrowed (one per person per book). */
+export interface Review {
+	id: number;
+	created_at: string;
+	body: string;
+	reviewer: Profile;
+	book: Book;
 }
 
 export type LoanStatus = 'pending' | 'accepted' | 'rejected' | 'returned';

@@ -6,20 +6,24 @@
 	import PageBar from '#lib/components/PageBar.svelte';
 	import BookForm from '#lib/components/BookForm.svelte';
 	import { auth } from '#lib/auth.svelte.ts';
-	import { getBookById, updateBook } from '#lib/data/api.ts';
+	import { getBookById, getReview, updateBook } from '#lib/data/api.ts';
 	import type { Book } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { toast } from '#lib/toast.svelte.ts';
 
 	let book = $state<Book | null>(null);
+	let review = $state<string | null>(null);
 	let loading = $state(true);
 
 	const id = $derived(page.params.id!);
 
 	$effect(() => {
 		loading = true;
-		getBookById(id)
-			.then((result) => (book = result))
+		Promise.all([getBookById(id), getReview(auth.user!.id, id)])
+			.then(([found, own]) => {
+				book = found;
+				review = own?.body ?? null;
+			})
 			.finally(() => (loading = false));
 	});
 </script>
@@ -36,6 +40,7 @@
 	{:else if book}
 		<BookForm
 			{book}
+			{review}
 			submitLabel="Save"
 			onsubmit={async (form, cover) => {
 				await updateBook(auth.user!.id, book!, form, cover);

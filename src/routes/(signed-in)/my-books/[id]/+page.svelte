@@ -47,6 +47,7 @@
 		{book}
 		{reviews}
 		reviewCount={data.details.reviewCount}
+		ownerReview={data.details.ownerReview}
 		large
 		info={[
 			{

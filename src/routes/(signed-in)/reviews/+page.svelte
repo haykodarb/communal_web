@@ -11,7 +11,7 @@
 	import Sentinel from '#lib/components/Sentinel.svelte';
 	import { store } from '#lib/cache.ts';
 	import { getFriendReviews } from '#lib/data/api.ts';
-	import type { Loan } from '#lib/data/models.ts';
+	import type { Review } from '#lib/data/models.ts';
 	import { keys, PAGE_SIZE } from '#lib/data/pages.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
@@ -21,7 +21,7 @@
 	// scroll. Home shows the first few of the same list (and cache entry).
 	let { data }: PageProps = $props();
 
-	const reviews = createPaged<Loan>(
+	const reviews = createPaged<Review>(
 		(page) => getFriendReviews(data.userId, { page, pageSize: PAGE_SIZE.friendReviews }),
 		PAGE_SIZE.friendReviews,
 		{
@@ -46,9 +46,9 @@
 
 	{#if reviews.items.length > 0}
 		<div class="list">
-			{#each reviews.items as loan, i (loan.id)}
+			{#each reviews.items as review, i (review.id)}
 				<div in:appear={{ index: i % PAGE_SIZE.friendReviews }}>
-					<ReviewCard {loan} showReviewer />
+					<ReviewCard {review} showReviewer />
 				</div>
 			{/each}
 		</div>

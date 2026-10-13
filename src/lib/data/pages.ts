@@ -14,6 +14,7 @@ import {
 	getMutualFriends,
 	getNotifications,
 	getProfile,
+	getReview,
 	getReviewCountForBook,
 	getReviewsForBook,
 	getReviewsForUser,
@@ -23,7 +24,7 @@ import {
 	searchUsers,
 	type FriendshipList
 } from './api';
-import type { Book, Friendship, Loan, NetworkBook, Profile } from './models';
+import type { Book, Friendship, Loan, NetworkBook, Profile, Review } from './models';
 
 // Data for each page, fetched by its load function through the page cache.
 // Lists keep every page loaded so far (see createPaged's onChange), so going
@@ -223,58 +224,78 @@ export const profileLists = (id: string, depends: Depends) =>
 			covers,
 			depends
 		),
-		list<Loan>(
+		list<Review>(
 			keys.profileReviews(id),
 			PAGE_SIZE.profileLists,
 			(page, pageSize) => getReviewsForUser(id, { page, pageSize }),
-			(loans) => avatars(loans.map((l) => l.loanee)),
+			(reviews) => covers(reviews.map((r) => r.book)),
 			depends
 		)
 	]).then(([books, reviews]) => ({ books, reviews }));
 
-/** A book with its current loan for you, its reviews and your waitlist entry. */
+/**
+ * A book with its current loan for you, its reviews (the owner's own apart, to
+ * show first) and your waitlist entry.
+ */
 export const book = (userId: string, id: string, depends: Depends) =>
 	cached(
 		keys.book(id),
 		async () => {
-			const [found, currentLoan, reviews, waitlisted, reviewCount] = await Promise.all([
+			const [found, currentLoan, waitlisted] = await Promise.all([
 				getBookById(id),
 				getCurrentLoanForBook(userId, id),
-				list<Loan>(
+				isOnWaitlist(userId, id)
+			]);
+			if (!found) {
+				const reviews: PagedState<Review> = { items: [], pages: 0, hasMore: false };
+				return { book: found, currentLoan, reviews, waitlisted, reviewCount: 0, ownerReview: null };
+			}
+			const ownerId = found.owner.id;
+			const [reviews, reviewCount, ownerReview] = await Promise.all([
+				list<Review>(
 					keys.bookReviews(id),
 					PAGE_SIZE.bookReviews,
-					(page, pageSize) => getReviewsForBook(id, { page, pageSize }),
-					(loans) => avatars(loans.map((l) => l.loanee)),
+					(page, pageSize) => getReviewsForBook(id, ownerId, { page, pageSize }),
+					(reviews) => avatars(reviews.map((r) => r.reviewer)),
 					depends
 				),
-				isOnWaitlist(userId, id),
-				getReviewCountForBook(id)
+				getReviewCountForBook(id, ownerId),
+				getReview(ownerId, id),
+				covers([found])
 			]);
-			if (found) await covers([found]);
-			return { book: found, currentLoan, reviews, waitlisted, reviewCount };
+			return { book: found, currentLoan, reviews, waitlisted, reviewCount, ownerReview };
 		},
 		depends
 	);
 
+/** A loan and the borrower's review of its book, if any. */
 export const loan = (id: string, depends: Depends) =>
 	cached(
 		keys.loan(id),
 		async () => {
 			const found = await getLoanById(id);
-			if (found) await Promise.all([covers([found.book]), avatars([found.loanee])]);
-			return found;
+			if (!found) return { loan: found, review: null };
+			const [review] = await Promise.all([
+				found.book.id ? getReview(found.loanee.id, found.book.id) : null,
+				covers([found.book]),
+				avatars([found.loanee, found.owner])
+			]);
+			return { loan: found, review };
 		},
 		depends
 	);
 
 /** Reviews written by your friends, newest first (Home and its own page). */
 export const friendReviews = (userId: string, depends: Depends) =>
-	list<Loan>(
+	list<Review>(
 		keys.friendReviews(userId),
 		PAGE_SIZE.friendReviews,
 		(page, pageSize) => getFriendReviews(userId, { page, pageSize }),
-		async (loans) => {
-			await Promise.all([covers(loans.map((l) => l.book)), avatars(loans.map((l) => l.loanee))]);
+		async (reviews) => {
+			await Promise.all([
+				covers(reviews.map((r) => r.book)),
+				avatars(reviews.map((r) => r.reviewer))
+			]);
 		},
 		depends
 	);

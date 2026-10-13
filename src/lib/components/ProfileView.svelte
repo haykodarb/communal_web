@@ -9,7 +9,7 @@
 	import VerticalBookCard from './VerticalBookCard.svelte';
 	import MasonryGrid from './MasonryGrid.svelte';
 	import { getBooksForUser, getReviewsForUser } from '#lib/data/api.ts';
-	import type { Book, Loan, Profile } from '#lib/data/models.ts';
+	import type { Book, Profile, Review } from '#lib/data/models.ts';
 	import { store } from '#lib/cache.ts';
 	import { keys, PAGE_SIZE, PROFILE_TABS } from '#lib/data/pages.ts';
 	import { selectTab, tabFrom } from '#lib/tabs.ts';
@@ -32,7 +32,7 @@
 		/** Extra line under the name, e.g. how you're connected. */
 		note?: string;
 		/** First pages of both tabs, from the page's load (through the cache). */
-		lists?: { books: PagedState<Book>; reviews: PagedState<Loan> };
+		lists?: { books: PagedState<Book>; reviews: PagedState<Review> };
 		/** Buttons under the username. */
 		actions: Snippet;
 	} = $props();
@@ -60,7 +60,7 @@
 			onChange: (state) => store(keys.profileBooks(profile.id), state)
 		}
 	);
-	const reviews = createPaged<Loan>(
+	const reviews = createPaged<Review>(
 		(page) => getReviewsForUser(profile.id, { page, pageSize: size }),
 		size,
 		{
@@ -121,8 +121,8 @@
 	<p class="empty">{emptyReviews}</p>
 {:else}
 	<div class="list">
-		{#each reviews.items as loan, i (loan.id)}
-			<div in:appear={{ index: i % 30 }}><ReviewCard {loan} /></div>
+		{#each reviews.items as review, i (review.id)}
+			<div in:appear={{ index: i % 30 }}><ReviewCard {review} /></div>
 		{/each}
 	</div>
 	<Sentinel onvisible={reviews.loadMore} />

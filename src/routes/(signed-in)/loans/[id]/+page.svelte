@@ -15,10 +15,11 @@
 	import {
 		deleteLoan,
 		getLoanById,
+		getReview,
 		setLoanFlag,
-		updateLoanReview
+		setReview
 	} from '#lib/data/api.ts';
-	import type { Loan } from '#lib/data/models.ts';
+	import type { Loan, Review } from '#lib/data/models.ts';
 	import { formatMediumDate } from '#lib/format.ts';
 	import { i18n, t } from '#lib/i18n.svelte.ts';
 	import { errorMessage } from '#lib/errors.ts';
@@ -26,9 +27,10 @@
 	import { toast } from '#lib/toast.svelte.ts';
 	import type { PageProps } from './$types';
 
-	// The loan comes from the load (through the page cache).
+	// The loan and the borrower's review come from the load (through the page cache).
 	let { data }: PageProps = $props();
 	let loan = $derived<Loan | null>(data.loan);
+	let review = $derived<Review | null>(data.review);
 	let busy = $state(false);
 	let error = $state('');
 
@@ -42,9 +44,11 @@
 
 	async function load() {
 		loan = await getLoanById(id);
+		review = loan?.book.id ? await getReview(loan.loanee.id, loan.book.id) : null;
 	}
 
 	const isOwned = $derived(loan ? loan.owner.id === data.userId : false);
+	const isBorrowed = $derived(loan ? loan.loanee.id === data.userId : false);
 
 	/** Asks for confirmation, runs the action, then reloads the loan. */
 	async function act(
@@ -77,7 +81,7 @@
 		busy = true;
 		error = '';
 		try {
-			await updateLoanReview(id, reviewDraft.trim() || null);
+			await setReview(loan!.loanee.id, loan!.book.id, reviewDraft.trim() || null);
 			await load();
 			editingReview = false;
 		} catch (e) {
@@ -87,7 +91,7 @@
 	}
 
 	function startEditing() {
-		reviewDraft = loan?.review ?? '';
+		reviewDraft = review?.body ?? '';
 		editingReview = true;
 	}
 
@@ -109,9 +113,11 @@
 	<div class="menu"><BackButton /></div>
 
 	{#if loan}
-		<!-- The other person, like a contact: avatar, name, and their role. -->
-		{@const person = isOwned ? loan.loanee : loan.owner}
-		{@const role = isOwned
+		<!-- The other person, like a contact: avatar, name, and their role. Someone
+		     who is neither party (e.g. from a review) sees the borrower, like the
+		     owner does. -->
+		{@const person = isBorrowed ? loan.owner : loan.loanee}
+		{@const role = !isBorrowed
 			? loan.returned
 				? 'Borrowed this book'
 				: loan.accepted
@@ -189,12 +195,12 @@
 				{/each}
 			</ol>
 
-			{#if loan.review && (loan.accepted || loan.returned) && !editingReview}
+			{#if review && (loan.accepted || loan.returned) && !editingReview}
 				<hr class="divider" />
 				<ReviewItem
 					author={loan.loanee}
-					text={loan.review}
-					tag={isOwned ? t('Review') : t('Your review')}
+					text={review.body}
+					tag={isBorrowed ? t('Your review') : t('Review')}
 					showAuthor={false}
 				/>
 			{/if}
@@ -232,6 +238,8 @@
 						</Button>
 					</div>
 				{/if}
+			{:else if !isBorrowed}
+				<!-- Neither party (e.g. from a review): nothing to do. -->
 			{:else if loan.accepted || loan.returned}
 				{#if editingReview}
 					<TextField
@@ -246,7 +254,7 @@
 							{t('Cancel')}
 						</Button>
 					</div>
-				{:else if loan.review}
+				{:else if review}
 					<Button variant="tonal" onclick={startEditing}>{t('Edit review')}</Button>
 				{:else}
 					<Button onclick={startEditing}>{t('Add review')}</Button>

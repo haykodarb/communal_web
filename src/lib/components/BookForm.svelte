@@ -13,11 +13,14 @@
 	// Shared by the create and edit pages (BookCreatePage / BookEditPage).
 	let {
 		book = null,
+		review: initialReview = null,
 		submitLabel,
 		onsubmit
 	}: {
 		/** The book being edited; null when creating. */
 		book?: Book | null;
+		/** The owner's own review of the book being edited, if any. */
+		review?: string | null;
 		submitLabel: string;
 		onsubmit: (form: BookForm, cover: Blob | null) => Promise<void>;
 	} = $props();
@@ -27,7 +30,7 @@
 	// svelte-ignore state_referenced_locally
 	let author = $state(book?.author ?? '');
 	// svelte-ignore state_referenced_locally
-	let review = $state(book?.review ?? '');
+	let review = $state(initialReview ?? '');
 	// svelte-ignore state_referenced_locally
 	let isPublic = $state(book?.public ?? true); // Book.empty() is public
 	let cover = $state<Blob | null>(null);

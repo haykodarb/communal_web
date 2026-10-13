@@ -12,7 +12,8 @@ import type {
 	Membership,
 	Message,
 	NetworkBook,
-	Profile
+	Profile,
+	Review
 } from './models';
 
 // The backend is untyped (no generated Database type), so rows are mapped here.
@@ -38,7 +39,6 @@ export function toBook(row: Record<string, unknown>): Book {
 		title: (row.title as string) ?? '',
 		author: (row.author as string) ?? '',
 		image_path: (row.image_path as string) ?? '',
-		review: (row.review as string) ?? null,
 		owner: toProfile(row.profiles as Record<string, unknown> | null),
 		loaned: Boolean(row.loaned),
 		public: Boolean(row.public)
@@ -79,7 +79,6 @@ export function toLoan(row: Record<string, unknown>): Loan {
 		returned_at: (row.returned_at as string) ?? null,
 		rejected_at: (row.rejected_at as string) ?? null,
 		latest_date: (row.latest_date as string) ?? null,
-		review: (row.review as string) ?? null,
 		book: bookRow ? toBook(bookRow) : toBook({}),
 		owner: toProfile(row.owner_profile as Record<string, unknown> | null),
 		loanee: toProfile(row.loanee_profile as Record<string, unknown> | null),
@@ -196,23 +195,59 @@ export async function getCommunitiesForUser(
 	);
 }
 
-/** Loans where the user left a review (accepted loans they borrowed). */
+// ---------------------------------------------------------------------------
+// Reviews: one per person per book, by its owner or by someone who borrowed it.
+// `books!inner` lets the books RLS drop reviews of books you can't see.
+
+const REVIEW_SELECT = '*, reviewer_profile:profiles!reviewer(*), books!inner(*, profiles(*))';
+
+function toReview(row: Record<string, unknown>): Review {
+	return {
+		id: row.id as number,
+		created_at: row.created_at as string,
+		body: (row.body as string) ?? '',
+		reviewer: toProfile(row.reviewer_profile as Record<string, unknown> | null),
+		book: toBook((row.books as Record<string, unknown>) ?? {})
+	};
+}
+
+/** `reviewerId`'s review of a book, if they wrote one. */
+export async function getReview(reviewerId: string, bookId: string): Promise<Review | null> {
+	const { data, error } = await supabase
+		.from('reviews')
+		.select(REVIEW_SELECT)
+		.eq('reviewer', reviewerId)
+		.eq('book', bookId)
+		.maybeSingle();
+	if (error) throw error;
+	return data ? toReview(data as Record<string, unknown>) : null;
+}
+
+/** Everything the user reviewed, books they own and books they borrowed, newest first. */
 export async function getReviewsForUser(
 	userId: string,
 	{ page = 0, pageSize = 30 }: { page?: number; pageSize?: number } = {}
-): Promise<Loan[]> {
+): Promise<Review[]> {
 	const { data, error } = await supabase
-		.from('loans')
-		.select(
-			'*, books!left(*, profiles(*)), loanee_profile:profiles!loanee(*), owner_profile:profiles!owner(*)'
-		)
-		.eq('accepted', true)
-		.eq('loanee', userId)
-		.not('book', 'is', null)
-		.not('review', 'is', null)
+		.from('reviews')
+		.select(REVIEW_SELECT)
+		.eq('reviewer', userId)
+		.order('created_at', { ascending: false })
+		.order('id', { ascending: false })
 		.range(page * pageSize, page * pageSize + pageSize - 1);
 	if (error) throw error;
-	return (data ?? []).map((row) => toLoan(row as Record<string, unknown>));
+	return (data ?? []).map((row) => toReview(row as Record<string, unknown>));
+}
+
+/** Writes (or, when `body` is empty, deletes) the user's review of a book. */
+async function setReview_(userId: string, bookId: string, body: string | null): Promise<void> {
+	const text = body?.trim();
+	const { error } = text
+		? await supabase
+				.from('reviews')
+				.upsert({ reviewer: userId, book: bookId, body: text }, { onConflict: 'reviewer,book' })
+		: await supabase.from('reviews').delete().eq('reviewer', userId).eq('book', bookId);
+	if (error) throw error;
 }
 
 export interface LoansQuery {
@@ -404,6 +439,7 @@ async function uploadImage(bucket: string, userId: string, image: Blob): Promise
 export interface BookForm {
 	title: string;
 	author: string;
+	/** The owner's own review, kept in `reviews`. */
 	review: string | null;
 	public: boolean;
 }
@@ -417,13 +453,14 @@ async function addBook_(userId: string, form: BookForm, cover: Blob): Promise<Bo
 			author: form.author,
 			owner: userId,
 			image_path: imagePath,
-			public: form.public,
-			review: form.review
+			public: form.public
 		})
 		.select('*, profiles(*)')
 		.single();
 	if (error) throw error;
-	return toBook(data as Record<string, unknown>);
+	const book = toBook(data as Record<string, unknown>);
+	if (form.review?.trim()) await setReview_(userId, book.id, form.review);
+	return book;
 }
 
 async function updateBook_(
@@ -439,13 +476,13 @@ async function updateBook_(
 			title: form.title,
 			author: form.author,
 			image_path: imagePath,
-			public: form.public,
-			review: form.review
+			public: form.public
 		})
 		.eq('id', book.id)
 		.select('*, profiles(*)')
 		.single();
 	if (error) throw error;
+	await setReview_(userId, book.id, form.review);
 	return toBook(data as Record<string, unknown>);
 }
 
@@ -501,61 +538,51 @@ const SAMPLE_REVIEW =
 	'together; I found myself rereading whole chapters. Would happily lend this to anyone ' +
 	'curious about the subject.';
 
-function simulatedReviews(page: number, pageSize: number): Loan[] {
+function simulatedReviews(page: number, pageSize: number): Review[] {
 	const start = page * pageSize;
 	const count = Math.max(0, Math.min(pageSize, SIMULATED_REVIEWS - start));
-	const nobody = toProfile(null);
 	return Array.from({ length: count }, (_, i) => {
 		const n = start + i;
 		return {
-			id: `simulated-${n}`,
-			created_at: '',
-			accepted_at: null,
-			returned_at: null,
-			rejected_at: null,
-			latest_date: new Date(Date.UTC(2026, 0, SIMULATED_REVIEWS - n)).toISOString(),
+			id: -1 - n,
+			created_at: new Date(Date.UTC(2026, 0, SIMULATED_REVIEWS - n)).toISOString(),
 			// Vary the length so some reviews clamp to 4 lines and some don't.
-			review: Array.from({ length: 1 + (n % 4) }, () => SAMPLE_REVIEW).join(' '),
-			book: {} as Book,
-			owner: nobody,
-			loanee: toProfile({ id: `simulated-${n}`, username: `reader_${n + 1}` }),
-			accepted: true,
-			rejected: false,
-			returned: true
+			body: Array.from({ length: 1 + (n % 4) }, () => SAMPLE_REVIEW).join(' '),
+			reviewer: toProfile({ id: `simulated-${n}`, username: `reader_${n + 1}` }),
+			book: {} as Book
 		};
 	});
 }
 
-/** How many readers reviewed a book (accepted loans with a review). */
-export async function getReviewCountForBook(bookId: string): Promise<number> {
+/** How many readers reviewed a book, leaving out its owner's own review. */
+export async function getReviewCountForBook(bookId: string, ownerId: string): Promise<number> {
 	if (SIMULATED_REVIEWS > 0) return SIMULATED_REVIEWS;
 	const { count, error } = await supabase
-		.from('loans')
+		.from('reviews')
 		.select('id', { count: 'exact', head: true })
 		.eq('book', bookId)
-		.eq('accepted', true)
-		.not('review', 'is', null);
+		.neq('reviewer', ownerId);
 	if (error) throw error;
 	return count ?? 0;
 }
 
-/** Accepted loans of a book that left a review, newest first. */
+/** Readers' reviews of a book, newest first; the owner's own is fetched apart (getReview). */
 export async function getReviewsForBook(
 	bookId: string,
+	ownerId: string,
 	{ page = 0, pageSize = 30 }: { page?: number; pageSize?: number } = {}
-): Promise<Loan[]> {
+): Promise<Review[]> {
 	if (SIMULATED_REVIEWS > 0) return simulatedReviews(page, pageSize);
 	const { data, error } = await supabase
-		.from('loans')
-		.select(LOAN_SELECT)
+		.from('reviews')
+		.select(REVIEW_SELECT)
 		.eq('book', bookId)
-		.eq('accepted', true)
-		.not('review', 'is', null)
-		.order('latest_date', { ascending: false, nullsFirst: false })
+		.neq('reviewer', ownerId)
+		.order('created_at', { ascending: false })
 		.order('id', { ascending: false })
 		.range(page * pageSize, page * pageSize + pageSize - 1);
 	if (error) throw error;
-	return (data ?? []).map((row) => toLoan(row as Record<string, unknown>));
+	return (data ?? []).map((row) => toReview(row as Record<string, unknown>));
 }
 
 // ---------------------------------------------------------------------------
@@ -665,17 +692,6 @@ async function setLoanFlag_(
 		.maybeSingle();
 	if (error) throw error;
 	if (!data) throw new Error('Could not update this loan, please try again.');
-}
-
-async function updateLoanReview_(loanId: string, review: string | null): Promise<void> {
-	const { data, error } = await supabase
-		.from('loans')
-		.update({ review })
-		.eq('id', loanId)
-		.select()
-		.maybeSingle();
-	if (error) throw error;
-	if (!data) throw new Error('Could not update review.');
 }
 
 // ---------------------------------------------------------------------------
@@ -1376,30 +1392,26 @@ async function leaveWaitlist_(userId: string, bookId: string): Promise<void> {
 // Home
 
 /**
- * The newest reviews written by your friends. Loans are readable by everyone,
- * so this narrows to friends explicitly, and `books!inner` lets the books RLS
- * drop reviews of books you can't see.
+ * The newest reviews written by your friends, of books they own or borrowed.
+ * Reviews of public books are readable by everyone, so this narrows to friends
+ * explicitly.
  */
 export async function getFriendReviews(
 	userId: string,
 	{ page = 0, pageSize = 20 }: { page?: number; pageSize?: number } = {}
-): Promise<Loan[]> {
+): Promise<Review[]> {
 	const friends = await getFriendships(userId, 'friends', { pageSize: 200 });
 	const ids = friends.map((f) => (f.requester.id === userId ? f.responder.id : f.requester.id));
 	if (ids.length === 0) return [];
 	const { data, error } = await supabase
-		.from('loans')
-		.select(
-			'*, books!inner(*, profiles(*)), loanee_profile:profiles!loanee(*), owner_profile:profiles!owner(*)'
-		)
-		.eq('accepted', true)
-		.not('review', 'is', null)
-		.in('loanee', ids)
-		.order('latest_date', { ascending: false, nullsFirst: false })
+		.from('reviews')
+		.select(REVIEW_SELECT)
+		.in('reviewer', ids)
+		.order('created_at', { ascending: false })
 		.order('id', { ascending: false })
 		.range(page * pageSize, page * pageSize + pageSize - 1);
 	if (error) throw error;
-	return (data ?? []).map((row) => toLoan(row as Record<string, unknown>));
+	return (data ?? []).map((row) => toReview(row as Record<string, unknown>));
 }
 
 // ---------------------------------------------------------------------------
@@ -1445,14 +1457,14 @@ function invalidates<A extends unknown[], R>(
 	};
 }
 
-export const addBook = invalidates(addBook_, 'books:', 'profile-books:');
-export const updateBook = invalidates(updateBook_, 'books:', 'book:', 'profile-books:', 'network', 'loans:', 'loan:');
-export const deleteBook = invalidates(deleteBook_, 'books:', 'book:', 'profile-books:', 'network', 'loans:', 'loan:');
+export const addBook = invalidates(addBook_, 'books:', 'profile-books:', 'profile-reviews:');
+export const updateBook = invalidates(updateBook_, 'books:', 'book:', 'profile-books:', 'profile-reviews:', 'network', 'loans:', 'loan:');
+export const deleteBook = invalidates(deleteBook_, 'books:', 'book:', 'profile-books:', 'profile-reviews:', 'network', 'loans:', 'loan:');
 export const updateProfile = invalidates(updateProfile_, 'me:', 'users', 'profile:', 'chats', 'chat:', 'friends:');
 export const requestLoan = invalidates(requestLoan_, 'loans:', 'loan:', 'book:');
 export const deleteLoan = invalidates(deleteLoan_, 'loans:', 'loan:', 'book:');
 export const setLoanFlag = invalidates(setLoanFlag_, 'loans:', 'loan:', 'book:', 'books:', 'network', 'profile-books:');
-export const updateLoanReview = invalidates(updateLoanReview_, 'loans:', 'loan:', 'book:', 'profile-reviews:');
+export const setReview = invalidates(setReview_, 'loans:', 'loan:', 'book:', 'profile-reviews:');
 export const sendFriendRequest = invalidates(sendFriendRequest_, 'friends:', 'profile:');
 export const acceptFriendRequest = invalidates(acceptFriendRequest_, 'friends:', 'profile:', 'network', 'notifications');
 export const deleteFriendship = invalidates(deleteFriendship_, 'friends:', 'profile:', 'network', 'notifications');

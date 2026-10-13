@@ -13,7 +13,7 @@
 	import { store } from '#lib/cache.ts';
 	import { searchNetworkBooks } from '#lib/data/api.ts';
 	import { keys, PAGE_SIZE } from '#lib/data/pages.ts';
-	import type { Loan, NetworkBook } from '#lib/data/models.ts';
+	import type { Loan, NetworkBook, Review } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
 	import type { PageProps } from './$types';
@@ -29,7 +29,7 @@
 	const REVIEWS_PREVIEW = 2;
 
 	const activeLoans = $derived<Loan[]>(data.activeLoans);
-	const reviews = $derived<Loan[]>(data.reviews.items.slice(0, REVIEWS_PREVIEW));
+	const reviews = $derived<Review[]>(data.reviews.items.slice(0, REVIEWS_PREVIEW));
 
 	// The same list (and cache entry) as Search's Books tab, so pages loaded here
 	// are already there, and the other way round.
@@ -70,8 +70,8 @@
 				<a class="see-all" href="/reviews">{t('See all')}</a>
 			</div>
 			<div class="reviews">
-				{#each reviews as loan (loan.id)}
-					<ReviewCard {loan} showReviewer />
+				{#each reviews as review (review.id)}
+					<ReviewCard {review} showReviewer />
 				{/each}
 			</div>
 		</section>

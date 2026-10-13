@@ -35,9 +35,6 @@ PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
 PUBLIC_SUPABASE_ANON_KEY=<anon-key>
 ```
 
-Optional, development only: `VITE_SIMULATED_REVIEWS=23` gives every book that
-many fake reviews, to try the book page's review list without real data.
-
 ## Scripts
 
 ```sh

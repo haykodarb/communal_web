@@ -17,7 +17,7 @@
 	import { peek, store } from '#lib/cache.ts';
 	import { searchNetworkBooks, searchUsers } from '#lib/data/api.ts';
 	import { keys, PAGE_SIZE, SEARCH_TABS } from '#lib/data/pages.ts';
-	import { selectTab, tabFrom } from '#lib/tabs.ts';
+	import { selectTab, shownUrl, tabFrom } from '#lib/tabs.ts';
 	import type { NetworkBook, Profile } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
@@ -40,7 +40,7 @@
 	// page's for a moment.
 	let tab = $state<number>(SEARCH_TABS.indexOf(untrack(() => data.tab)));
 	$effect(() => {
-		tab = SEARCH_TABS.indexOf(tabFrom(page.url, SEARCH_TABS));
+		tab = SEARCH_TABS.indexOf(tabFrom(shownUrl(), SEARCH_TABS));
 	});
 	function select(i: number) {
 		tab = i;

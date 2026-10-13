@@ -12,7 +12,7 @@
 	import type { Book, Profile, Review } from '#lib/data/models.ts';
 	import { store } from '#lib/cache.ts';
 	import { keys, PAGE_SIZE, PROFILE_TABS } from '#lib/data/pages.ts';
-	import { selectTab, tabFrom } from '#lib/tabs.ts';
+	import { selectTab, shownUrl, tabFrom } from '#lib/tabs.ts';
 	import { createPaged, type PagedState } from '#lib/paged.svelte.ts';
 	import { t } from '#lib/i18n.svelte.ts';
 
@@ -39,9 +39,9 @@
 
 	// Books or Reviews, kept in the URL (?tab=reviews). The selected tab is local
 	// state so it switches right away; the URL (and its load) follows.
-	let tab = $state<number>(PROFILE_TABS.indexOf(tabFrom(page.url, PROFILE_TABS)));
+	let tab = $state<number>(PROFILE_TABS.indexOf(tabFrom(shownUrl(), PROFILE_TABS)));
 	$effect(() => {
-		tab = PROFILE_TABS.indexOf(tabFrom(page.url, PROFILE_TABS));
+		tab = PROFILE_TABS.indexOf(tabFrom(shownUrl(), PROFILE_TABS));
 	});
 	function select(i: number) {
 		tab = i;

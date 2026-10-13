@@ -525,38 +525,8 @@ export async function getCurrentLoanForBook(
 	);
 }
 
-// Dev-only, opt-in: VITE_SIMULATED_REVIEWS=23 in .env pretends every book has
-// that many reviews, so the book page's infinite scroll can be exercised
-// without real data. Unset (the default) or in production builds, the real
-// reviews are used.
-const SIMULATED_REVIEWS = import.meta.env.DEV
-	? Number(import.meta.env.VITE_SIMULATED_REVIEWS ?? 0) || 0
-	: 0;
-
-const SAMPLE_REVIEW =
-	'An absorbing read. The argument builds patiently and the last third ties everything ' +
-	'together; I found myself rereading whole chapters. Would happily lend this to anyone ' +
-	'curious about the subject.';
-
-function simulatedReviews(page: number, pageSize: number): Review[] {
-	const start = page * pageSize;
-	const count = Math.max(0, Math.min(pageSize, SIMULATED_REVIEWS - start));
-	return Array.from({ length: count }, (_, i) => {
-		const n = start + i;
-		return {
-			id: -1 - n,
-			created_at: new Date(Date.UTC(2026, 0, SIMULATED_REVIEWS - n)).toISOString(),
-			// Vary the length so some reviews clamp to 4 lines and some don't.
-			body: Array.from({ length: 1 + (n % 4) }, () => SAMPLE_REVIEW).join(' '),
-			reviewer: toProfile({ id: `simulated-${n}`, username: `reader_${n + 1}` }),
-			book: {} as Book
-		};
-	});
-}
-
 /** How many readers reviewed a book, leaving out its owner's own review. */
 export async function getReviewCountForBook(bookId: string, ownerId: string): Promise<number> {
-	if (SIMULATED_REVIEWS > 0) return SIMULATED_REVIEWS;
 	const { count, error } = await supabase
 		.from('reviews')
 		.select('id', { count: 'exact', head: true })
@@ -572,7 +542,6 @@ export async function getReviewsForBook(
 	ownerId: string,
 	{ page = 0, pageSize = 30 }: { page?: number; pageSize?: number } = {}
 ): Promise<Review[]> {
-	if (SIMULATED_REVIEWS > 0) return simulatedReviews(page, pageSize);
 	const { data, error } = await supabase
 		.from('reviews')
 		.select(REVIEW_SELECT)

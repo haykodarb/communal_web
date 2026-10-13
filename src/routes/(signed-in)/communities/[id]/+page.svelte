@@ -12,7 +12,7 @@
 	import { getCommunityById } from '#lib/data/api.ts';
 	import type { Community } from '#lib/data/models.ts';
 	import { t } from '#lib/i18n.svelte.ts';
-	import { selectTab, tabFrom } from '#lib/tabs.ts';
+	import { selectTab, shownUrl, tabFrom } from '#lib/tabs.ts';
 
 	// CommunitySpecificPage: Books / Discuss / Members with the floating
 	// bottom tab bar. The tab lives in ?tab= so back navigation keeps it.
@@ -30,9 +30,9 @@
 	const tabKeys = tabs.map((t) => t.key) as Tab[];
 	// The selected tab is local state so it switches right away; the URL (and its
 	// load) follows. It re-syncs if the URL changes externally.
-	let tab = $state<Tab>(tabFrom(page.url, tabKeys));
+	let tab = $state<Tab>(tabFrom(shownUrl(), tabKeys));
 	$effect(() => {
-		tab = tabFrom(page.url, tabKeys);
+		tab = tabFrom(shownUrl(), tabKeys);
 	});
 
 	$effect(() => {

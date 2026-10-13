@@ -23,7 +23,7 @@
 	import { t } from '#lib/i18n.svelte.ts';
 	import { store } from '#lib/cache.ts';
 	import { FRIEND_TABS, keys, PAGE_SIZE } from '#lib/data/pages.ts';
-	import { selectTab, tabFrom } from '#lib/tabs.ts';
+	import { selectTab, shownUrl, tabFrom } from '#lib/tabs.ts';
 	import { createPaged } from '#lib/paged.svelte.ts';
 	import type { PageProps } from './$types';
 	import { onTableChange } from '#lib/realtime.ts';
@@ -37,9 +37,9 @@
 
 	// The selected tab is local state so it switches right away; the URL (and its
 	// load) follows. It re-syncs if the URL changes externally.
-	let tab = $state<number>(FRIEND_TABS.indexOf(tabFrom(page.url, FRIEND_TABS)));
+	let tab = $state<number>(FRIEND_TABS.indexOf(tabFrom(shownUrl(), FRIEND_TABS)));
 	$effect(() => {
-		tab = FRIEND_TABS.indexOf(tabFrom(page.url, FRIEND_TABS));
+		tab = FRIEND_TABS.indexOf(tabFrom(shownUrl(), FRIEND_TABS));
 	});
 	function select(i: number) {
 		tab = i;
